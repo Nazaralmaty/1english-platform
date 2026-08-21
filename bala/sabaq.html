@@ -89,7 +89,7 @@
     st = App.unit(id);
     $('#pbar').style.width = Math.round(App.unitProgress(id) * 100) + '%';
     var steps = [
-      { n:1, t:'Бейнесабақ',      s:'4 минут · 3 сұрақ',       done:st.video >= 1,  go:video },
+      { n:1, t:'Бейнесабақ',      s:'1 мин 6 с · 3 сұрақ',       done:st.video >= 1,  go:video },
       { n:2, t:'Жаңа 8 сөз',      s:'дыбысымен, мысалымен',    done:st.wordsDone,   go:wordsPane },
       { n:3, t:'Жаттығулар',      s:Object.keys(st.ex).length + ' / 4 орындалды', done:Object.keys(st.ex).length >= 4, go:exPane },
       { n:4, t:'Ойын аренасы',    s:'осы сабақтың сөздерімен', done:st.game,        go:goGame },
