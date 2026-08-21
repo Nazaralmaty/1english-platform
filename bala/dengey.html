@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Деңгей таңдау</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .lv{display:block;width:100%;text-align:left;background:var(--white);border-radius:var(--r-lg);
+      padding:20px;box-shadow:var(--shadow);margin-bottom:14px;border:2px solid transparent;
+      transition:.16s var(--ease)}
+  .lv:active{transform:scale(.99)}
+  .lv.on{border-color:var(--navy)}
+  .lv h3{font-size:24px;font-weight:900;letter-spacing:-.8px}
+  .lv .cef{font-size:13px;font-weight:800;color:var(--crimson);letter-spacing:.08em}
+  .lv .kk{font-size:16px;font-weight:700;color:var(--navy);margin-top:8px}
+  .lv .ab{font-size:14.5px;color:var(--muted);line-height:1.45;margin-top:6px}
+  .lv .ck{font-size:14px;color:var(--ink);background:var(--paper-cool);border-radius:12px;
+          padding:11px 13px;margin-top:12px;line-height:1.4}
+  .lv .mods{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .lv .mods span{font-size:12px;font-weight:800;background:var(--paper);border-radius:999px;
+                 padding:6px 10px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" id="back" href="index.html">←</a>
+    <h1>Деңгейді таңда</h1>
+  </header>
+  <div class="scroll notab">
+    <p class="muted" style="margin:4px 0 18px">
+      Деңгейді өзің таңдайсың. Қиын болса да, оңай болса да — кез келген уақытта ауыстыра аласың,
+      прогресің сақталады.</p>
+    <div id="list"></div>
+    <a class="btn ghost" href="diagnostika.html" style="margin-top:6px">Білмеймін — тест тапсырамын</a>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/course.js"></script>
+<script>
+(function(){
+  var S = App.load(), list = App.$('#list');
+  if (!S.level) App.$('#back').classList.add('hidden');
+
+  COURSE.levels.forEach(function(l){
+    var mods = COURSE.mods(l.id).filter(function(m){ return m.ready !== false; });
+    var lessons = COURSE.ofLevel(l.id).filter(function(u){ return u.ready; }).length;
+    var b = App.el('button','lv' + (S.level === l.id ? ' on' : ''),
+      '<div class="row between"><div class="cef">' + l.cefr + '</div>' +
+      (S.diag && S.diag.suggest === l.id ? '<span class="pill ok">тест ұсынады</span>' : '') + '</div>' +
+      '<h3>' + l.name + '</h3>' +
+      '<div class="kk">' + l.kk + '</div>' +
+      '<div class="ab">' + l.about + '</div>' +
+      '<div class="ck">' + l.check + '</div>' +
+      '<div class="mods"><span>' + lessons + ' сабақ</span>' +
+        mods.map(function(m){ return '<span>' + m.num + '-модуль · ' + m.kk + '</span>'; }).join('') +
+      '</div>');
+    b.onclick = function(){
+      var st = App.load(); st.level = l.id; App.save();
+      location.href = 'index.html';
+    };
+    list.appendChild(b);
+  });
+
+  if (App.qs('test') === '1') {
+    console.assert(App.$$('.lv').length === 2, 'должно быть два уровня');
+    console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+    console.log('OK bala/dengey');
+  }
+})();
+</script>
+</body>
+</html>

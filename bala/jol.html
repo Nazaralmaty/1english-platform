@@ -6,9 +6,10 @@
 <title>1English · Оқу жолы</title>
 <link rel="stylesheet" href="../assets/app.css">
 <style>
-  .wk{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
-  .wk b{font-size:15px;font-weight:800;letter-spacing:-.2px}
-  .wk .ln{flex:1;height:1px;background:var(--line)}
+  .mod{margin:24px 0 12px}
+  .mod .n{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--crimson)}
+  .mod h3{font-size:19px;font-weight:900;letter-spacing:-.5px;margin-top:2px}
+  .mod p{font-size:14px;color:var(--muted);margin-top:4px;line-height:1.4}
   .unit{display:flex;gap:12px;align-items:flex-start;padding:14px;background:var(--white);
         border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:10px}
   .unit.lock{background:transparent;box-shadow:none;border:1px dashed var(--line)}
@@ -16,8 +17,10 @@
        font-weight:900;background:var(--paper-cool);color:var(--navy)}
   .dot.done{background:var(--ok);color:#fff}
   .dot.now{background:var(--navy);color:#fff;box-shadow:0 0 0 4px rgba(10,49,97,.12)}
-  .cando{font-size:14px;color:var(--muted);margin-top:3px}
-  .gram{font-size:12px;font-weight:800;color:var(--crimson);margin-top:6px;letter-spacing:.02em}
+  .cando{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .gram{font-size:12px;font-weight:800;color:var(--crimson);margin-top:6px}
+  .hero{background:var(--navy);color:#fff;border-radius:var(--r);padding:18px;margin-bottom:6px}
+  .hero .row .btn{width:auto}
 </style>
 </head>
 <body>
@@ -25,45 +28,69 @@
   <header class="top">
     <a class="back" href="index.html">←</a>
     <h1>Оқу жолы</h1>
-    <div class="pill" id="lvl">pre-A1</div>
   </header>
-  <div class="scroll" id="list"></div>
+  <div class="scroll">
+    <div class="hero">
+      <div class="row between">
+        <div class="grow">
+          <div class="tag" style="color:#9CC4F5" id="cefr">A1</div>
+          <div class="card-t" style="font-size:22px;margin-top:4px" id="lvname">—</div>
+          <div class="card-s" id="lvsub">—</div>
+        </div>
+        <a class="btn sm onnavy" href="dengey.html">Ауыстыру</a>
+      </div>
+      <div class="bar" style="margin-top:14px"><i id="lvbar" style="width:0%"></i></div>
+      <div class="card-s" id="lvprog" style="margin-top:8px">—</div>
+    </div>
+    <div id="list"></div>
+  </div>
 </div>
 <script src="../assets/app.js"></script>
 <script src="../data/course.js"></script>
+<script src="../data/lessons_b.js"></script>
+<script src="../data/lessons_e.js"></script>
 <script>
 (function(){
-  var S = App.load(), list = App.$('#list');
-  App.$('#lvl').textContent = S.diag ? S.diag.level : COURSE.level;
+  var S = App.load(), $ = App.$, list = $('#list');
+  var level = S.level || 'beginner';
+  var lv = COURSE.level(level);
+  $('#cefr').textContent = lv.cefr;
+  $('#lvname').textContent = lv.name;
+  $('#lvsub').textContent = lv.kk;
 
-  var ready = COURSE.units.filter(function(u){ return u.ready; });
-  var cur = (ready.filter(function(u){ return !App.unitDone(u.id); })[0] || ready[ready.length-1]).id;
+  var units = COURSE.ofLevel(level);
+  var ready = units.filter(function(u){ return u.ready; });
+  var done = ready.filter(function(u){ return App.unitDone(u.id); }).length;
+  $('#lvbar').style.width = Math.round(100 * done / Math.max(ready.length,1)) + '%';
+  $('#lvprog').textContent = done + ' / ' + ready.length + ' сабақ жабылды';
+  var cur = App.curUnit(COURSE, level);
 
-  var w = 0;
-  COURSE.units.forEach(function(u){
-    if (u.w !== w) {
-      w = u.w;
-      var hd = App.el('div','wk','<b>' + w + '-апта</b><span class="ln"></span>');
-      list.appendChild(hd);
-    }
-    var done = App.unitDone(u.id), now = u.id === cur;
-    var node = App.el(u.ready ? 'a' : 'div', 'unit' + (u.ready ? '' : ' lock'));
-    if (u.ready) node.href = 'sabaq.html?u=' + u.id;
-    node.innerHTML =
-      '<div class="dot ' + (done ? 'done' : now ? 'now' : '') + '">' + (done ? '✓' : u.num) + '</div>' +
-      '<div class="grow">' +
-        '<div class="card-t">' + u.kk + ' <span class="muted" style="font-weight:600">· ' + u.en + '</span></div>' +
-        '<div class="cando">' + u.cando + '</div>' +
-        '<div class="gram">' + u.gram + ' · ' + u.lvl + '</div>' +
-      '</div>' +
-      (u.ready ? '' : '<div style="font-size:16px;opacity:.5">🔒</div>');
-    list.appendChild(node);
+  COURSE.mods(level).forEach(function(m){
+    var head = App.el('div','mod',
+      '<div class="n">' + m.num + '-МОДУЛЬ' + (m.ready === false ? ' · ДАЙЫНДАЛУДА' : '') + '</div>' +
+      '<h3>' + m.kk + '</h3><p>' + m.goal + '</p>');
+    list.appendChild(head);
+    COURSE.inMod(m.id).forEach(function(u){
+      var isDone = App.unitDone(u.id), now = cur && u.id === cur.id;
+      var node = App.el(u.ready ? 'a' : 'div', 'unit' + (u.ready ? '' : ' lock'));
+      if (u.ready) node.href = 'sabaq.html?u=' + u.id;
+      var L = (window.LESSONS || {})[u.id];
+      node.innerHTML =
+        '<div class="dot ' + (isDone ? 'done' : now ? 'now' : '') + '">' + (isDone ? '✓' : u.num) + '</div>' +
+        '<div class="grow">' +
+          '<div class="card-t">' + u.kk + ' <span class="muted" style="font-weight:600">· ' + u.en + '</span></div>' +
+          '<div class="cando">' + u.cando + '</div>' +
+          '<div class="gram">' + u.gram + ' · ' + u.lvl + (L && L.video ? ' · 🎬 бейне' : '') + '</div>' +
+        '</div>' +
+        (u.ready ? '' : '<div style="font-size:16px;opacity:.5">🔒</div>');
+      list.appendChild(node);
+    });
   });
 
   App.tabs('jol.html');
   if (App.qs('test') === '1') {
-    console.assert(App.$$('.unit').length === 24, 'должно быть 24 юнита');
-    console.assert(App.$$('.wk').length === 8, 'должно быть 8 недель');
+    console.assert(App.$$('.mod').length === 3, 'у уровня должно быть 3 модуля');
+    console.assert(App.$$('.unit').length === 9, 'в уровне должно быть 9 уроков');
     console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
     console.log('OK bala/jol');
   }

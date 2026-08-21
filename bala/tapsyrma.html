@@ -26,12 +26,15 @@
 </div>
 <script src="../assets/app.js"></script>
 <script src="../data/course.js"></script>
-<script src="../data/lesson_u1.js"></script>
+<script src="../data/lessons_b.js"></script>
+<script src="../data/lessons_e.js"></script>
 <script>
 (function(){
-  var id = App.qs('u') || 'u1', $ = App.$;
+  var id = App.qs('u') || 'b1', $ = App.$;
   App.$('#back').href = 'sabaq.html?u=' + id;
-  var meta = COURSE.byId(id), Q = LESSON_U1.test;
+  var meta = COURSE.byId(id), L = LESSONS[id];
+  if (!L) { $('#body').innerHTML = '<div class="card center" style="padding:30px">Бұл сабақ дайындалуда</div>'; return; }
+  var Q = L.test;
   var i = 0, right = 0, marks = [], wrong = [];
 
   function bar(){
@@ -45,7 +48,7 @@
     if (!q) return done();
     $('#cnt').textContent = (i+1) + ' / ' + Q.length;
     $('#body').innerHTML = bar() +
-      '<div class="tag">' + meta.num + '-САБАҚ · ' + meta.kk + '</div>' +
+      '<div class="tag">' + meta.num + '-САБАҚ · ' + meta.kk.toUpperCase() + '</div>' +
       '<div class="card-t" style="font-size:21px;margin:8px 0 16px;line-height:1.3">' + q.q + '</div>' +
       '<div id="o"></div><div id="fb"></div>';
     q.opts.forEach(function(o, n){

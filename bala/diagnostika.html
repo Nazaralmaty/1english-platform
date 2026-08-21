@@ -95,7 +95,7 @@
   function done(){
     var lv = DIAG.levelOf(score, asked);
     var S = App.load();
-    S.diag = { level: lv.code, kk: lv.kk, score: score, asked: asked, at: App.today(), startUnit: lv.unit };
+    S.diag = { level: lv.code, kk: lv.kk, score: score, asked: asked, at: App.today(), suggest: lv.course };
     App.save(); App.touchStreak();
     var p = Math.round(100 * score / 20);
     App.$('#cnt').textContent = 'Дайын';
@@ -105,14 +105,19 @@
         '<div class="card-t" style="font-size:20px">' + lv.kk + '</div>' +
         '<div class="card-s">20 сұрақтың ' + score + '-і дұрыс' + (asked < 20 ? ' · ' + asked + ' сұрақ қойылды' : '') + '</div>' +
       '</div>' +
-      '<div class="card"><div class="tag">ЖЕКЕ ЖОСПАР</div>' +
-        '<div class="card-t" style="margin-top:6px">Сен бастайтын сабақ</div>' +
-        '<div class="card-s" id="su"></div></div>' +
+      '<div class="card"><div class="tag">ҰСЫНЫС</div>' +
+        '<div class="card-t" style="margin-top:6px" id="su">—</div>' +
+        '<div class="card-s" id="su2"></div></div>' +
       '<div class="card flat"><div class="card-t" style="font-size:15px">Не тексерілді</div>' +
         '<div class="card-s">Сөздік қор · грамматика · оқу · тыңдалым. Спикинг ұстазбен Zoom-сабақта тексеріледі.</div></div>' +
-      '<a class="btn" href="index.html" style="margin-top:14px">Оқуды бастау</a>';
-    var u = COURSE.byId(lv.unit) || COURSE.units[0];
-    App.$('#su').textContent = u.num + '-сабақ · ' + u.kk + ' — ' + u.cando;
+      '<button class="btn" id="take" style="margin-top:14px">Осы деңгейден бастау</button>' +
+      '<a class="btn ghost" href="dengey.html" style="margin-top:10px">Басқа деңгейді таңдау</a>';
+    var c = COURSE.level(lv.course);
+    App.$('#su').textContent = c.name + ' · ' + c.cefr;
+    App.$('#su2').textContent = c.kk + '. Деңгей — ұсыныс қана: қаласаң, кез келгенін таңдай аласың.';
+    App.$('#take').onclick = function(){
+      var st = App.load(); st.level = lv.course; App.save(); location.href = 'index.html';
+    };
   }
 
   render();

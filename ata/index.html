@@ -49,6 +49,12 @@
       <div id="va"></div>
     </div>
 
+    <div class="card" id="mcard" style="display:none">
+      <div class="tag">АЙ САЙЫНҒЫ ТЕСТ</div>
+      <div class="card-t" style="margin-top:6px" id="mband">—</div>
+      <div class="card-s" id="mline">—</div>
+    </div>
+
     <div class="say">
       <div class="tag" style="color:#9CC4F5">БАЛАҒА НЕ ДЕУГЕ БОЛАДЫ</div>
       <div class="q" id="phrase">—</div>
@@ -71,12 +77,13 @@
   /* ponytail: посещаемость Zoom приходит с сервера школы. В прототипе сервера
      нет — держим одну явную константу вместо правдоподобной подделки. */
   var ZOOM_ATTENDED = 2, ZOOM_TOTAL = 3;
+  var level = S.level || 'beginner';
 
   $('#nm').textContent = S.user.name || 'Оқушы';
-  $('#sub').textContent = (S.user.group || 'Балалар тобы') + ' · ' + (S.diag ? S.diag.level : 'pre-A1');
+  $('#sub').textContent = (S.user.group || 'Балалар тобы') + ' · ' + COURSE.level(level).name;
 
   var closedEx = 0;
-  COURSE.units.forEach(function(u){
+  COURSE.ofLevel(level).forEach(function(u){
     var st = S.units[u.id];
     if (st && Object.keys(st.ex || {}).length >= 4) closedEx++;
   });
@@ -102,6 +109,13 @@
     if (src) $('#va').innerHTML = '<audio controls src="' + src + '" style="width:100%;margin-top:10px"></audio>';
   }
 
+  var mt = (S.monthly || [])[S.monthly.length - 1];
+  if (mt) {
+    $('#mcard').style.display = 'block';
+    $('#mband').textContent = 'Деңгей: ' + mt.band;
+    $('#mline').textContent = mt.at + ' · ' + mt.score + '/' + mt.total + ' дұрыс · ' + mt.xp + ' XP';
+  }
+
   /* фраза родителю — привязана к тому, что реально происходит */
   var due = 0; try { due = Object.keys(S.words).filter(function(k){ return S.words[k].due <= App.today(); }).length; } catch(e){}
   var phrase = !S.diag ? 'Балаңыз әлі деңгей тестін өтпеді. Бүгін бірге 5 минут бөліңізші.'
@@ -111,7 +125,7 @@
   $('#phrase').textContent = phrase;
 
   var box = $('#cando');
-  var done = COURSE.units.filter(function(u){ return App.unitDone(u.id); });
+  var done = COURSE.ofLevel(level).filter(function(u){ return App.unitDone(u.id); });
   if (!done.length) box.innerHTML = '<div class="card-s">Әзірше жабылған сабақ жоқ.</div>';
   done.forEach(function(u){
     box.appendChild(App.el('div','li','<div class="m">✅</div><div class="grow">' +

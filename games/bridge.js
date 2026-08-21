@@ -30,6 +30,9 @@
       if (p.word) A.seeWord(p.word, !!p.correct);
       if (p.errors) p.errors.forEach(function (e) { A.seeWord(e.word, false); });
       if (p.words)  p.words.forEach(function (w) { A.seeWord(w, true); });
+      /* Закрытая арена-тапсырма — это и есть шаг «Ойын» в уроке. Ждать
+         выхода из игры нельзя: ребёнок может закрыть вкладку. */
+      if (p.level != null && unit) { A.unit(unit).game = true; A.save(); }
     },
 
     /* Партия закончена: закрываем шаг юнита и возвращаем ребёнка назад. */

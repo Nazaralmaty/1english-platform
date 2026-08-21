@@ -27,12 +27,15 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const SCREENS = [
   { id:'stend',  name:'Стенд',            file:'index.html' },
   { id:'kiru',   name:'Кіру',             file:'bala/kiru.html' },
+  { id:'dengey', name:'Деңгей таңдау',     file:'bala/dengey.html' },
   { id:'bugin',  name:'Бүгін',            file:'bala/index.html' },
   { id:'diag',   name:'Диагностика',      file:'bala/diagnostika.html' },
   { id:'jol',    name:'Оқу жолы',         file:'bala/jol.html' },
-  { id:'sabaq',  name:'Сабақ (юнит)',     file:'bala/sabaq.html', q:'?u=u1&test=1' },
+  { id:'sabaq',  name:'Сабақ · b2 (бейне)', file:'bala/sabaq.html', q:'?u=b2&test=1' },
+  { id:'sabaq2', name:'Сабақ · e2',        file:'bala/sabaq.html', q:'?u=e2&test=1' },
   { id:'sozdik', name:'Сөздік',           file:'bala/sozdik.html' },
-  { id:'tapsyrma', name:'Апталық тапсырма', file:'bala/tapsyrma.html', q:'?u=u1&test=1' },
+  { id:'tapsyrma', name:'Сабақ тесті',     file:'bala/tapsyrma.html', q:'?u=b2&test=1' },
+  { id:'aitest', name:'Ай сайынғы тест',   file:'bala/ai_test.html' },
   { id:'oiyn',   name:'Ойындар',          file:'bala/oiyn.html' },
   { id:'profil', name:'Профиль',          file:'bala/profil.html' },
   { id:'surypta',name:'Сөз сұрыптау',     file:'games/surypta.html' },
@@ -142,30 +145,36 @@ if (want('stend')) {
    и это заметят на показе, а не здесь. Поэтому сверяем числом. */
 {
   const { readFileSync } = await import('fs');
-  const words = readFileSync(path.join(HERE, 'data/words.js'), 'utf8');
+  const words  = readFileSync(path.join(HERE, 'data/words.js'), 'utf8');
   const course = readFileSync(path.join(HERE, 'data/course.js'), 'utf8');
-  const readyIds = [...course.matchAll(/id:'(u\d+)'[^}]*ready:true/g)].map((m) => m[1]);
-  const bad = readyIds.filter((id) => (words.match(new RegExp("u:'" + id + "'", 'g')) || []).length !== 8);
-  totalFails += bad.length;
-  rows.push(['Слова ↔ курс', readyIds.length + ' готовых юнитов',
-    bad.length ? 'не по 8 слов: ' + bad.join(', ') : 'по 8 слов в каждом']);
+  const lessons = readFileSync(path.join(HERE, 'data/lessons_b.js'), 'utf8')
+                + readFileSync(path.join(HERE, 'data/lessons_e.js'), 'utf8');
+  const readyIds = [...course.matchAll(/id:'([be]\d+)'[^}]*ready:true/g)].map((m) => m[1]);
+  const noWords  = readyIds.filter((id) => (words.match(new RegExp("u:'" + id + "'", 'g')) || []).length !== 8);
+  const noText   = readyIds.filter((id) => !lessons.includes('LESSONS.' + id + ' ='));
+  totalFails += noWords.length + noText.length;
+  rows.push(['Слова ↔ курс', readyIds.length + ' готовых уроков',
+    noWords.length ? 'не по 8 слов: ' + noWords.join(', ') : 'по 8 слов в каждом']);
+  rows.push(['Контент ↔ курс', readyIds.length + ' готовых уроков',
+    noText.length ? 'нет содержимого: ' + noText.join(', ') : 'у каждого есть содержимое']);
 }
 
 /* ── видеоурок ────────────────────────────────────────────────────────────
    Проверяем не «файл лежит», а то, ради чего он лежит: ролик открывается в
    экране сабака, доигрывает до чекпоинта и чекпоинт останавливает видео
-   вопросом. Разъехавшиеся секунды в data/lesson_u1.js ловятся именно здесь. */
+   вопросом. Разъехавшиеся секунды в data/lessons_b.js ловятся именно здесь. */
 if (want('sabaq') || want('video')) {
   const { readFileSync } = await import('fs');
-  const les = readFileSync(path.join(HERE, 'data/lesson_u1.js'), 'utf8');
-  const times = [...les.matchAll(/t:\s*(\d+)/g)].map((m) => +m[1]);
+  const les = readFileSync(path.join(HERE, 'data/lessons_b.js'), 'utf8');
+  const times = [...les.matchAll(/\{ t:(\d+),/g)].map((m) => +m[1]);
+  if (!times.length) { rows.push(['Видеоурок', '—', 'у урока b2 не осталось чекпоинтов']); totalFails++; }
   const p = await browser.newPage();
   await p.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
   const errs = [];
   p.on('pageerror', (e) => errs.push(e.message.split('\n')[0]));
-  await p.goto('file://' + encodeURI(path.join(HERE, 'bala/sabaq.html')) + '?u=u1',
+  await p.goto('file://' + encodeURI(path.join(HERE, 'bala/sabaq.html')) + '?u=b2',
                { waitUntil: 'networkidle0' });
-  const r = await p.evaluate(async (t0) => {
+  const r = times.length ? await p.evaluate(async (t0) => {
     document.querySelectorAll('.step')[0].click();          /* шаг «Бейнесабақ» */
     const v = document.getElementById('v');
     await new Promise((res) => {
@@ -176,7 +185,7 @@ if (want('sabaq') || want('video')) {
     v.currentTime = t0 + 0.6;                                /* прыжок на чекпоинт */
     await new Promise((res) => setTimeout(res, 900));
     return { dur: dur, paused: v.paused, ask: !!document.querySelector('#cpbox .cp') };
-  }, times[0]);
+  }, times[0]) : { dur:0, paused:false, ask:false };
   await p.close();
   const problems = [...errs];
   if (!(r.dur > 0)) problems.push('видео не открылось (нет длительности)');
@@ -194,7 +203,7 @@ const w0 = Math.max(...rows.map((r) => r[0].length));
 const w1 = Math.max(...rows.map((r) => r[1].length));
 console.log('');
 for (const [a, b, c] of rows) {
-  const bad = !['чисто', 'все живые', 'по 8 слов в каждом'].includes(c);
+  const bad = !['чисто', 'все живые', 'по 8 слов в каждом', 'у каждого есть содержимое'].includes(c);
   console.log((bad ? '✗ ' : '✓ ') + a.padEnd(w0) + '  ' + b.padEnd(w1) + '  ' + c);
 }
 console.log('\n' + (totalFails ? '✗ ' : '✓ ') + totalChecks + ' блоков теста, ' + totalFails + ' проблем\n');

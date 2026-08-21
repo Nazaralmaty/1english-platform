@@ -45,11 +45,12 @@ window.DIAG = {
     ]}
   ],
   /* Порог уровня. Считается по количеству верных из заданных. */
+  /* Итог диагностики — совет, какой КУРС брать, а не приговор по уровню.
+     Ученик всё равно выбирает сам (см. bala/dengey.html). */
   levelOf: function (score, asked) {
-    var p = asked ? score / asked : 0;
-    if (score <= 6)  return { code:'pre-A1', kk:'Нөлден бастаймыз',   unit:'u1' };
-    if (score <= 12) return { code:'A1',     kk:'Негізі бар',          unit:'u4' };
-    if (score <= 17) return { code:'A1+',    kk:'Жақсы негіз',         unit:'u7' };
-    return { code:'A2', kk:'Сенімді деңгей', unit:'u13', p:p };
+    if (score <= 7)  return { code:'pre-A1', kk:'Нөлден бастаймыз',    course:'beginner' };
+    if (score <= 12) return { code:'A1',     kk:'Негізі бар',           course:'beginner' };
+    if (score <= 17) return { code:'A1+',    kk:'Жақсы негіз',          course:'elementary' };
+    return { code:'A2', kk:'Сенімді деңгей', course:'elementary' };
   }
 };

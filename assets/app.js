@@ -24,7 +24,9 @@
       right:'Дұрыс!', wrong:'Қате', yourLevel:'Сіздің деңгейіңіз',
       toRepeat:'Бүгін қайталау', learned:'Меңгерілген', minutes:'мин',
       voiceTask:'Дауыстық тапсырма', record:'Жазу', stop:'Тоқтату',
-      sent:'Ұстазға жіберілді', noRepeat:'Бүгінге бәрі қайталанды 🎉'
+      sent:'Ұстазға жіберілді', noRepeat:'Бүгінге бәрі қайталанды 🎉',
+      level:'Деңгей', module:'Модуль', changeLevel:'Деңгейді ауыстыру',
+      exit:'Шығу', back:'Артқа'
     },
     ru: {
       today:'Сегодня', map:'Путь', words:'Словарь', games:'Игры', me:'Профиль',
@@ -35,7 +37,9 @@
       right:'Верно!', wrong:'Ошибка', yourLevel:'Ваш уровень',
       toRepeat:'Повторить сегодня', learned:'Выучено', minutes:'мин',
       voiceTask:'Голосовое задание', record:'Записать', stop:'Стоп',
-      sent:'Отправлено ұстазу', noRepeat:'На сегодня всё повторено 🎉'
+      sent:'Отправлено преподавателю', noRepeat:'На сегодня всё повторено 🎉',
+      level:'Уровень', module:'Модуль', changeLevel:'Сменить уровень',
+      exit:'Выход', back:'Назад'
     }
   };
 
@@ -46,7 +50,9 @@
   function blank() {
     return {
       user:   { name: '', phone: '', group: '' },
-      diag:   null,                 /* {level, score, at} — пока null, диагностика не пройдена */
+      level:  null,                 /* 'beginner' | 'elementary' — выбирает сам ученик */
+      diag:   null,                 /* {level, score, at} — совет, а не приговор */
+      monthly: [],                  /* результаты ежемесячного теста */
       units:  {},                   /* u1: {video, wordsDone, ex:{}, game, voice, test} */
       words:  {},                   /* en: {box, due, wrong} — очередь повторения */
       streak: { days: 0, last: '' },
@@ -74,20 +80,31 @@
     return s.units[id];
   }
 
-  /* Юнит закрыт, когда сделаны все пять шагов. Тест — пятый и последний. */
-  function unitDone(id) {
-    var u = load().units[id];
-    return !!(u && u.video >= 1 && u.wordsDone && Object.keys(u.ex).length >= 4 && u.game && u.test != null);
+  /* Шагов у урока четыре, а с видеосабаком — пять. Видео есть не у всех
+     уроков, и «прогресс 4/5 навсегда» у урока без видео был бы враньём. */
+  function steps(id) {
+    var L = (window.LESSONS || {})[id];
+    return (L && L.video) ? 5 : 4;
   }
-  function unitProgress(id) {
+  function stepsDone(id) {
     var u = load().units[id]; if (!u) return 0;
-    var n = 0;
-    if (u.video >= 1) n++;
+    var L = (window.LESSONS || {})[id], n = 0;
+    if (L && L.video && u.video >= 1) n++;
     if (u.wordsDone) n++;
     if (Object.keys(u.ex).length >= 4) n++;
     if (u.game) n++;
     if (u.test != null) n++;
-    return n / 5;
+    return n;
+  }
+  function unitDone(id) { return stepsDone(id) >= steps(id); }
+  function unitProgress(id) { return stepsDone(id) / steps(id); }
+
+  /* Первый незакрытый готовый урок выбранного уровня. Если всё закрыто —
+     последний, чтобы экран не оказался пустым. */
+  function curUnit(course, level) {
+    var ready = course.units.filter(function (u) { return u.level === level && u.ready; });
+    if (!ready.length) return null;
+    return ready.filter(function (u) { return !unitDone(u.id); })[0] || ready[ready.length - 1];
   }
 
   /* ── повторение ────────────────────────────────────────────────────
@@ -174,7 +191,7 @@
     t: t, lang: lang,
     setLang: function (l) { try { localStorage.setItem(LANG_KEY, l); } catch (e) {} location.reload(); },
     load: load, save: save, reset: reset, state: load,
-    unit: unit, unitDone: unitDone, unitProgress: unitProgress,
+    unit: unit, unitDone: unitDone, unitProgress: unitProgress, curUnit: curUnit,
     seeWord: seeWord, dueWords: dueWords, knownCount: knownCount,
     touchStreak: touchStreak, today: today,
     $: $, $$: $$, el: el, toast: toast, qs: qs, d: d, tabs: tabs

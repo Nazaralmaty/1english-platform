@@ -60,18 +60,39 @@ $$;
 -- 2. КУРС: ЮНИТЫ И СЛОВА
 -- Читаются всеми: цель юнита и слова — это и есть продукт, скрывать нечего.
 -- ══════════════════════════════════════════════════════════════════════════
+-- Уровень курса. Ученик выбирает сам и может сменить — прогресс привязан
+-- к уроку, а не к уровню, поэтому при смене ничего не теряется.
+create table if not exists en_levels (
+  id    text primary key check (id in ('beginner','elementary','pre_intermediate')),
+  name  text not null,
+  cefr  text not null,
+  kk    text not null,
+  about text not null
+);
+
+create table if not exists en_modules (
+  id    text primary key,                          -- 'bm1'
+  level text not null references en_levels(id) on delete cascade,
+  num   smallint not null,
+  kk    text not null,
+  goal  text not null,
+  is_ready boolean not null default true,
+  unique (level, num)
+);
+
 create table if not exists en_units (
-  id       text primary key,                       -- 'u1'
-  week     smallint not null check (week between 1 and 8),
-  num      smallint not null check (num between 1 and 24),
+  id       text primary key,                       -- 'b1' | 'e1'
+  level    text not null references en_levels(id) on delete cascade,
+  module   text references en_modules(id) on delete set null,
+  num      smallint not null,
   title_kk text not null,
   title_en text not null,
   cando    text not null,                          -- «Мен өзімді таныстыра аламын»
   grammar  text not null,
-  level    text not null,
+  level_cefr text not null,                        -- A1 / A2 — шкала CEFR, не курс
   video_url text,
   is_ready boolean not null default false,         -- контент написан целиком
-  unique (num)
+  unique (level, num)
 );
 
 create table if not exists en_words (
@@ -84,7 +105,7 @@ create table if not exists en_words (
   unique (unit, en)
 );
 
--- В юните ровно 8 слов. Это не эстетика: экран сабака рисует восемь карточек,
+-- В уроке ровно 8 слов. Это не эстетика: экран сабака рисует восемь карточек,
 -- и «семь» там выглядит как потерянная карточка. Ошибку ловим при вставке.
 create or replace function en_check_words() returns trigger
 language plpgsql as $$
@@ -115,7 +136,9 @@ create table if not exists en_questions (
   say           text,                              -- listen: что произносит TTS
   options       text[] not null check (array_length(options,1) between 2 and 4),
   correct_index smallint not null check (correct_index >= 0),
-  explain       text not null check (char_length(explain) > 10),
+  -- Объяснение обязано быть, но короткое «we → have.» — законное объяснение
+  -- для грамматики; проверка ловит пустую строку, а не краткость.
+  explain       text not null check (char_length(explain) > 5),
   is_active     boolean not null default true,
   check ((scope = 'unit' and unit is not null) or (scope = 'diag' and block is not null))
 );
@@ -166,6 +189,20 @@ create table if not exists en_voice (
   sec     smallint not null,
   status  text not null default 'жіберілді' check (status in ('жіберілді','бағаланды')),
   note    text,
+  at      timestamptz not null default now()
+);
+
+-- Ежемесячный адаптивный тест: итог и разбивка по бэндам.
+create table if not exists en_monthly (
+  id      bigint generated always as identity primary key,
+  student uuid not null references auth.users(id) on delete cascade,
+  level   text not null,
+  band    text not null,                           -- 'Elementary' … 'Upper-Intermediate'
+  branch  text not null check (branch in ('easy','core','hard')),
+  score   smallint not null,
+  total   smallint not null,
+  xp      smallint not null,
+  bands   jsonb not null,                          -- {a1,a2,b1,b2} в процентах
   at      timestamptz not null default now()
 );
 
@@ -279,12 +316,25 @@ alter table en_reps      enable row level security;
 alter table en_streak    enable row level security;
 alter table en_voice     enable row level security;
 alter table en_diag      enable row level security;
+alter table en_levels    enable row level security;
+alter table en_modules   enable row level security;
+alter table en_monthly   enable row level security;
 
 -- контент курса читают все вошедшие
 drop policy if exists en_units_read on en_units;
 create policy en_units_read on en_units for select to authenticated using (true);
 drop policy if exists en_words_read on en_words;
 create policy en_words_read on en_words for select to authenticated using (true);
+drop policy if exists en_levels_read on en_levels;
+create policy en_levels_read on en_levels for select to authenticated using (true);
+drop policy if exists en_modules_read on en_modules;
+create policy en_modules_read on en_modules for select to authenticated using (true);
+drop policy if exists en_monthly_read on en_monthly;
+create policy en_monthly_read on en_monthly for select to authenticated
+  using (student = auth.uid() or en_is_teacher_of(student) or en_is_parent_of(student));
+drop policy if exists en_monthly_insert on en_monthly;
+create policy en_monthly_insert on en_monthly for insert to authenticated
+  with check (student = auth.uid());
 drop policy if exists en_groups_read on en_groups;
 create policy en_groups_read on en_groups for select to authenticated using (true);
 
@@ -320,6 +370,19 @@ create policy en_voice_insert on en_voice for insert to authenticated
 drop policy if exists en_voice_grade on en_voice;
 create policy en_voice_grade on en_voice for update to authenticated
   using (en_is_teacher_of(student)) with check (en_is_teacher_of(student));
+
+-- Права. В Supabase роль authenticated уже имеет usage на public, но явные
+-- гранты не мешают и делают схему воспроизводимой на голом Postgres.
+grant usage on schema public to authenticated;
+grant select on en_levels, en_modules, en_units, en_words, en_groups,
+                en_questions_public, en_people, en_progress, en_reps,
+                en_streak, en_diag, en_monthly, en_voice to authenticated;
+grant insert on en_voice, en_monthly to authenticated;
+grant update on en_voice to authenticated;
+grant execute on function en_answer(bigint, smallint), en_see_word(bigint, boolean),
+                 en_step_done(text, text, smallint), en_finish_unit(text, jsonb),
+                 en_touch_streak() to authenticated;
+-- en_questions намеренно НЕ выдаётся никому: читают только функции выше.
 
 -- ══════════════════════════════════════════════════════════════════════════
 -- 7. ПРОВЕРКА, РАДИ КОТОРОЙ ВСЁ ДЕЛАЛОСЬ

@@ -51,6 +51,9 @@
           <button class="pill" id="kk">ҚАЗ</button><button class="pill" id="ru">РУС</button>
         </div></div>
       <div class="hr"></div>
+      <a class="row between" href="dengey.html"><div class="grow"><div class="card-t" style="font-size:16px">Деңгей</div>
+        <div class="card-s" id="lvline">—</div></div><div style="opacity:.4">›</div></a>
+      <div class="hr"></div>
       <a class="row between" href="../ata/index.html"><div class="grow"><div class="card-t" style="font-size:16px">Ата-ана кабинеті</div>
         <div class="card-s">аптаның қорытындысы</div></div><div style="opacity:.4">›</div></a>
       <div class="hr"></div>
@@ -68,19 +71,23 @@
   var S = App.load(), $ = App.$;
   $('#nm').textContent = S.user.name || 'Оқушы';
   $('#ini').textContent = (S.user.name || 'О').slice(0,1).toUpperCase();
-  $('#grp').textContent = (S.user.group || 'Балалар тобы') + ' · ' + COURSE.zoom.day;
+  $('#grp').textContent = (S.user.group || 'Балалар тобы') + ' · ' + COURSE.level(S.level || 'beginner').name;
+
   $('#k1').textContent = S.streak.days;
   $('#k2').textContent = App.knownCount();
-  var closed = COURSE.units.filter(function(u){ return App.unitDone(u.id); }).length;
+  var level = S.level || 'beginner';
+  var lvUnits = COURSE.ofLevel(level).filter(function(u){ return u.ready; });
+  var closed = lvUnits.filter(function(u){ return App.unitDone(u.id); }).length;
   $('#k3').textContent = closed;
 
-  var lv = S.diag ? S.diag.level : 'pre-A1';
+  var meta = COURSE.level(level);
+  var cur = S.diag ? S.diag.level : (level === 'beginner' ? 'pre-A1' : 'A1');
   ['pre-A1','A1','A1+','A2','B1'].forEach(function(x){
-    $('#scale').appendChild(App.el('div', x === lv ? 'on' : '', x));
+    $('#scale').appendChild(App.el('div', x === cur ? 'on' : '', x));
   });
 
   var box = $('#cando');
-  COURSE.units.filter(function(u){ return u.ready; }).forEach(function(u){
+  lvUnits.forEach(function(u){
     var done = App.unitDone(u.id);
     box.appendChild(App.el('div','cd',
       '<div class="m">' + (done ? '✅' : '⬜️') + '</div>' +
@@ -88,6 +95,8 @@
       '<div class="card-s">' + u.num + '-сабақ · ' + u.lvl + '</div></div>'));
   });
 
+  var lvline = App.$('#lvline');
+  if (lvline) lvline.textContent = meta.name + ' — ' + meta.kk;
   $('#kk').onclick = function(){ App.setLang('kk'); };
   $('#ru').onclick = function(){ App.setLang('ru'); };
   $('#' + App.lang()).classList.add('ok');
@@ -97,7 +106,7 @@
 
   App.tabs('profil.html');
   if (App.qs('test') === '1') {
-    console.assert(App.$$('.cd').length === 6, 'can-do список пуст');
+    console.assert(App.$$('.cd').length === 6, 'в уровне должно быть 6 готовых can-do, а их ' + App.$$('.cd').length);
     console.assert($('#scale').children.length === 5, 'шкала CEFR не отрисована');
     console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
     console.log('OK bala/profil');

@@ -40,8 +40,11 @@
 (function(){
   var $ = App.$, S = App.load();
   /* повторяем только то, что уже проходили: слова открытых юнитов */
-  var seen = WORDS.filter(function(w){ return S.words[w.en]; });
-  var pool = seen.length ? seen : WORDS.byUnit('u1');
+  var level = S.level || 'beginner';
+  var levelWords = WORDS.byLevel(level);
+  var seen = levelWords.filter(function(w){ return S.words[w.en]; });
+  /* пока ничего не проходили — показываем слова первого урока уровня */
+  var pool = seen.length ? seen : levelWords.slice(0, 8);
   App.$('#kn').textContent = App.knownCount() + ' меңгерілген';
 
   function speak(t){ try{ var u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=.85;
@@ -71,7 +74,7 @@
         return;
       }
       /* три отвлекающих варианта — из того же банка, чтобы выбор был осмысленным */
-      var others = WORDS.filter(function(x){ return x.en !== w.en; }).sort(function(){ return Math.random()-.5; }).slice(0,3);
+      var others = levelWords.filter(function(x){ return x.en !== w.en; }).sort(function(){ return Math.random()-.5; }).slice(0,3);
       var opts = others.concat([w]).sort(function(){ return Math.random()-.5; });
       body.innerHTML =
         '<div class="muted center" style="margin-bottom:8px">' + (i+1) + ' / ' + due.length + '</div>' +
@@ -86,7 +89,7 @@
           if (!good) App.$$('.opt').filter(function(x){ return x.textContent === w.en; })[0].classList.add('ok');
           App.seeWord(w.en, good); if (good) right++;
           speak(w.en);
-          i++; setTimeout(show, good ? 550 : 1300);
+          i++; setTimeout(show, App.d(good ? 550 : 1300));
         };
         $('#o').appendChild(b);
       });
@@ -98,7 +101,7 @@
   function list(){
     var body = $('#body'); body.innerHTML = '';
     var st = App.load().words;
-    var mine = WORDS.filter(function(w){ return st[w.en]; });
+    var mine = WORDS.filter(function(w){ return st[w.en]; });   /* все уровни: слова не пропадают при смене */
     if (!mine.length) { body.innerHTML = '<div class="card center muted" style="padding:30px">Әзірше сөз жоқ. Сабақтан бастаңыз.</div>'; return; }
     var byUnit = {};
     mine.forEach(function(w){ (byUnit[w.u] = byUnit[w.u] || []).push(w); });

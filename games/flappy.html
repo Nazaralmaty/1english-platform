@@ -750,11 +750,15 @@ function drillQuestions(missed,seed){
     }catch(e){}
   }
 
-  if(SL.isInApp){
+  /* Выход из арены есть ВСЕГДА. В приложении он закрывает WebView, в браузере
+     возвращает на тот экран, откуда пришли (?back=). Раньше кнопка была только
+     внутри приложения — из браузера ребёнок оставался заперт в игре. */
+  (function(){
     var c=$('slCloseBtn');
     c.style.display='block';
+    c.title='Шығу';
     c.addEventListener('click',function(){ Sound.click(); sendSession(); SL.close(); });
-  }
+  })();
   SL.on('pause',function(){ try{ Game.pause(); }catch(e){} });
   window.addEventListener('pagehide',sendSession);
   document.addEventListener('visibilitychange',function(){ if(document.hidden) sendSession(); });

@@ -1,5 +1,12 @@
 .DS_Store
+node_modules/
+
+# Промежуточные файлы сборки видео: восстанавливаются скриптами из media/script.
+# В репозитории лежит только результат — mp4, постер и презентация.
 media/frames/
 media/seg/
-media/vo/raw/
-node_modules/
+media/vo/
+media/u2/frames/
+media/u2/seg/
+media/u2/mix/
+media/u2/vo/

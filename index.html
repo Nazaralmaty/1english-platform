@@ -29,8 +29,9 @@
   <div class="hero">
     <img src="assets/logo.png" alt="1English" style="height:30px;width:auto;filter:brightness(0) invert(1)">
     <h1>Оқу платформасы<br>прототип</h1>
-    <p>Сатып алған оқушының Zoom-сабақтар арасындағы жеке кеңістігі:
-       бейнесабақ, сөздік, жаттығу, ойын, прогресс. Топтық сабақ Zoom-да қалады.</p>
+    <p>Сатып алған оқушының Zoom-сабақтар арасындағы жеке кеңістігі: екі деңгей
+       (Beginner және Elementary), модульдер мен сабақтар, сөздік, ойын, ай сайынғы
+       адаптив тест. Топтық сабақ Zoom-да қалады.</p>
     <a class="btn onnavy" href="bala/kiru.html" style="margin-top:18px">Демоны бастау →</a>
   </div>
 
@@ -39,12 +40,15 @@
   <div class="h2">Оқушы</div>
   <div class="grid">
     <a class="it" href="bala/kiru.html"><span class="e">📱</span><div><b>Кіру</b><span>Телефон нөмірі + код. Email жоқ.</span></div></a>
+    <a class="it" href="bala/dengey.html"><span class="e">🎚️</span><div><b>Деңгей таңдау</b><span>Beginner немесе Elementary — ауыстыруға болады.</span></div></a>
     <a class="it" href="bala/index.html"><span class="e">🏠</span><div><b>Бүгін</b><span>Бір ғана келесі қадам, стрик, Zoom-сабақ.</span></div></a>
     <a class="it" href="bala/diagnostika.html"><span class="e">🎯</span><div><b>Деңгей диагностикасы</b><span>20 сұрақ, 4 блок, төбесі табылса тоқтайды.</span></div></a>
-    <a class="it" href="bala/jol.html"><span class="e">🗺️</span><div><b>Оқу жолы</b><span>8 апта × 3 сабақ, can-do мақсаттарымен.</span></div></a>
-    <a class="it" href="bala/sabaq.html?u=u1"><span class="e">▶️</span><div><b>Сабақ (толық юнит)</b><span>Бейне+сұрақ, 8 сөз, 4 жаттығу, ойын, дауыс.</span></div></a>
+    <a class="it" href="bala/jol.html"><span class="e">🗺️</span><div><b>Оқу жолы</b><span>Модульдер мен сабақтар, can-do мақсаттарымен.</span></div></a>
+    <a class="it" href="bala/sabaq.html?u=b2"><span class="e">▶️</span><div><b>Сабақ · бейнесі бар</b><span>Beginner 2: бейне + сұрақ, 8 сөз, 4 жаттығу, ойын, дауыс.</span></div></a>
+    <a class="it" href="bala/sabaq.html?u=e2"><span class="e">🎓</span><div><b>Сабақ · Elementary</b><span>Өткен шақтағы сұрақ: 8 сөз, 4 жаттығу, тест.</span></div></a>
     <a class="it" href="bala/sozdik.html"><span class="e">📇</span><div><b>Сөздік / қайталау</b><span>Лейтнер кезегі, бүгінгі сөздер, дыбыс.</span></div></a>
-    <a class="it" href="bala/tapsyrma.html?u=u1"><span class="e">📝</span><div><b>Апталық тапсырма</b><span>6 сұрақ, қателермен жұмыс.</span></div></a>
+    <a class="it" href="bala/tapsyrma.html?u=b2"><span class="e">📝</span><div><b>Сабақ тесті</b><span>6 сұрақ, қателермен жұмыс.</span></div></a>
+    <a class="it" href="bala/ai_test.html"><span class="e">🎯</span><div><b>Ай сайынғы тест</b><span>Эскалация: дұрыс жауап → қиынырақ сұрақ, форматтар ауысады.</span></div></a>
     <a class="it" href="bala/profil.html"><span class="e">👤</span><div><b>Профиль</b><span>CEFR шкаласы, can-do тізімі, тіл ауыстыру.</span></div></a>
   </div>
 
@@ -64,14 +68,15 @@
   <div class="note">
     <b>Прототиптің шекарасы.</b> Барлық дерек осы құрылғыда (localStorage), сервер жоқ:
     прогресс басқа телефонға көшпейді, тест жауаптары бет кодында жатыр, ұстаз тек
-    осы құрылғыдағы дауысты тыңдай алады. Бұл Ф3-те Supabase-ке көшеді — сонда
-    дұрыс жауап клиентке мүлде берілмейді. Толығырақ: <code>README.md</code>.
+    осы құрылғыдағы дауысты тыңдай алады. Бұл Supabase қосылғанда шешіледі — сонда
+    дұрыс жауап клиентке мүлде берілмейді. Бейнесабақ әзірге біреу — 2-сабақта.
+    Толығырақ: <code>README.md</code>.
   </div>
 </div>
 <script src="assets/app.js"></script>
 <script>
 if (App.qs('test') === '1') {
-  console.assert(App.$$('.it').length === 13, 'на стенде должно быть 13 ссылок');
+  console.assert(App.$$('.it').length === 16, 'на стенде должно быть 16 ссылок, а их ' + App.$$('.it').length);
   console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
   console.log('OK index (стенд)');
 }

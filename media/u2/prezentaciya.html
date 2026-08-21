@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1English · 2-сабақ · have got</title>
+<style>
+/* Визуальный язык — из /faceless-reel: гигантская фоновая геометрия, бейдж за
+   кромкой, карточки в 3D-наклоне, стикеры, ghost-типографика. Кадр 16:9 и темп
+   учебный: слайд живёт долго, читается без звука и годится в скриншот. */
+@font-face{font-family:'Golos Text';font-weight:400 900;font-display:block;
+  src:url('../../assets/fonts/GolosText-cyrillic-ext.woff2') format('woff2');
+  unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:'Golos Text';font-weight:400 900;font-display:block;
+  src:url('../../assets/fonts/GolosText-cyrillic.woff2') format('woff2');
+  unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Golos Text';font-weight:400 900;font-display:block;
+  src:url('../../assets/fonts/GolosText-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0A3161; --navy2:#173F73; --deep:#061C3A;
+  --crimson:#B31942; --paper:#F3F1EC; --paper2:#EEF2F8;
+  --ink:#111A24; --muted:#6B7A8D; --ok:#1E9E5A; --gold:#E9A317;
+}
+html,body{width:1600px;height:900px;overflow:hidden;background:var(--paper)}
+body{font-family:'Golos Text',sans-serif;-webkit-font-smoothing:antialiased;color:var(--ink)}
+.slide{position:absolute;inset:0;display:none;padding:78px 96px;overflow:hidden}
+.slide.show{display:flex;flex-direction:column;justify-content:center}   /* контент по центру кадра: пустая полоса внизу — самый заметный брак */
+.slide.dark{background:var(--navy);color:#fff}
+.slide.deep{background:var(--deep);color:#fff}
+
+/* фон — масса, а не текстура */
+.bgmark{position:absolute;border-radius:50%;opacity:.075;background:var(--navy);pointer-events:none}
+.dark .bgmark,.deep .bgmark{background:#fff;opacity:.06}
+.bg1{width:900px;height:900px;top:-360px;left:-320px}
+.bg2{width:720px;height:720px;bottom:-330px;right:-240px;border-radius:120px;transform:rotate(18deg)}
+.ghost{position:absolute;right:-30px;bottom:-70px;font-size:230px;font-weight:900;letter-spacing:-10px;
+       opacity:.07;pointer-events:none;white-space:nowrap}
+
+/* бейдж за кромкой */
+.badge{position:absolute;top:-96px;right:-96px;width:340px;height:340px;border-radius:50%;
+       background:var(--crimson);display:grid;place-items:center;font-size:150px;color:#fff;
+       box-shadow:0 30px 60px rgba(179,25,66,.28)}
+.badge.b2{background:var(--ok);box-shadow:0 30px 60px rgba(30,158,90,.26)}
+.badge.b3{background:var(--gold);box-shadow:0 30px 60px rgba(233,163,23,.26)}
+
+.kick{display:inline-flex;align-self:flex-start;align-items:center;gap:12px;font-size:22px;font-weight:800;
+      letter-spacing:.16em;text-transform:uppercase;color:var(--crimson)}
+.dark .kick,.deep .kick{color:#9CC4F5}
+.num{font-size:104px;font-weight:900;letter-spacing:-5px;line-height:.9;color:var(--crimson);opacity:.9}
+h1{font-size:92px;font-weight:900;letter-spacing:-3.4px;line-height:1.02;margin-top:18px;max-width:1160px}
+h2{font-size:64px;font-weight:900;letter-spacing:-2px;line-height:1.06;margin-top:14px;max-width:1100px}
+.lead{font-size:30px;color:var(--muted);margin-top:18px;max-width:900px;line-height:1.4}
+.dark .lead,.deep .lead{color:#A9C0DC}
+
+/* карточки в 3D-наклоне */
+.cards{display:flex;gap:26px;margin-top:44px;perspective:1400px}
+.card{background:#fff;border-radius:28px;padding:28px 30px;box-shadow:0 26px 50px rgba(10,49,97,.16);
+      transform:rotateY(15deg) rotateX(7deg) translateZ(20px);transform-origin:left center;min-width:300px;flex:1}
+.cards .card:nth-child(2){transform:rotateY(8deg) rotateX(5deg) translateZ(10px)}
+.cards .card:nth-child(3){transform:rotateY(-12deg) rotateX(5deg) translateZ(14px)}
+.card .en{font-size:38px;font-weight:900;letter-spacing:-1.2px;color:var(--navy)}
+.card .kk{font-size:23px;color:var(--muted);margin-top:8px}
+.card .tagm{font-size:17px;font-weight:800;letter-spacing:.1em;color:var(--crimson);text-transform:uppercase}
+.card.bad{background:#FBE7EC}
+.card.bad .en{color:var(--crimson);text-decoration:line-through;text-decoration-thickness:4px}
+.card.good{background:#E6F4EC}
+.card.good .en{color:var(--ok)}
+
+/* формула */
+.form{display:flex;align-items:center;gap:22px;margin-top:40px;flex-wrap:wrap}
+.chip{background:#fff;border-radius:20px;padding:20px 26px;font-size:34px;font-weight:900;
+      box-shadow:0 16px 34px rgba(10,49,97,.12);color:var(--navy)}
+.chip.acc{background:var(--navy);color:#fff}
+.chip.red{background:var(--crimson);color:#fff}
+.arrow{font-size:40px;color:var(--muted)}
+
+/* стикер-вывод */
+.sticker{display:inline-flex;align-self:flex-start;align-items:center;gap:16px;background:var(--navy);color:#fff;
+         border-radius:22px;padding:22px 30px;font-size:30px;font-weight:800;margin-top:40px;
+         transform:rotate(-1.2deg);box-shadow:0 20px 40px rgba(10,49,97,.25)}
+.sticker.ok{background:var(--ok)} .sticker.red{background:var(--crimson)}
+
+/* россыпь слов */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:38px;max-width:1200px}
+.gi{background:#fff;border-radius:18px;padding:18px 20px;box-shadow:0 12px 26px rgba(10,49,97,.10)}
+.gi b{display:block;font-size:27px;font-weight:900;color:var(--navy);letter-spacing:-.5px}
+.gi span{font-size:19px;color:var(--muted)}
+
+.mark{position:absolute;left:96px;bottom:46px;font-size:22px;font-weight:900;color:var(--navy);opacity:.5}
+.dark .mark,.deep .mark{color:#fff;opacity:.55}
+.pg{position:absolute;right:96px;bottom:46px;font-size:20px;font-weight:800;color:var(--muted)}
+.dark .pg,.deep .pg{color:#8EA3BE}
+.bar{position:absolute;left:0;right:0;bottom:0;height:9px;background:rgba(10,49,97,.10)}
+.bar i{display:block;height:100%;background:var(--crimson)}
+.nav{position:fixed;inset:auto 0 0 0;height:100%;display:flex}
+.nav button{flex:1;background:transparent;border:0;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="nav"><button id="prev" aria-label="артқа"></button><button id="next" aria-label="алға"></button></div>
+<script>
+var S = [
+/* 1 */ {cls:'dark', badge:'🎒', kick:'BEGINNER · 2-САБАҚ',
+  h1:'Менде бар.<br>Менде жоқ.', lead:'have got — ағылшынның ең жиі қолданылатын құрылымдарының бірі. Бүгін оны сөйлеуге қосамыз.',
+  ghost:'have got'},
+/* 2 */ {kick:'НЕГЕ КЕРЕК', h2:'Күнделікті сөйлеудің үштен бірі — «бар» мен «жоқ» туралы',
+  cards:[['I have got a question.','Менде сұрақ бар','сабақта'],
+         ['I have not got time.','Менің уақытым жоқ','кез келген жерде'],
+         ['Have you got a pet?','Сенде үй жануары бар ма?','танысқанда']],
+  ghost:'?'},
+/* 3 */ {badge:'🧩', kick:'ФОРМУЛА', h2:'Кім туралы айтсаң — сол формасы',
+  form:[['I / you / we / they','acc'],['→',''],['have got','red']],
+  form2:[['he / she / it','acc'],['→',''],['has got','red']],
+  sticker:'Тек he · she · it — has. Қалғаны — have.', ghost:'have / has'},
+/* 4 */ {kick:'МЫСАЛДАР', h2:'Осылай естіледі',
+  cards:[['I have got two brothers.','Менде екі ағам бар',''],
+         ['She has got a new phone.','Оның жаңа телефоны бар',''],
+         ['We have got no time.','Бізде уақыт жоқ','']],
+  ghost:'examples'},
+/* 5 */ {cls:'dark', badge:'⛔️', kick:'ТЕРІС ФОРМА', h2:'«Жоқ» дегенде not — have мен got арасында',
+  form:[['I','acc'],['have not got','red'],['time','acc']],
+  sticker:'Қысқаша: haven’t got · hasn’t got', ghost:'not'},
+/* 6 */ {badge:'❓', kick:'СҰРАҚ', h2:'Сұрақта have алға шығады',
+  cards:[['Have you got a pet?','Сенде үй жануары бар ма?','сұрақ'],
+         ['Yes, I have.','Иә, бар','қысқа жауап'],
+         ['No, I haven’t.','Жоқ, жоқ','қысқа жауап']],
+  ghost:'have you?'},
+/* 7 */ {cls:'deep', badge:'🚫', kick:'ЕҢ ЖИІ ҮШ ҚАТЕ', h2:'Осы үшеуін жіберсең — бірден байқалады',
+  cards:[['Do you have got a pet?','have got-та do қолданылмайды','1'],
+         ['She have got a phone.','she → has got','2'],
+         ['I have got not time.','not — have мен got арасында','3']],
+  bad:true, sticker:'Дұрысы: Have you got…? · She has got… · I have not got…', ghost:'✗ ✗ ✗'},
+/* 8 */ {kick:'ОСЫ САБАҚТЫҢ СӨЗДЕРІ', h2:'Сегіз сөз — бәрі «менде бар» туралы',
+  grid:[['brother','аға, іні'],['phone','телефон'],['pet','үй жануары'],['money','ақша'],
+        ['time','уақыт'],['homework','үй тапсырмасы'],['question','сұрақ'],['idea','идея']],
+  ghost:'8'},
+/* 9 */ {cls:'dark', badge:'🎙', kick:'ТАПСЫРМА', h2:'Өз бөлмең туралы үш сөйлем айт',
+  form:[['I have got …','acc'],['I have not got …','acc'],['Have you got …?','red']],
+  lead:'Дауыстық тапсырманы жаз — ұстаз тыңдап, пікір қалдырады.', ghost:'your turn'},
+/* 10 */ {cls:'deep', kick:'КЕЛЕСІ ҚАДАМ', h1:'Сегіз сөз · төрт жаттығу<br>ойын · тест',
+  lead:'Платформада сабақ ашық. Күнделікті қайталау — үш минут.', ghost:'1English'}
+];
+
+function chip(c){ return '<div class="chip ' + (c[1]||'') + '">' + c[0] + '</div>'; }
+function render(n){
+  var s = S[n-1], h = '';
+  h += '<div class="slide show ' + (s.cls||'') + '">';
+  h += '<div class="bgmark bg1"></div><div class="bgmark bg2"></div>';
+  if (s.ghost) h += '<div class="ghost">' + s.ghost + '</div>';
+  if (s.badge) h += '<div class="badge ' + (n%3===0?'b2':n%3===1?'':'b3') + '">' + s.badge + '</div>';
+  if (s.kick) h += '<div class="kick">' + s.kick + '</div>';
+  if (s.h1)  h += '<h1>' + s.h1 + '</h1>';
+  if (s.h2)  h += '<h2>' + s.h2 + '</h2>';
+  if (s.lead && !s.cards) h += '<div class="lead">' + s.lead + '</div>';
+  if (s.form)  h += '<div class="form">' + s.form.map(chip).join('<div class="arrow"></div>') + '</div>';
+  if (s.form2) h += '<div class="form">' + s.form2.map(chip).join('<div class="arrow"></div>') + '</div>';
+  if (s.cards) h += '<div class="cards">' + s.cards.map(function(c){
+      return '<div class="card' + (s.bad ? ' bad' : '') + '">' +
+             (c[2] ? '<div class="tagm">' + c[2] + '</div>' : '') +
+             '<div class="en">' + c[0] + '</div><div class="kk">' + c[1] + '</div></div>'; }).join('') + '</div>';
+  if (s.grid) h += '<div class="grid">' + s.grid.map(function(g){
+      return '<div class="gi"><b>' + g[0] + '</b><span>' + g[1] + '</span></div>'; }).join('') + '</div>';
+  if (s.sticker) h += '<div class="sticker' + (s.bad ? ' red' : s.cls ? ' ok' : '') + '">' + s.sticker + '</div>';
+  h += '<div class="mark">1English</div><div class="pg">' + n + ' / ' + S.length + '</div>';
+  h += '<div class="bar"><i style="width:' + Math.round(100*n/S.length) + '%"></i></div>';
+  h += '</div>';
+  document.getElementById('app').innerHTML = h;
+  document.title = '1English · слайд ' + n + '/' + S.length;
+}
+var cur = Math.max(1, Math.min(S.length, +(new URLSearchParams(location.search).get('n') || 1)));
+render(cur);
+function go(d){ cur = Math.max(1, Math.min(S.length, cur + d)); render(cur); }
+document.getElementById('next').onclick = function(){ go(1); };
+document.getElementById('prev').onclick = function(){ go(-1); };
+document.onkeydown = function(e){ if (e.key === 'ArrowRight' || e.key === ' ') go(1); if (e.key === 'ArrowLeft') go(-1); };
+window.SLIDES = S.length;
+</script>
+</body>
+</html>

@@ -33,10 +33,10 @@
 <script>
 (function(){
   var S = App.load();
-  var ready = COURSE.units.filter(function(u){ return u.ready; });
-  var cur = (ready.filter(function(u){ return !App.unitDone(u.id); })[0] || ready[ready.length-1]).id;
-  var pool = WORDS.filter(function(w){ return S.words[w.en]; });
-  var u = pool.length >= 8 ? '' : cur;              /* нет истории — играем словами текущего юнита */
+  var level = S.level || 'beginner';
+  var cur = App.curUnit(COURSE, level).id;
+  var pool = WORDS.byLevel(level).filter(function(w){ return S.words[w.en]; });
+  var u = pool.length >= 8 ? '' : cur;              /* нет истории — играем словами текущего урока */
   App.$('#wn').textContent = (pool.length || WORDS.byUnit(cur).length) + ' сөз';
   var back = encodeURIComponent('../bala/oiyn.html');
   App.$('#g1').href = '../games/flappy.html?u=' + u + '&back=' + back;
