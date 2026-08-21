@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Бүгін</title>
+<link rel="stylesheet" href="../assets/app.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <img src="../assets/logo.png" alt="1English" style="height:26px;width:auto">
+    <div class="grow"></div>
+    <div class="pill gold" id="streak">🔥 <span class="num">0</span></div>
+  </header>
+
+  <div class="scroll">
+    <p class="tag" id="hello">Сәлем!</p>
+    <h2 class="big" style="margin:2px 0 16px" id="dayline">Бүгін не істейміз?</h2>
+
+    <!-- главная карточка: ровно одно действие -->
+    <a class="card navy" id="main" href="#" style="display:block">
+      <div class="row between">
+        <div class="grow">
+          <div class="tag" style="color:#9CC4F5" id="mainTag">КЕЛЕСІ ҚАДАМ</div>
+          <div class="card-t" id="mainT" style="margin-top:6px">…</div>
+          <div class="card-s" id="mainS">…</div>
+        </div>
+        <div style="font-size:30px" id="mainIc">▶</div>
+      </div>
+      <div class="bar" style="margin-top:14px"><i id="mainBar" style="width:0%"></i></div>
+    </a>
+
+    <!-- Zoom -->
+    <div class="card">
+      <div class="row">
+        <div class="ava" style="background:#EAF1FB">🎥</div>
+        <div class="grow">
+          <div class="card-t" id="zoomT">Zoom сабағы</div>
+          <div class="card-s" id="zoomS">—</div>
+        </div>
+        <a class="btn sm ghost" id="zoomBtn" href="#" target="_blank" rel="noopener">Кіру</a>
+      </div>
+    </div>
+
+    <div class="h2">Осы аптада</div>
+    <div id="week" class="stack"></div>
+
+    <div class="h2">Тез жаттығу</div>
+    <div class="row" style="gap:10px">
+      <a class="card flat grow center" href="sozdik.html" style="margin:0;padding:18px 10px">
+        <div style="font-size:26px">📇</div>
+        <div class="card-t" style="font-size:15px;margin-top:6px">Қайталау</div>
+        <div class="card-s" id="dueN">0 сөз</div>
+      </a>
+      <a class="card flat grow center" href="oiyn.html" style="margin:0;padding:18px 10px">
+        <div style="font-size:26px">🎮</div>
+        <div class="card-t" style="font-size:15px;margin-top:6px">Ойын</div>
+        <div class="card-s">3 арена</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script src="../data/course.js"></script>
+<script src="../data/words.js"></script>
+<script>
+(function(){
+  var S = App.load(), $ = App.$;
+
+  /* приветствие по времени суток — мелочь, но экран сразу перестаёт быть макетом */
+  var h = new Date().getHours();
+  $('#hello').textContent = (h < 12 ? 'Қайырлы таң' : h < 18 ? 'Қайырлы күн' : 'Кеш жарық') +
+                            (S.user.name ? ', ' + S.user.name : '') + '!';
+  $('#streak').innerHTML = '🔥 <span class="num">' + S.streak.days + '</span>';
+
+  var z = COURSE.zoom;
+  $('#zoomS').textContent = z.day + ' · ' + z.time;
+  $('#zoomBtn').href = z.link;
+
+  /* Текущий юнит — первый незакрытый из готовых. */
+  var ready = COURSE.units.filter(function(u){ return u.ready; });
+  var cur = ready.filter(function(u){ return !App.unitDone(u.id); })[0] || ready[ready.length-1];
+
+  var due = App.dueWords(WORDS.upTo(cur.id));
+  $('#dueN').textContent = due.length + ' сөз';
+
+  /* ── одно действие: диагностика → повторение → следующий шаг юнита ── */
+  var m = { tag:'КЕЛЕСІ ҚАДАМ', t:'', s:'', href:'', ic:'▶', bar:0 };
+  if (!S.diag) {
+    m = { tag:'БІРІНШІ ҚАДАМ', t:'Деңгейіңді анықтайық',
+          s:'20 сұрақ · 5 минут. Сол бойынша жоспар құрылады.',
+          href:'diagnostika.html', ic:'🎯', bar:0 };
+  } else if (due.length >= 5) {
+    m = { tag:'БҮГІНГІ ҚАЙТАЛАУ', t:due.length + ' сөзді қайталау',
+          s:'3 минут. Ұмытпау үшін — күнде.', href:'sozdik.html', ic:'📇',
+          bar: Math.round(100 * (1 - due.length / Math.max(WORDS.upTo(cur.id).length,1))) };
+  } else {
+    var p = App.unitProgress(cur.id), u = App.unit(cur.id);
+    var step = (u.video < 1) ? 'Бейнесабақты көру'
+             : (!u.wordsDone) ? 'Жаңа 8 сөз'
+             : (Object.keys(u.ex).length < 4) ? 'Жаттығулар'
+             : (!u.game) ? 'Ойын аренасы'
+             : 'Апталық тапсырма';
+    m = { tag:cur.w + '-АПТА · ' + cur.num + '-САБАҚ', t:cur.kk,
+          s:step + ' · ' + cur.cando, href:'sabaq.html?u=' + cur.id, ic:'▶',
+          bar: Math.round(p*100) };
+  }
+  $('#mainTag').textContent = m.tag; $('#mainT').textContent = m.t;
+  $('#mainS').textContent = m.s;     $('#mainIc').textContent = m.ic;
+  $('#main').href = m.href;          $('#mainBar').style.width = m.bar + '%';
+
+  /* ── неделя ─────────────────────────────────────────────────────── */
+  var wrap = $('#week');
+  COURSE.units.filter(function(u){ return u.w === cur.w; }).forEach(function(u){
+    var p = Math.round(App.unitProgress(u.id) * 100);
+    var open = u.ready;
+    var a = App.el('a', 'card' + (open ? '' : ' flat'));
+    a.href = open ? 'sabaq.html?u=' + u.id : '#';
+    a.style.opacity = open ? 1 : .55;
+    a.innerHTML =
+      '<div class="row">' +
+        '<div class="ava">' + (App.unitDone(u.id) ? '✓' : u.num) + '</div>' +
+        '<div class="grow"><div class="card-t">' + u.kk + '</div>' +
+        '<div class="card-s">' + (open ? u.cando : 'Дайындалуда') + '</div></div>' +
+        (open ? '' : '<div style="font-size:18px">🔒</div>') +
+      '</div>' +
+      (open ? '<div class="bar thin" style="margin-top:12px"><i style="width:' + p + '%"></i></div>' : '');
+    wrap.appendChild(a);
+  });
+
+  App.tabs('index.html');
+  if (App.qs('test') === '1') {
+    console.assert(!!$('#main').getAttribute('href'), 'главная карточка без ссылки');
+    console.assert(wrap.children.length === 3, 'в неделе должно быть 3 юнита');
+    console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+    console.log('OK bala/index');
+  }
+})();
+</script>
+</body>
+</html>

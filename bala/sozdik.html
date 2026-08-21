@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Сөздік</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .seg{display:flex;background:var(--paper-cool);border-radius:14px;padding:4px;margin:6px 0 16px}
+  .seg button{flex:1;padding:10px;border-radius:11px;font-weight:800;font-size:14px;color:var(--muted)}
+  .seg button.on{background:var(--white);color:var(--navy);box-shadow:var(--shadow)}
+  .opt{width:100%;text-align:left;background:var(--white);border:2px solid transparent;border-radius:14px;
+       padding:15px;font-weight:700;box-shadow:var(--shadow);margin-bottom:9px;transition:.15s var(--ease)}
+  .opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .opt.no{border-color:var(--crimson);background:#FBE7EC}
+  .boxdots{display:flex;gap:3px}
+  .boxdots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+  .boxdots i.on{background:var(--ok)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" href="index.html">←</a>
+    <h1>Сөздік</h1>
+    <div class="pill ok" id="kn">0</div>
+  </header>
+  <div class="scroll">
+    <div class="seg">
+      <button id="tq" class="on">Бүгін қайталау</button>
+      <button id="tl">Менің сөздерім</button>
+    </div>
+    <div id="body"></div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/words.js"></script>
+<script src="../data/course.js"></script>
+<script>
+(function(){
+  var $ = App.$, S = App.load();
+  /* повторяем только то, что уже проходили: слова открытых юнитов */
+  var seen = WORDS.filter(function(w){ return S.words[w.en]; });
+  var pool = seen.length ? seen : WORDS.byUnit('u1');
+  App.$('#kn').textContent = App.knownCount() + ' меңгерілген';
+
+  function speak(t){ try{ var u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=.85;
+                          speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
+
+  /* ── очередь на сегодня ─────────────────────────────────────────── */
+  function queue(){
+    var due = App.dueWords(pool), i = 0, right = 0;
+    var body = $('#body');
+    if (!due.length) {
+      body.innerHTML = '<div class="card center" style="padding:34px 18px">' +
+        '<div style="font-size:38px">🎉</div><div class="card-t" style="margin-top:8px">' + App.t('noRepeat') + '</div>' +
+        '<div class="card-s">Ертең жаңа топ шығады</div></div>' +
+        '<a class="btn ghost" href="index.html">Бүгінге оралу</a>';
+      return;
+    }
+    function show(){
+      var w = due[i];
+      if (!w) {
+        App.touchStreak();
+        body.innerHTML = '<div class="card center" style="padding:30px 18px">' +
+          '<div style="font-size:38px">✅</div>' +
+          '<div class="card-t" style="margin-top:8px">' + right + ' / ' + due.length + ' дұрыс</div>' +
+          '<div class="card-s">Қателескен сөздер ертең қайта шығады</div></div>' +
+          '<a class="btn" href="index.html">Дайын</a>';
+        App.$('#kn').textContent = App.knownCount() + ' меңгерілген';
+        return;
+      }
+      /* три отвлекающих варианта — из того же банка, чтобы выбор был осмысленным */
+      var others = WORDS.filter(function(x){ return x.en !== w.en; }).sort(function(){ return Math.random()-.5; }).slice(0,3);
+      var opts = others.concat([w]).sort(function(){ return Math.random()-.5; });
+      body.innerHTML =
+        '<div class="muted center" style="margin-bottom:8px">' + (i+1) + ' / ' + due.length + '</div>' +
+        '<div class="card center" style="padding:26px 16px"><div style="font-size:26px;font-weight:900;letter-spacing:-.6px">' + w.kk + '</div>' +
+        '<div class="card-s">ағылшынша қалай?</div></div><div id="o"></div>';
+      opts.forEach(function(o){
+        var b = App.el('button','opt', o.en);
+        b.onclick = function(){
+          App.$$('.opt').forEach(function(x){ x.onclick = null; });
+          var good = o.en === w.en;
+          b.classList.add(good ? 'ok' : 'no');
+          if (!good) App.$$('.opt').filter(function(x){ return x.textContent === w.en; })[0].classList.add('ok');
+          App.seeWord(w.en, good); if (good) right++;
+          speak(w.en);
+          i++; setTimeout(show, good ? 550 : 1300);
+        };
+        $('#o').appendChild(b);
+      });
+    }
+    show();
+  }
+
+  /* ── все мои слова ──────────────────────────────────────────────── */
+  function list(){
+    var body = $('#body'); body.innerHTML = '';
+    var st = App.load().words;
+    var mine = WORDS.filter(function(w){ return st[w.en]; });
+    if (!mine.length) { body.innerHTML = '<div class="card center muted" style="padding:30px">Әзірше сөз жоқ. Сабақтан бастаңыз.</div>'; return; }
+    var byUnit = {};
+    mine.forEach(function(w){ (byUnit[w.u] = byUnit[w.u] || []).push(w); });
+    Object.keys(byUnit).forEach(function(u){
+      var meta = COURSE.byId(u);
+      body.appendChild(App.el('div','h2', meta ? meta.num + '-сабақ · ' + meta.kk : u));
+      var card = App.el('div','card');
+      byUnit[u].forEach(function(w){
+        var b = st[w.en].box, dots = '';
+        for (var k = 1; k <= 5; k++) dots += '<i class="' + (b >= k ? 'on' : '') + '"></i>';
+        var row = App.el('div','li',
+          '<div class="grow"><div class="card-t" style="font-size:16px">' + w.en + '</div>' +
+          '<div class="card-s">' + w.kk + '</div></div>' +
+          '<div class="boxdots">' + dots + '</div><button class="pill">🔊</button>');
+        row.querySelector('button').onclick = function(){ speak(w.en); };
+        card.appendChild(row);
+      });
+      body.appendChild(card);
+    });
+  }
+
+  $('#tq').onclick = function(){ this.classList.add('on'); $('#tl').classList.remove('on'); queue(); };
+  $('#tl').onclick = function(){ this.classList.add('on'); $('#tq').classList.remove('on'); list(); };
+  queue();
+  App.tabs('sozdik.html');
+
+  if (App.qs('test') === '1') {
+    console.assert(!!$('#body').innerHTML.trim(), 'пустой экран очереди');
+    $('#tl').click();
+    console.assert(!!$('#body').innerHTML.trim(), 'пустой список слов');
+    $('#tq').click();
+    console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+    console.log('OK bala/sozdik');
+  }
+})();
+</script>
+</body>
+</html>

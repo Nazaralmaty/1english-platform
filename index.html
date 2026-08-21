@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · платформа (прототип)</title>
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body{background:var(--paper)}
+  .wrap{max-width:760px;margin:0 auto;padding:calc(24px + env(safe-area-inset-top)) 20px 60px}
+  .hero{background:var(--navy);color:#fff;border-radius:28px;padding:26px 22px;margin-bottom:22px}
+  .hero h1{font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1.1;margin:14px 0 8px}
+  .hero p{color:#A9C0DC;font-size:15px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+  .it{display:flex;gap:13px;align-items:flex-start;background:var(--white);border-radius:var(--r);
+      padding:15px;box-shadow:var(--shadow)}
+  .it .e{font-size:24px;flex:none;width:34px;text-align:center}
+  .it b{display:block;font-size:16px;font-weight:800;letter-spacing:-.2px}
+  .it span{font-size:13.5px;color:var(--muted);line-height:1.45;display:block;margin-top:2px}
+  .lead{font-size:15px;color:var(--muted);line-height:1.55;margin:0 0 10px}
+  .note{background:var(--paper-cool);border-radius:var(--r);padding:16px;font-size:13.5px;
+        color:var(--muted);line-height:1.55;margin-top:22px}
+  .note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <img src="assets/logo.png" alt="1English" style="height:30px;width:auto;filter:brightness(0) invert(1)">
+    <h1>Оқу платформасы<br>прототип</h1>
+    <p>Сатып алған оқушының Zoom-сабақтар арасындағы жеке кеңістігі:
+       бейнесабақ, сөздік, жаттығу, ойын, прогресс. Топтық сабақ Zoom-да қалады.</p>
+    <a class="btn onnavy" href="bala/kiru.html" style="margin-top:18px">Демоны бастау →</a>
+  </div>
+
+  <p class="lead">Кез келген экранды тікелей ашуға болады — бәрі бір күйде (localStorage) жұмыс істейді.</p>
+
+  <div class="h2">Оқушы</div>
+  <div class="grid">
+    <a class="it" href="bala/kiru.html"><span class="e">📱</span><div><b>Кіру</b><span>Телефон нөмірі + код. Email жоқ.</span></div></a>
+    <a class="it" href="bala/index.html"><span class="e">🏠</span><div><b>Бүгін</b><span>Бір ғана келесі қадам, стрик, Zoom-сабақ.</span></div></a>
+    <a class="it" href="bala/diagnostika.html"><span class="e">🎯</span><div><b>Деңгей диагностикасы</b><span>20 сұрақ, 4 блок, төбесі табылса тоқтайды.</span></div></a>
+    <a class="it" href="bala/jol.html"><span class="e">🗺️</span><div><b>Оқу жолы</b><span>8 апта × 3 сабақ, can-do мақсаттарымен.</span></div></a>
+    <a class="it" href="bala/sabaq.html?u=u1"><span class="e">▶️</span><div><b>Сабақ (толық юнит)</b><span>Бейне+сұрақ, 8 сөз, 4 жаттығу, ойын, дауыс.</span></div></a>
+    <a class="it" href="bala/sozdik.html"><span class="e">📇</span><div><b>Сөздік / қайталау</b><span>Лейтнер кезегі, бүгінгі сөздер, дыбыс.</span></div></a>
+    <a class="it" href="bala/tapsyrma.html?u=u1"><span class="e">📝</span><div><b>Апталық тапсырма</b><span>6 сұрақ, қателермен жұмыс.</span></div></a>
+    <a class="it" href="bala/profil.html"><span class="e">👤</span><div><b>Профиль</b><span>CEFR шкаласы, can-do тізімі, тіл ауыстыру.</span></div></a>
+  </div>
+
+  <div class="h2">Ойын аренасы</div>
+  <div class="grid">
+    <a class="it" href="games/flappy.html?back=../index.html"><span class="e">🐤</span><div><b>Flappy English</b><span>StudyLine аренасынан көшірілген, сөздер платформадан.</span></div></a>
+    <a class="it" href="games/surypta.html?back=../index.html"><span class="e">🧺</span><div><b>Сөз сұрыптау</b><span>Сөзді мағыналық тобына салу.</span></div></a>
+    <a class="it" href="games/soilem.html?back=../index.html"><span class="e">🧩</span><div><b>Сөйлем құрастыр</b><span>Ағылшын сөз реті — қазаққа ең қиыны.</span></div></a>
+  </div>
+
+  <div class="h2">Ұстаз бен ата-ана</div>
+  <div class="grid">
+    <a class="it" href="ustaz/index.html"><span class="e">🧑‍🏫</span><div><b>Ұстаз кабинеті</b><span>Кім тапсырма жасады, кімнің дауысы тыңдалмаған.</span></div></a>
+    <a class="it" href="ata/index.html"><span class="e">👨‍👩‍👧</span><div><b>Ата-ана кабинеті</b><span>Апта бір карточкамен + балаға не деу керек.</span></div></a>
+  </div>
+
+  <div class="note">
+    <b>Прототиптің шекарасы.</b> Барлық дерек осы құрылғыда (localStorage), сервер жоқ:
+    прогресс басқа телефонға көшпейді, тест жауаптары бет кодында жатыр, ұстаз тек
+    осы құрылғыдағы дауысты тыңдай алады. Бұл Ф3-те Supabase-ке көшеді — сонда
+    дұрыс жауап клиентке мүлде берілмейді. Толығырақ: <code>README.md</code>.
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+if (App.qs('test') === '1') {
+  console.assert(App.$$('.it').length === 13, 'на стенде должно быть 13 ссылок');
+  console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+  console.log('OK index (стенд)');
+}
+</script>
+</body>
+</html>

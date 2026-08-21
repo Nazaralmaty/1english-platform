@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Сабақ</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .step{display:flex;gap:12px;align-items:center;background:var(--white);border-radius:var(--r);
+        padding:15px;box-shadow:var(--shadow);margin-bottom:10px;width:100%;text-align:left}
+  .step .n{width:36px;height:36px;border-radius:11px;background:var(--paper-cool);color:var(--navy);
+           display:grid;place-items:center;font-weight:900;flex:none}
+  .step.done .n{background:var(--ok);color:#fff}
+  .step[disabled]{opacity:.5}
+  .pane{position:fixed;inset:0;background:var(--paper);z-index:50;overflow-y:auto;display:none}
+  .pane.on{display:block}
+  .pane .inner{max-width:480px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) var(--pad) 40px}
+  .x{position:sticky;top:0;display:flex;align-items:center;gap:12px;background:var(--paper);
+     padding:6px 0 12px;z-index:5}
+  video{width:100%;border-radius:var(--r);background:#000;display:block}
+  .vfall{background:var(--navy);color:#fff;border-radius:var(--r);padding:26px 18px;text-align:center}
+  .cp{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-up);margin-top:12px}
+  .opt{width:100%;text-align:left;background:var(--paper-cool);border:2px solid transparent;border-radius:14px;
+       padding:14px;font-weight:700;margin-top:8px;transition:.15s var(--ease)}
+  .opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .opt.no{border-color:var(--crimson);background:#FBE7EC}
+  .wcard{background:var(--white);border-radius:var(--r-lg);box-shadow:var(--shadow-up);padding:30px 20px;
+         text-align:center;min-height:210px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+  .wen{font-size:34px;font-weight:900;letter-spacing:-1px}
+  .wkk{font-size:20px;font-weight:700;color:var(--navy)}
+  .wex{font-size:14px;color:var(--muted)}
+  .mrow{display:flex;gap:8px;margin-bottom:8px}
+  .mrow>button{flex:1;background:var(--white);border-radius:14px;padding:14px 8px;font-weight:700;
+               box-shadow:var(--shadow);font-size:15px}
+  .mrow>button.sel{background:var(--navy);color:#fff}
+  .mrow>button.ok{background:var(--ok);color:#fff}
+  .inp{width:100%;background:var(--white);border:2px solid var(--line);border-radius:14px;padding:14px;
+       font-size:17px;font-weight:700;text-align:center}
+  .rec{width:96px;height:96px;border-radius:50%;background:var(--crimson);color:#fff;font-size:34px;
+       display:grid;place-items:center;margin:18px auto;box-shadow:0 8px 26px rgba(179,25,66,.35)}
+  .rec.on{animation:pulse 1.1s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" href="jol.html">←</a>
+    <h1 id="ttl">Сабақ</h1>
+    <div class="pill" id="lvl">A1</div>
+  </header>
+  <div class="scroll">
+    <p class="tag" id="wk">1-АПТА</p>
+    <h2 class="big" style="margin:2px 0 6px" id="uk">…</h2>
+    <p class="muted" id="cando" style="margin-bottom:18px"></p>
+    <div class="bar" style="margin-bottom:18px"><i id="pbar" style="width:0%"></i></div>
+    <div id="steps"></div>
+    <a class="btn" id="toTest" href="#" style="margin-top:14px">Апталық тапсырма</a>
+  </div>
+</div>
+
+<!-- панели шагов -->
+<div class="pane" id="pane"><div class="inner">
+  <div class="x"><button class="back" id="close">✕</button><h1 id="pt" style="font-size:19px;font-weight:800"></h1></div>
+  <div id="pbody"></div>
+</div></div>
+
+<script src="../assets/app.js"></script>
+<script src="../data/course.js"></script>
+<script src="../data/words.js"></script>
+<script src="../data/lesson_u1.js"></script>
+<script>
+(function(){
+  var id = App.qs('u') || 'u1';
+  var meta = COURSE.byId(id) || COURSE.units[0];
+  var L = window.LESSON_U1;                    /* пока написан один юнит */
+  var st = App.unit(id), $ = App.$;
+
+  $('#ttl').textContent = meta.num + '-сабақ';
+  $('#lvl').textContent = meta.lvl;
+  $('#wk').textContent = meta.w + '-АПТА';
+  $('#uk').textContent = meta.kk;
+  $('#cando').textContent = meta.cando;
+  $('#toTest').href = 'tapsyrma.html?u=' + id;
+
+  var words = WORDS.byUnit(id);
+
+  function draw(){
+    st = App.unit(id);
+    $('#pbar').style.width = Math.round(App.unitProgress(id) * 100) + '%';
+    var steps = [
+      { n:1, t:'Бейнесабақ',      s:'4 минут · 3 сұрақ',       done:st.video >= 1,  go:video },
+      { n:2, t:'Жаңа 8 сөз',      s:'дыбысымен, мысалымен',    done:st.wordsDone,   go:wordsPane },
+      { n:3, t:'Жаттығулар',      s:Object.keys(st.ex).length + ' / 4 орындалды', done:Object.keys(st.ex).length >= 4, go:exPane },
+      { n:4, t:'Ойын аренасы',    s:'осы сабақтың сөздерімен', done:st.game,        go:goGame },
+      { n:5, t:'Дауыстық тапсырма', s:'ұстаз тыңдайды',        done:st.voice,       go:voicePane }
+    ];
+    var wrap = $('#steps'); wrap.innerHTML = '';
+    steps.forEach(function(s){
+      var b = App.el('button','step' + (s.done ? ' done' : ''),
+        '<div class="n">' + (s.done ? '✓' : s.n) + '</div>' +
+        '<div class="grow"><div class="card-t" style="font-size:16px">' + s.t + '</div>' +
+        '<div class="card-s">' + s.s + '</div></div><div style="font-size:16px;opacity:.4">›</div>');
+      b.onclick = s.go; wrap.appendChild(b);
+    });
+    $('#toTest').textContent = st.test != null
+      ? 'Апталық тапсырма · ' + st.test + '/6'
+      : 'Апталық тапсырма';
+  }
+
+  /* ── панель ─────────────────────────────────────────────────────── */
+  var pane = $('#pane');
+  function open(title, html){ $('#pt').textContent = title; $('#pbody').innerHTML = html; pane.classList.add('on'); }
+  function close(){ pane.classList.remove('on'); try{ speechSynthesis.cancel(); }catch(e){} draw(); }
+  $('#close').onclick = close;
+
+  function speak(t){
+    try { var u = new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=.85;
+          speechSynthesis.cancel(); speechSynthesis.speak(u); } catch(e){}
+  }
+
+  /* ── 1. видео с чекпоинтами ─────────────────────────────────────── */
+  function video(){
+    open('Бейнесабақ',
+      '<video id="v" playsinline controls preload="metadata" poster="' + L.video.poster + '"><source src="' + L.video.src + '" type="video/mp4"></video>' +
+      '<div id="vmiss" class="hidden vfall"><div style="font-size:30px">🎬</div>' +
+      '<div class="card-t" style="color:#fff;margin-top:8px">Бейне әлі жүктелмеген</div>' +
+      '<div class="card-s">Сұрақтар мен конспект жұмыс істейді — төменде.</div></div>' +
+      '<div id="cpbox"></div>' +
+      '<div class="h2">Конспект</div><div id="notes"></div>' +
+      '<button class="btn ok" id="fin">Көрдім, әрі қарай</button>');
+
+    var v = $('#v'), box = $('#cpbox'), fired = {};
+    v.addEventListener('error', function(){ v.classList.add('hidden'); $('#vmiss').classList.remove('hidden'); });
+    v.addEventListener('timeupdate', function(){
+      L.video.checkpoints.forEach(function(c, n){
+        if (!fired[n] && v.currentTime >= c.t) { fired[n] = 1; v.pause(); ask(c); }
+      });
+    });
+
+    function ask(c){
+      box.innerHTML = '<div class="cp"><div class="tag">СҰРАҚ</div><div class="card-t" style="margin:6px 0 4px">' + c.q + '</div></div>';
+      var cp = box.querySelector('.cp');
+      c.opts.forEach(function(o, n){
+        var b = App.el('button','opt', o);
+        b.onclick = function(){
+          App.$$('.opt', cp).forEach(function(x){ x.onclick = null; });
+          b.classList.add(n === c.a ? 'ok' : 'no');
+          if (n !== c.a) App.$$('.opt', cp)[c.a].classList.add('ok');
+          cp.appendChild(App.el('div','card-s', c.ex));
+          setTimeout(function(){ box.innerHTML=''; try{ v.play(); }catch(e){} }, 1600);
+        };
+        cp.appendChild(b);
+      });
+    }
+
+    var notes = $('#notes');
+    L.notes.forEach(function(n){
+      var c = App.el('div','card flat',
+        '<div class="row between"><div class="grow"><div class="card-t" style="font-size:16px">' + n.en + '</div>' +
+        '<div class="card-s">' + n.kk + '</div></div><button class="pill">🔊</button></div>');
+      c.querySelector('button').onclick = function(){ speak(n.en); };
+      notes.appendChild(c);
+    });
+
+    $('#fin').onclick = function(){ App.unit(id).video = 1; App.save(); App.touchStreak(); close(); };
+  }
+
+  /* ── 2. слова ───────────────────────────────────────────────────── */
+  function wordsPane(){
+    var i = 0, flipped = false;
+    open('Жаңа сөздер', '<div id="wbox"></div>');
+    function show(){
+      var w = words[i];
+      if (!w) {
+        App.unit(id).wordsDone = true; App.save(); App.touchStreak();
+        $('#wbox').innerHTML = '<div class="wcard"><div style="font-size:38px">🎉</div>' +
+          '<div class="wen" style="font-size:22px">8 сөз дайын</div>' +
+          '<div class="wex">Ертең қайталауға шығады</div></div>' +
+          '<button class="btn ok" id="ok" style="margin-top:14px">Жақсы</button>';
+        $('#ok').onclick = close; return;
+      }
+      $('#wbox').innerHTML =
+        '<div class="muted center" style="margin-bottom:10px">' + (i+1) + ' / ' + words.length + '</div>' +
+        '<div class="wcard" id="card">' +
+          '<div class="wen">' + w.en + '</div>' +
+          (flipped ? '<div class="wkk">' + w.kk + '</div><div class="wex">' + w.ex + '</div>'
+                   : '<div class="wex">Аудармасын көру үшін басыңыз</div>') +
+        '</div>' +
+        '<div class="row" style="gap:10px;margin-top:14px">' +
+          '<button class="btn ghost" id="say">🔊 Тыңдау</button>' +
+          '<button class="btn" id="next">' + (flipped ? 'Келесі' : 'Аудармасы') + '</button>' +
+        '</div>';
+      $('#card').onclick = function(){ if (!flipped) { flipped = true; show(); } };
+      $('#say').onclick = function(){ speak(w.en); };
+      $('#next').onclick = function(){
+        if (!flipped) { flipped = true; return show(); }
+        App.seeWord(w.en, true); i++; flipped = false; show();
+      };
+      if (!flipped) speak(w.en);
+    }
+    show();
+  }
+
+  /* ── 3. упражнения ──────────────────────────────────────────────── */
+  function exPane(){
+    open('Жаттығулар', '<div id="exlist"></div>');
+    var list = $('#exlist');
+    L.ex.forEach(function(e, n){
+      var done = App.unit(id).ex[n] != null;
+      var b = App.el('button','step' + (done ? ' done' : ''),
+        '<div class="n">' + (done ? '✓' : (n+1)) + '</div><div class="grow">' +
+        '<div class="card-t" style="font-size:16px">' + e.title + '</div>' +
+        '<div class="card-s">' + (done ? App.unit(id).ex[n] + ' дұрыс' : 'орындалмаған') + '</div></div>');
+      b.onclick = function(){ runEx(e, n); };
+      list.appendChild(b);
+    });
+  }
+
+  function finishEx(n, right){
+    App.unit(id).ex[n] = right; App.save(); App.touchStreak();
+    $('#pbody').innerHTML = '<div class="wcard"><div style="font-size:38px">✅</div>' +
+      '<div class="wen" style="font-size:22px">' + right + ' дұрыс</div></div>' +
+      '<button class="btn ok" id="ok" style="margin-top:14px">Жаттығуларға оралу</button>';
+    $('#ok').onclick = exPane;
+  }
+
+  function runEx(e, n){
+    if (e.type === 'match')  return exMatch(e, n);
+    if (e.type === 'gap')    return exPick(e, n, 'text');
+    if (e.type === 'listen') return exPick(e, n, 'listen');
+    return exWrite(e, n);
+  }
+
+  function exMatch(e, n){
+    open(e.title, '<div class="muted" style="margin-bottom:14px">Ағылшын сөзді қазақшасымен сәйкестендір.</div><div id="m"></div>');
+    var left = e.pairs.map(function(p){ return p[0]; });
+    var right = e.pairs.map(function(p){ return p[1]; }).slice().sort(function(){ return Math.random() - .5; });
+    var sel = null, ok = 0;
+    var m = $('#m');
+    left.forEach(function(en, k){
+      var row = App.el('div','mrow');
+      var a = App.el('button', '', en), b = App.el('button', '', right[k]);
+      a.dataset.en = en; b.dataset.kk = right[k];
+      row.appendChild(a); row.appendChild(b); m.appendChild(row);
+    });
+    m.onclick = function(ev){
+      var b = ev.target.closest('button'); if (!b || b.classList.contains('ok')) return;
+      if (b.dataset.en) { App.$$('button[data-en]', m).forEach(function(x){ x.classList.remove('sel'); });
+                          b.classList.add('sel'); sel = b; return; }
+      if (!sel) return;
+      var pair = e.pairs.filter(function(p){ return p[0] === sel.dataset.en; })[0];
+      if (pair[1] === b.dataset.kk) {
+        sel.classList.remove('sel'); sel.classList.add('ok'); b.classList.add('ok');
+        App.seeWord(sel.dataset.en, true); ok++; sel = null;
+        if (ok === e.pairs.length) setTimeout(function(){ finishEx(n, ok + '/' + e.pairs.length); }, 400);
+      } else {
+        App.seeWord(sel.dataset.en, false);
+        b.style.background = '#FBE7EC'; setTimeout(function(){ b.style.background = ''; }, 400);
+      }
+    };
+  }
+
+  function exPick(e, n, mode){
+    var i = 0, right = 0;
+    open(e.title, '<div id="q"></div>');
+    function show(){
+      var it = e.items[i];
+      if (!it) return finishEx(n, right + '/' + e.items.length);
+      $('#q').innerHTML =
+        '<div class="muted center" style="margin-bottom:10px">' + (i+1) + ' / ' + e.items.length + '</div>' +
+        (mode === 'listen'
+          ? '<div class="center"><button class="say pill" id="say" style="padding:16px 22px;font-size:16px">🔊 Тыңда</button></div>'
+          : '') +
+        '<div class="card-t" style="font-size:20px;margin:14px 0 12px">' + (it.text || 'Не естідің?') + '</div>' +
+        '<div id="opts"></div>';
+      if (mode === 'listen') { $('#say').onclick = function(){ speak(it.say); }; speak(it.say); }
+      it.opts.forEach(function(o, k){
+        var b = App.el('button','opt', o);
+        b.onclick = function(){
+          App.$$('.opt').forEach(function(x){ x.onclick = null; });
+          var good = k === it.a;
+          b.classList.add(good ? 'ok' : 'no');
+          if (!good) App.$$('.opt')[it.a].classList.add('ok');
+          if (good) right++;
+          if (it.say) App.seeWord(it.say, good);
+          if (it.ex) $('#opts').appendChild(App.el('div','card-s', it.ex));
+          i++; setTimeout(show, good ? 500 : 1300);
+        };
+        $('#opts').appendChild(b);
+      });
+    }
+    show();
+  }
+
+  function exWrite(e, n){
+    var i = 0, right = 0;
+    open(e.title, '<div id="q"></div>');
+    function show(){
+      var it = e.items[i];
+      if (!it) return finishEx(n, right + '/' + e.items.length);
+      $('#q').innerHTML =
+        '<div class="muted center" style="margin-bottom:10px">' + (i+1) + ' / ' + e.items.length + '</div>' +
+        '<div class="card-t center" style="font-size:24px;margin:16px 0">' + it.kk + '</div>' +
+        '<input class="inp" id="in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ағылшынша…">' +
+        '<button class="btn" id="ck" style="margin-top:12px">Тексеру</button><div id="fb"></div>';
+      var inp = $('#in');
+      inp.focus();
+      function check(){
+        var v = inp.value.trim().toLowerCase();
+        var good = v === it.a;
+        inp.style.borderColor = good ? 'var(--ok)' : 'var(--crimson)';
+        App.seeWord(it.a, good);
+        if (good) right++;
+        $('#fb').innerHTML = '<div class="card flat" style="margin-top:10px"><b>' + it.a + '</b> — ' + it.kk + '</div>';
+        $('#ck').disabled = true;
+        i++; setTimeout(show, good ? 700 : 1400);
+      }
+      $('#ck').onclick = check;
+      inp.onkeydown = function(ev){ if (ev.key === 'Enter') check(); };
+    }
+    show();
+  }
+
+  /* ── 4. игра ────────────────────────────────────────────────────── */
+  function goGame(){
+    App.unit(id).game = true; App.save();   /* отметка ставится по возвращении из арены */
+    location.href = '../games/flappy.html?u=' + id + '&back=' + encodeURIComponent('../bala/sabaq.html?u=' + id);
+  }
+
+  /* ── 5. голосовое задание ───────────────────────────────────────── */
+  function voicePane(){
+    open('Дауыстық тапсырма',
+      '<div class="card"><div class="tag">ТАПСЫРМА</div><div class="card-t" style="margin-top:6px">' + L.voice.task + '</div>' +
+      L.voice.lines.map(function(l){ return '<div class="card-s" style="font-size:16px;color:var(--navy);font-weight:700;margin-top:6px">' + l + '</div>'; }).join('') +
+      '</div>' +
+      '<button class="rec" id="rec">🎙</button>' +
+      '<div class="center muted" id="rs">Басып сөйле, қайта бассаң — тоқтайды</div>' +
+      '<div id="pv"></div>');
+
+    var rec = null, chunks = [], on = false, t0 = 0;
+    $('#rec').onclick = function(){
+      if (!navigator.mediaDevices || !window.MediaRecorder) return App.toast('Бұл браузер дауыс жазбайды');
+      if (on) { rec.stop(); return; }
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function(s){
+        rec = new MediaRecorder(s); chunks = []; t0 = Date.now();
+        rec.ondataavailable = function(e){ chunks.push(e.data); };
+        rec.onstop = function(){
+          on = false; $('#rec').classList.remove('on'); s.getTracks().forEach(function(t){ t.stop(); });
+          var blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+          var sec = Math.round((Date.now() - t0) / 1000);
+          var fr = new FileReader();
+          fr.onload = function(){
+            try { localStorage.setItem('1eng.voice.' + id, fr.result); } catch(e){ App.toast('Жад толы'); }
+            var S = App.load();
+            S.voice = S.voice.filter(function(v){ return v.unit !== id; });
+            S.voice.push({ unit:id, at:App.today(), sec:sec, status:'жіберілді' });
+            App.unit(id).voice = true; App.save(); App.touchStreak();
+            $('#pv').innerHTML = '<div class="card"><div class="card-t">Жазба · ' + sec + ' сек</div>' +
+              '<audio controls src="' + fr.result + '" style="width:100%;margin-top:10px"></audio>' +
+              '<div class="pill ok" style="margin-top:10px">✓ ' + App.t('sent') + '</div></div>' +
+              '<button class="btn ok" id="ok" style="margin-top:12px">Дайын</button>';
+            $('#ok').onclick = close;
+          };
+          fr.readAsDataURL(blob);
+        };
+        rec.start(); on = true; $('#rec').classList.add('on');
+        $('#rs').textContent = 'Жазылып жатыр… қайта бас — тоқтайды';
+      }).catch(function(){ App.toast('Микрофонға рұқсат жоқ'); });
+    };
+  }
+
+  draw();
+  App.tabs('');
+
+  if (App.qs('test') === '1') {
+    console.assert(App.$$('.step').length === 5, 'должно быть 5 шагов юнита');
+    console.assert(words.length === 8, 'в юните должно быть 8 слов, а не ' + words.length);
+    /* открыть и закрыть каждую панель — она не должна падать */
+    wordsPane(); close(); exPane(); close(); voicePane(); close(); video(); close();
+    console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+    console.log('OK bala/sabaq');
+  }
+})();
+</script>
+</body>
+</html>

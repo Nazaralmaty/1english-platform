@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Ойындар</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .g{display:block;border-radius:var(--r-lg);padding:20px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden;
+     box-shadow:var(--shadow-up)}
+  .g .em{position:absolute;right:-6px;bottom:-12px;font-size:82px;opacity:.22;line-height:1}
+  .g h3{font-size:20px;font-weight:900;letter-spacing:-.4px}
+  .g p{font-size:14px;opacity:.85;margin-top:4px;max-width:74%}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><a class="back" href="index.html">←</a><h1>Ойын аренасы</h1>
+    <div class="pill" id="wn">0 сөз</div></header>
+  <div class="scroll">
+    <p class="muted" style="margin:6px 0 16px">Ойын өтілген сөздермен ойналады — жаңа сөз ойында пайда болмайды.</p>
+    <a class="g" id="g1" style="background:linear-gradient(140deg,#0A3161,#173F73)">
+      <span class="em">🐤</span><h3>Flappy English</h3><p>Дұрыс аудармасы бар қақпадан ұш</p></a>
+    <a class="g" id="g2" style="background:linear-gradient(140deg,#B31942,#E8536F)">
+      <span class="em">🧺</span><h3>Сөз сұрыптау</h3><p>Сөзді тобына қарай себетке лақтыр</p></a>
+    <a class="g" id="g3" style="background:linear-gradient(140deg,#1E9E5A,#3BC77C)">
+      <span class="em">🧩</span><h3>Сөйлем құрастыр</h3><p>Сөздерден дұрыс сөйлем жина</p></a>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/words.js"></script>
+<script src="../data/course.js"></script>
+<script>
+(function(){
+  var S = App.load();
+  var ready = COURSE.units.filter(function(u){ return u.ready; });
+  var cur = (ready.filter(function(u){ return !App.unitDone(u.id); })[0] || ready[ready.length-1]).id;
+  var pool = WORDS.filter(function(w){ return S.words[w.en]; });
+  var u = pool.length >= 8 ? '' : cur;              /* нет истории — играем словами текущего юнита */
+  App.$('#wn').textContent = (pool.length || WORDS.byUnit(cur).length) + ' сөз';
+  var back = encodeURIComponent('../bala/oiyn.html');
+  App.$('#g1').href = '../games/flappy.html?u=' + u + '&back=' + back;
+  App.$('#g2').href = '../games/surypta.html?u=' + u + '&back=' + back;
+  App.$('#g3').href = '../games/soilem.html?u=' + u + '&back=' + back;
+  App.tabs('oiyn.html');
+  if (App.qs('test') === '1') {
+    console.assert(App.$$('.g').length === 3, 'должно быть 3 арены');
+    App.$$('.g').forEach(function(a){ console.assert(/games\//.test(a.getAttribute('href')), 'арена без ссылки'); });
+    console.log('OK bala/oiyn');
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Деңгей диагностикасы</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .qbar{display:flex;gap:4px;margin:6px 0 20px}
+  .qbar i{flex:1;height:4px;border-radius:99px;background:var(--line)}
+  .qbar i.on{background:var(--navy)}
+  .qbar i.bad{background:var(--crimson)}
+  .qtext{font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.25;margin:10px 0 20px}
+  .opt{width:100%;text-align:left;background:var(--white);border:2px solid transparent;border-radius:16px;
+       padding:16px;font-size:16px;font-weight:700;box-shadow:var(--shadow);margin-bottom:10px;
+       transition:.15s var(--ease)}
+  .opt:active{transform:scale(.985)}
+  .opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .opt.no{border-color:var(--crimson);background:#FBE7EC}
+  .say{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;
+       border-radius:16px;padding:14px 20px;font-weight:800;margin-bottom:18px}
+  .res{text-align:center;padding:30px 0}
+  .ring{width:132px;height:132px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;
+        background:conic-gradient(var(--ok) var(--p),var(--line) 0)}
+  .ring b{width:108px;height:108px;border-radius:50%;background:var(--paper);display:grid;place-items:center;
+          font-size:26px;font-weight:900;letter-spacing:-1px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" href="index.html">←</a>
+    <h1>Деңгей диагностикасы</h1>
+    <div class="pill" id="cnt">1 / 20</div>
+  </header>
+  <div class="scroll notab" id="screen"></div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/diag.js"></script>
+<script src="../data/course.js"></script>
+<script>
+(function(){
+  var screen = App.$('#screen'), all = [], bi = 0;
+  var score = 0, asked = 0, blockScore = 0, i = 0, marks = [];
+
+  function flat(b){ return b.q; }
+  function speak(text){
+    try {
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US'; u.rate = .85;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    } catch(e){ App.toast('Бұл браузерде дыбыс жоқ'); }
+  }
+
+  function bar(){
+    var h = '<div class="qbar">';
+    for (var k = 0; k < 20; k++) h += '<i class="' + (marks[k] === 1 ? 'on' : marks[k] === 0 ? 'bad' : '') + '"></i>';
+    return h + '</div>';
+  }
+
+  function render(){
+    var block = DIAG.blocks[bi];
+    if (!block || i >= block.q.length) return nextBlock();
+    var q = block.q[i];
+    App.$('#cnt').textContent = (asked + 1) + ' / 20';
+    screen.innerHTML = bar() +
+      '<div class="tag">' + block.lvl + '</div>' +
+      (q.t === 'listen' ? '<button class="say" id="say">🔊 Тыңда</button><div class="qtext">' + q.q + '</div>'
+                        : '<div class="qtext">' + q.q + '</div>');
+    q.opts.forEach(function(o, n){
+      var b = App.el('button','opt', o);
+      b.onclick = function(){ answer(q, n, b); };
+      screen.appendChild(b);
+    });
+    if (q.t === 'listen') { App.$('#say').onclick = function(){ speak(q.say); }; speak(q.say); }
+  }
+
+  function answer(q, n, btn){
+    App.$$('.opt').forEach(function(b){ b.onclick = null; });
+    var ok = n === q.a;
+    btn.classList.add(ok ? 'ok' : 'no');
+    if (!ok) App.$$('.opt')[q.a].classList.add('ok');
+    if (ok) { score++; blockScore++; }
+    marks[asked] = ok ? 1 : 0;
+    asked++; i++;
+    setTimeout(render, App.d(ok ? 420 : 900));
+  }
+
+  /* Потолок: меньше двух верных в блоке — дальше не спрашиваем. */
+  function nextBlock(){
+    if (bi < DIAG.blocks.length - 1 && blockScore >= 2) { bi++; i = 0; blockScore = 0; return render(); }
+    return done();
+  }
+
+  function done(){
+    var lv = DIAG.levelOf(score, asked);
+    var S = App.load();
+    S.diag = { level: lv.code, kk: lv.kk, score: score, asked: asked, at: App.today(), startUnit: lv.unit };
+    App.save(); App.touchStreak();
+    var p = Math.round(100 * score / 20);
+    App.$('#cnt').textContent = 'Дайын';
+    screen.innerHTML =
+      '<div class="res">' +
+        '<div class="ring" style="--p:' + p + '%"><b>' + lv.code + '</b></div>' +
+        '<div class="card-t" style="font-size:20px">' + lv.kk + '</div>' +
+        '<div class="card-s">20 сұрақтың ' + score + '-і дұрыс' + (asked < 20 ? ' · ' + asked + ' сұрақ қойылды' : '') + '</div>' +
+      '</div>' +
+      '<div class="card"><div class="tag">ЖЕКЕ ЖОСПАР</div>' +
+        '<div class="card-t" style="margin-top:6px">Сен бастайтын сабақ</div>' +
+        '<div class="card-s" id="su"></div></div>' +
+      '<div class="card flat"><div class="card-t" style="font-size:15px">Не тексерілді</div>' +
+        '<div class="card-s">Сөздік қор · грамматика · оқу · тыңдалым. Спикинг ұстазбен Zoom-сабақта тексеріледі.</div></div>' +
+      '<a class="btn" href="index.html" style="margin-top:14px">Оқуды бастау</a>';
+    var u = COURSE.byId(lv.unit) || COURSE.units[0];
+    App.$('#su').textContent = u.num + '-сабақ · ' + u.kk + ' — ' + u.cando;
+  }
+
+  render();
+
+  if (App.qs('test') === '1') {
+    /* прогон: отвечаем правильно на всё, экран результата обязан появиться */
+    var guard = 0;
+    (function step(){
+      var b = App.$$('.opt');
+      var live = b.filter(function(x){ return !!x.onclick; });
+      if (live.length && guard++ < 40) { live[0].click(); return setTimeout(step, 40); }
+      setTimeout(function(){
+        console.assert(!!App.load().diag, 'диагностика не сохранила уровень');
+        console.assert(/pre-A1|A1|A2/.test(App.$('.ring b').textContent), 'нет уровня на экране результата');
+        console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+        console.log('OK bala/diagnostika');
+      }, 300);
+    })();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Оқу жолы</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .wk{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+  .wk b{font-size:15px;font-weight:800;letter-spacing:-.2px}
+  .wk .ln{flex:1;height:1px;background:var(--line)}
+  .unit{display:flex;gap:12px;align-items:flex-start;padding:14px;background:var(--white);
+        border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:10px}
+  .unit.lock{background:transparent;box-shadow:none;border:1px dashed var(--line)}
+  .dot{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;
+       font-weight:900;background:var(--paper-cool);color:var(--navy)}
+  .dot.done{background:var(--ok);color:#fff}
+  .dot.now{background:var(--navy);color:#fff;box-shadow:0 0 0 4px rgba(10,49,97,.12)}
+  .cando{font-size:14px;color:var(--muted);margin-top:3px}
+  .gram{font-size:12px;font-weight:800;color:var(--crimson);margin-top:6px;letter-spacing:.02em}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" href="index.html">←</a>
+    <h1>Оқу жолы</h1>
+    <div class="pill" id="lvl">pre-A1</div>
+  </header>
+  <div class="scroll" id="list"></div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/course.js"></script>
+<script>
+(function(){
+  var S = App.load(), list = App.$('#list');
+  App.$('#lvl').textContent = S.diag ? S.diag.level : COURSE.level;
+
+  var ready = COURSE.units.filter(function(u){ return u.ready; });
+  var cur = (ready.filter(function(u){ return !App.unitDone(u.id); })[0] || ready[ready.length-1]).id;
+
+  var w = 0;
+  COURSE.units.forEach(function(u){
+    if (u.w !== w) {
+      w = u.w;
+      var hd = App.el('div','wk','<b>' + w + '-апта</b><span class="ln"></span>');
+      list.appendChild(hd);
+    }
+    var done = App.unitDone(u.id), now = u.id === cur;
+    var node = App.el(u.ready ? 'a' : 'div', 'unit' + (u.ready ? '' : ' lock'));
+    if (u.ready) node.href = 'sabaq.html?u=' + u.id;
+    node.innerHTML =
+      '<div class="dot ' + (done ? 'done' : now ? 'now' : '') + '">' + (done ? '✓' : u.num) + '</div>' +
+      '<div class="grow">' +
+        '<div class="card-t">' + u.kk + ' <span class="muted" style="font-weight:600">· ' + u.en + '</span></div>' +
+        '<div class="cando">' + u.cando + '</div>' +
+        '<div class="gram">' + u.gram + ' · ' + u.lvl + '</div>' +
+      '</div>' +
+      (u.ready ? '' : '<div style="font-size:16px;opacity:.5">🔒</div>');
+    list.appendChild(node);
+  });
+
+  App.tabs('jol.html');
+  if (App.qs('test') === '1') {
+    console.assert(App.$$('.unit').length === 24, 'должно быть 24 юнита');
+    console.assert(App.$$('.wk').length === 8, 'должно быть 8 недель');
+    console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+    console.log('OK bala/jol');
+  }
+})();
+</script>
+</body>
+</html>

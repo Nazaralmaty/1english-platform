@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Профиль</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .kpi{display:flex;gap:10px;margin-bottom:12px}
+  .kpi>div{flex:1;background:var(--white);border-radius:var(--r);padding:16px 12px;text-align:center;box-shadow:var(--shadow)}
+  .kpi b{display:block;font-size:26px;font-weight:900;letter-spacing:-1px}
+  .kpi span{font-size:12px;color:var(--muted);font-weight:700}
+  .cd{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+  .cd:last-child{border-bottom:0}
+  .cd .m{width:22px;flex:none;text-align:center}
+  .scale{display:flex;gap:4px;margin-top:10px}
+  .scale div{flex:1;height:32px;border-radius:9px;background:var(--line);display:grid;place-items:center;
+             font-size:11px;font-weight:800;color:var(--muted)}
+  .scale div.on{background:var(--navy);color:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><a class="back" href="index.html">←</a><h1>Профиль</h1></header>
+  <div class="scroll">
+    <div class="card navy">
+      <div class="row">
+        <div class="ava" style="background:rgba(255,255,255,.16);color:#fff" id="ini">А</div>
+        <div class="grow">
+          <div class="card-t" id="nm">Оқушы</div>
+          <div class="card-s" id="grp">—</div>
+        </div>
+      </div>
+      <div class="scale" id="scale"></div>
+    </div>
+
+    <div class="kpi">
+      <div><b class="num" id="k1">0</b><span>күн қатарынан</span></div>
+      <div><b class="num" id="k2">0</b><span>меңгерілген сөз</span></div>
+      <div><b class="num" id="k3">0</b><span>жабылған сабақ</span></div>
+    </div>
+
+    <div class="h2">Мен не істей аламын</div>
+    <div class="card" id="cando"></div>
+
+    <div class="h2">Баптау</div>
+    <div class="card">
+      <div class="row between"><div class="grow"><div class="card-t" style="font-size:16px">Тіл / Язык</div>
+        <div class="card-s">Интерфейс тілі</div></div>
+        <div class="row" style="gap:6px">
+          <button class="pill" id="kk">ҚАЗ</button><button class="pill" id="ru">РУС</button>
+        </div></div>
+      <div class="hr"></div>
+      <a class="row between" href="../ata/index.html"><div class="grow"><div class="card-t" style="font-size:16px">Ата-ана кабинеті</div>
+        <div class="card-s">аптаның қорытындысы</div></div><div style="opacity:.4">›</div></a>
+      <div class="hr"></div>
+      <button class="row between" id="wipe" style="width:100%;text-align:left"><div class="grow">
+        <div class="card-t" style="font-size:16px;color:var(--crimson)">Прогресті тазалау</div>
+        <div class="card-s">демо үшін</div></div></button>
+    </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/course.js"></script>
+<script src="../data/words.js"></script>
+<script>
+(function(){
+  var S = App.load(), $ = App.$;
+  $('#nm').textContent = S.user.name || 'Оқушы';
+  $('#ini').textContent = (S.user.name || 'О').slice(0,1).toUpperCase();
+  $('#grp').textContent = (S.user.group || 'Балалар тобы') + ' · ' + COURSE.zoom.day;
+  $('#k1').textContent = S.streak.days;
+  $('#k2').textContent = App.knownCount();
+  var closed = COURSE.units.filter(function(u){ return App.unitDone(u.id); }).length;
+  $('#k3').textContent = closed;
+
+  var lv = S.diag ? S.diag.level : 'pre-A1';
+  ['pre-A1','A1','A1+','A2','B1'].forEach(function(x){
+    $('#scale').appendChild(App.el('div', x === lv ? 'on' : '', x));
+  });
+
+  var box = $('#cando');
+  COURSE.units.filter(function(u){ return u.ready; }).forEach(function(u){
+    var done = App.unitDone(u.id);
+    box.appendChild(App.el('div','cd',
+      '<div class="m">' + (done ? '✅' : '⬜️') + '</div>' +
+      '<div class="grow"><div class="card-t" style="font-size:15px;' + (done ? '' : 'color:var(--muted)') + '">' + u.cando + '</div>' +
+      '<div class="card-s">' + u.num + '-сабақ · ' + u.lvl + '</div></div>'));
+  });
+
+  $('#kk').onclick = function(){ App.setLang('kk'); };
+  $('#ru').onclick = function(){ App.setLang('ru'); };
+  $('#' + App.lang()).classList.add('ok');
+  $('#wipe').onclick = function(){
+    if (confirm('Барлық прогрес өшеді. Жалғастырамыз ба?')) { App.reset(); location.href = 'index.html'; }
+  };
+
+  App.tabs('profil.html');
+  if (App.qs('test') === '1') {
+    console.assert(App.$$('.cd').length === 6, 'can-do список пуст');
+    console.assert($('#scale').children.length === 5, 'шкала CEFR не отрисована');
+    console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+    console.log('OK bala/profil');
+  }
+})();
+</script>
+</body>
+</html>

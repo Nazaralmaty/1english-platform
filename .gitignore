@@ -1,0 +1,5 @@
+.DS_Store
+media/frames/
+media/seg/
+media/vo/raw/
+node_modules/

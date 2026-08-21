@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Ұстаз кабинеті</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .st{display:flex;gap:12px;align-items:center;padding:13px;background:var(--white);border-radius:var(--r);
+      box-shadow:var(--shadow);margin-bottom:9px}
+  .st.me{border:2px solid var(--navy)}
+  .mini{display:flex;gap:4px;margin-top:6px}
+  .mini i{width:22px;height:6px;border-radius:99px;background:var(--line)}
+  .mini i.on{background:var(--ok)} .mini i.no{background:#F3C9D3}
+  .filt{display:flex;gap:8px;margin:8px 0 16px;overflow-x:auto;padding-bottom:2px}
+  .filt button{white-space:nowrap;background:var(--paper-cool);border-radius:999px;padding:9px 14px;
+               font-weight:800;font-size:13px;color:var(--muted)}
+  .filt button.on{background:var(--navy);color:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" href="../index.html">←</a>
+    <h1>Ұстаз кабинеті</h1>
+    <div class="pill" id="grp">Топ</div>
+  </header>
+  <div class="scroll notab">
+    <p class="tag">1-АПТА · 1-САБАҚ · СӘЛЕМ! МЕН…</p>
+    <h2 class="big" style="margin:2px 0 12px" id="hd">—</h2>
+
+    <div class="filt">
+      <button class="on" data-f="all">Барлығы</button>
+      <button data-f="nohw">Тапсырма жоқ</button>
+      <button data-f="voice">Тыңдалмаған дауыс</button>
+    </div>
+
+    <div id="list"></div>
+
+    <p class="muted" style="font-size:13px;margin-top:16px">
+      Топтағы басқа оқушылардың деректері — прототип үшін тұрақты тізім
+      (сервер жоқ). Жоғарыдағы көк рамка — осы құрылғыдағы нағыз оқушы,
+      оның прогресі шынайы.
+    </p>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/course.js"></script>
+<script src="../data/lesson_u1.js"></script>
+<script>
+(function(){
+  var S = App.load(), $ = App.$;
+
+  /* ponytail: список группы придёт из Supabase (Ф3). Пока — явная константа,
+     помеченная demo:true, чтобы её нельзя было принять за настоящие данные. */
+  var DEMO = [
+    { n:'Айдана Т.', hw:4, voice:'тыңдалмаған', sec:24, test:6, demo:true },
+    { n:'Ерасыл М.', hw:2, voice:null,          sec:0,  test:null, demo:true },
+    { n:'Сабина Қ.', hw:4, voice:'бағаланды',   sec:31, test:5, demo:true },
+    { n:'Нұрислам Б.', hw:0, voice:null,        sec:0,  test:null, demo:true },
+    { n:'Аружан С.', hw:3, voice:'тыңдалмаған', sec:19, test:null, demo:true }
+  ];
+
+  var u = App.unit('u1');
+  var me = {
+    n: (S.user.name || 'Оқушы') + ' (сіздің құрылғы)',
+    hw: Object.keys(u.ex || {}).length,
+    voice: u.voice ? ((S.voice[0] && S.voice[0].status === 'бағаланды') ? 'бағаланды' : 'тыңдалмаған') : null,
+    sec: (S.voice[0] && S.voice[0].sec) || 0,
+    test: u.test,
+    me: true
+  };
+  var all = [me].concat(DEMO);
+  $('#grp').textContent = 'Балалар тобы';
+  $('#hd').textContent = all.length + ' оқушы';
+
+  function render(f){
+    var list = $('#list'); list.innerHTML = '';
+    all.filter(function(s){
+      if (f === 'nohw')  return s.hw < 4;
+      if (f === 'voice') return s.voice === 'тыңдалмаған';
+      return true;
+    }).forEach(function(s){
+      var dots = '';
+      for (var k = 1; k <= 4; k++) dots += '<i class="' + (s.hw >= k ? 'on' : 'no') + '"></i>';
+      var node = App.el('div','st' + (s.me ? ' me' : ''),
+        '<div class="ava">' + s.n.slice(0,1) + '</div>' +
+        '<div class="grow"><div class="card-t" style="font-size:16px">' + s.n + '</div>' +
+        '<div class="card-s">жаттығу ' + s.hw + '/4 · тест ' + (s.test == null ? '—' : s.test + '/6') + '</div>' +
+        '<div class="mini">' + dots + '</div></div>' +
+        (s.voice ? '<button class="pill ' + (s.voice === 'тыңдалмаған' ? 'crimson' : 'ok') + '">🎧 ' + s.sec + 'с</button>' : ''));
+      var b = node.querySelector('button');
+      if (b) b.onclick = function(){ listen(s, b); };
+      list.appendChild(node);
+    });
+  }
+
+  function listen(s, btn){
+    if (s.me) {
+      var src = null; try { src = localStorage.getItem('1eng.voice.u1'); } catch(e){}
+      if (!src) return App.toast('Жазба табылмады');
+      var box = App.el('div','card',
+        '<div class="card-t">' + s.n + '</div>' +
+        '<audio controls autoplay src="' + src + '" style="width:100%;margin:10px 0"></audio>');
+      var ok = App.el('button','btn ok','✓ Бағаладым');
+      ok.onclick = function(){
+        var st = App.load();
+        if (st.voice[0]) st.voice[0].status = 'бағаланды';
+        App.save(); App.toast('Белгіленді'); box.remove(); s.voice = 'бағаланды'; render(cur);
+      };
+      box.appendChild(ok);
+      btn.closest('.st').after(box);
+    } else {
+      App.toast('Прототипте тек өз құрылғыңыздың жазбасы ойналады');
+    }
+  }
+
+  var cur = 'all';
+  App.$$('.filt button').forEach(function(b){
+    b.onclick = function(){
+      App.$$('.filt button').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on'); cur = b.dataset.f; render(cur);
+    };
+  });
+  render(cur);
+
+  if (App.qs('test') === '1') {
+    console.assert(App.$$('.st').length === 6, 'в списке группы должно быть 6 строк');
+    App.$$('.filt button')[1].click();
+    console.assert(App.$$('.st').length < 6, 'фильтр «нет домашки» ничего не отфильтровал');
+    App.$$('.filt button')[0].click();
+    console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+    console.log('OK ustaz/index');
+  }
+})();
+</script>
+</body>
+</html>

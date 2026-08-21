@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="kk"><head><meta charset="UTF-8">
+<title>slide</title>
+<style>
+@font-face{font-family:'Golos Text';font-weight:400 900;src:url('../../assets/fonts/GolosText-cyrillic-ext.woff2') format('woff2');unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:'Golos Text';font-weight:400 900;src:url('../../assets/fonts/GolosText-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Golos Text';font-weight:400 900;src:url('../../assets/fonts/GolosText-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden}
+body{font-family:'Golos Text',sans-serif;background:#F3F1EC;color:#111A24;
+     display:flex;flex-direction:column;justify-content:center;padding:84px 96px;position:relative}
+body.dark{background:#0A3161;color:#fff}
+.mark{text-decoration:none;-webkit-text-decoration:none;position:absolute;top:44px;left:96px;font-weight:900;letter-spacing:-.5px;font-size:22px;color:#0A3161;opacity:.55}
+body.dark .mark{color:#fff;opacity:.6}
+.tag{font-size:20px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#B31942;margin-bottom:22px}
+body.dark .tag{color:#9CC4F5}
+h1{font-size:82px;font-weight:900;letter-spacing:-2.6px;line-height:1.04}
+h2{font-size:56px;font-weight:900;letter-spacing:-1.6px;line-height:1.12}
+.en{font-size:92px;font-weight:900;letter-spacing:-3px;line-height:1.05;color:#0A3161}
+body.dark .en{color:#fff}
+.kk{font-size:38px;font-weight:700;color:#6B7A8D;margin-top:20px}
+body.dark .kk{color:#A9C0DC}
+.bad{color:#B31942;text-decoration:line-through;text-decoration-thickness:6px}
+.ok{color:#1E9E5A}
+.line{display:flex;gap:20px;align-items:baseline;margin-top:14px}
+.badge{display:inline-block;background:#B31942;color:#fff;font-size:24px;font-weight:900;
+       padding:8px 16px;border-radius:12px;letter-spacing:.06em}
+.dlg div{font-size:44px;font-weight:800;margin-top:16px;letter-spacing:-1px}
+.dlg span{color:#9CC4F5;font-weight:700;font-size:30px;margin-left:14px;letter-spacing:0}
+.bar{position:absolute;left:0;right:0;bottom:0;height:10px;background:#DFE4EC}
+.bar i{display:block;height:100%;background:#1E9E5A}
+</style></head>
+<body>
+<div class="mark">1English</div>
+<div id="c"></div>
+<div class="bar"><i id="p"></i></div>
+<script>
+/* Слайды строго по строкам озвучки script/kk.txt — их порядок и есть монтаж. */
+var S = [
+ {d:1,t:'1-САБАҚ',h:'Сәлем!<br>Мен…'},
+ {tag:'МАҚСАТ',h:'Ағылшынша<br>танысу'},
+ {tag:'ҮШ СӨЙЛЕМ',h:'Атың · Жасың<br>Қаласың'},
+ {tag:'1-ҚАДАМ',h:'Амандасу'},
+ {en:'Hello!',kk:'Сәлем!'},
+ {tag:'2-ҚАДАМ',h:'Есіміңді айту'},
+ {en:'My name is Arman.',kk:'Менің атым — Арман.'},
+ {en:'My name is …',kk:'осылай бастаймыз',ok:1},
+ {en:'I name Arman.',kk:'бұлай айтуға болмайды',bad:1},
+ {tag:'3-ҚАДАМ',h:'Жасыңды айту'},
+ {en:"I'm eleven years old.",kk:'Мен он бір жастамын.'},
+ {tag:'ЖАУАП',h:'Саған не дейді?'},
+ {en:'Nice to meet you.',kk:'Танысқаныма қуаныштымын.'},
+ {en:'Nice to meet you, too.',kk:'сен де солай айтасың',ok:1},
+ {tag:'4-ҚАДАМ',h:'Қайдансың?'},
+ {en:'I am from Almaty.',kk:'Мен Алматыданмын.'},
+ {en:'from',kk:'қайдан'},
+ {en:'I am from …',kk:'am сөзін тастауға болмайды',ok:1},
+ {tag:'БӘРІН БІРГЕ',h:'Толық таныстыру'},
+ {d:1,dlg:[['Hello!','Сәлем'],['My name is Arman.','Менің атым'],["I'm eleven years old.",'жасым'],['I am from Almaty.','қаладанмын']]},
+ {en:'Goodbye! See you.',kk:'Сау бол! Кездескенше.'},
+ {d:1,tag:'КЕЛЕСІ ҚАДАМ',h:'8 сөз · 4 жаттығу<br>1 ойын'}
+];
+var n = Math.max(1, Math.min(S.length, +(new URLSearchParams(location.search).get('n') || 1)));
+var s = S[n-1], c = document.getElementById('c');
+if (s.d) document.body.classList.add('dark');
+var html = '';
+if (s.tag) html += '<div class="tag">' + s.tag + '</div>';
+if (s.h)   html += '<h1>' + s.h + '</h1>';
+if (s.en)  html += '<div class="en ' + (s.bad ? 'bad' : s.ok ? 'ok' : '') + '">' + s.en + '</div>';
+if (s.kk)  html += '<div class="kk">' + (s.bad ? '<span class="badge">ҚАТЕ</span> ' : '') + s.kk + '</div>';
+if (s.dlg) html += '<div class="dlg">' + s.dlg.map(function(d){ return '<div>' + d[0] + '<span>' + d[1] + '</span></div>'; }).join('') + '</div>';
+c.innerHTML = html;
+document.getElementById('p').style.width = Math.round(100 * n / S.length) + '%';
+document.title = 'slide ' + n + '/' + S.length;
+</script>
+</body></html>

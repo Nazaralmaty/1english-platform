@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · Апталық тапсырма</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .opt{width:100%;text-align:left;background:var(--white);border:2px solid transparent;border-radius:15px;
+       padding:15px;font-weight:700;box-shadow:var(--shadow);margin-bottom:9px;transition:.15s var(--ease)}
+  .opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .opt.no{border-color:var(--crimson);background:#FBE7EC}
+  .qbar{display:flex;gap:4px;margin-bottom:18px}
+  .qbar i{flex:1;height:4px;border-radius:99px;background:var(--line)}
+  .qbar i.on{background:var(--ok)} .qbar i.bad{background:var(--crimson)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" id="back" href="sabaq.html">←</a>
+    <h1>Апталық тапсырма</h1>
+    <div class="pill" id="cnt">1 / 6</div>
+  </header>
+  <div class="scroll notab" id="body"></div>
+</div>
+<script src="../assets/app.js"></script>
+<script src="../data/course.js"></script>
+<script src="../data/lesson_u1.js"></script>
+<script>
+(function(){
+  var id = App.qs('u') || 'u1', $ = App.$;
+  App.$('#back').href = 'sabaq.html?u=' + id;
+  var meta = COURSE.byId(id), Q = LESSON_U1.test;
+  var i = 0, right = 0, marks = [], wrong = [];
+
+  function bar(){
+    var h = '<div class="qbar">';
+    for (var k = 0; k < Q.length; k++) h += '<i class="' + (marks[k]===1?'on':marks[k]===0?'bad':'') + '"></i>';
+    return h + '</div>';
+  }
+
+  function show(){
+    var q = Q[i];
+    if (!q) return done();
+    $('#cnt').textContent = (i+1) + ' / ' + Q.length;
+    $('#body').innerHTML = bar() +
+      '<div class="tag">' + meta.num + '-САБАҚ · ' + meta.kk + '</div>' +
+      '<div class="card-t" style="font-size:21px;margin:8px 0 16px;line-height:1.3">' + q.q + '</div>' +
+      '<div id="o"></div><div id="fb"></div>';
+    q.opts.forEach(function(o, n){
+      var b = App.el('button','opt', o);
+      b.onclick = function(){
+        App.$$('.opt').forEach(function(x){ x.onclick = null; });
+        var good = n === q.a;
+        b.classList.add(good ? 'ok' : 'no');
+        if (!good) { App.$$('.opt')[q.a].classList.add('ok'); wrong.push(q); }
+        if (good) right++;
+        marks[i] = good ? 1 : 0;
+        $('#fb').innerHTML = '<div class="card flat" style="margin-top:6px">' + q.ex + '</div>';
+        i++; setTimeout(show, App.d(good ? 600 : 1600));
+      };
+      $('#o').appendChild(b);
+    });
+  }
+
+  function done(){
+    var u = App.unit(id);
+    /* сохраняем лучший результат: пересдача не должна ухудшать */
+    u.test = (u.test == null) ? right : Math.max(u.test, right);
+    App.save(); App.touchStreak();
+    var pass = right >= 4;
+    $('#cnt').textContent = 'Дайын';
+    $('#body').innerHTML =
+      '<div class="card ' + (pass ? 'navy' : '') + ' center" style="padding:30px 18px">' +
+        '<div style="font-size:40px">' + (pass ? '🏅' : '💪') + '</div>' +
+        '<div class="big" style="margin:10px 0 4px">' + right + ' / ' + Q.length + '</div>' +
+        '<div class="card-s">' + (pass ? 'Сабақ жабылды' : '4 дұрыс жауап керек — қайта көр') + '</div>' +
+      '</div>' +
+      (wrong.length ? '<div class="h2">Қателермен жұмыс</div><div id="w"></div>' : '') +
+      '<a class="btn" href="index.html">Бүгінге оралу</a>' +
+      '<button class="btn ghost" id="again" style="margin-top:10px">Қайта тапсыру</button>';
+    var wbox = $('#w');
+    if (wbox) wrong.forEach(function(q){
+      wbox.appendChild(App.el('div','card flat',
+        '<div class="card-t" style="font-size:16px">' + q.q + '</div>' +
+        '<div class="pill ok" style="margin-top:8px">' + q.opts[q.a] + '</div>' +
+        '<div class="card-s" style="margin-top:8px">' + q.ex + '</div>'));
+    });
+    $('#again').onclick = function(){ i = 0; right = 0; marks = []; wrong = []; show(); };
+  }
+
+  show();
+  if (App.qs('test') === '1') {
+    var guard = 0;
+    (function step(){
+      var b = App.$$('.opt');
+      var live = b.filter(function(x){ return !!x.onclick; });
+      if (live.length && guard++ < 20) { live[0].click(); return setTimeout(step, 40); }
+      setTimeout(function(){
+        console.assert(App.unit(id).test === 6, 'результат теста не сохранился: ' + App.unit(id).test);
+        console.assert(document.body.scrollWidth <= window.innerWidth + 1, 'экран едет вбок');
+        console.log('OK bala/tapsyrma');
+      }, 400);
+    })();
+  }
+})();
+</script>
+</body>
+</html>
