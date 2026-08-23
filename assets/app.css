@@ -67,7 +67,8 @@ a{color:inherit;text-decoration:none}
 
 /* ── карточки ────────────────────────────────────────────────────── */
 .card{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);
-      margin-bottom:12px;position:relative}
+      margin-bottom:12px;position:relative;transition:transform .12s var(--ease)}
+a.card:active,a.it:active{transform:scale(.975)}
 .card.navy{background:var(--navy);color:#fff;box-shadow:var(--shadow-up)}
 .card.flat{box-shadow:none;border:1px solid var(--line)}
 .card-t{font-size:17px;font-weight:800;letter-spacing:-.2px}
@@ -94,7 +95,9 @@ a{color:inherit;text-decoration:none}
 
 /* пилюли и бейджи */
 .pill{display:inline-flex;align-items:center;gap:6px;background:var(--paper-cool);
-      color:var(--navy);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;white-space:nowrap}
+      color:var(--navy);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;white-space:nowrap;
+      transition:transform .12s var(--ease)}
+a.pill:active{transform:scale(.94)}
 .pill.ok{background:var(--ok-soft);color:var(--ok)}
 .pill.crimson{background:#FBE7EC;color:var(--crimson)}
 .pill.gold{background:#FCF0D8;color:#8A6008}
@@ -113,7 +116,8 @@ a{color:inherit;text-decoration:none}
       background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
       border-top:1px solid var(--line);display:flex}
 .tabs a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-        font-size:11px;font-weight:700;color:var(--muted)}
+        font-size:11px;font-weight:700;color:var(--muted);transition:transform .12s var(--ease)}
+.tabs a:active{transform:scale(.92)}
 .tabs a span.ic{font-size:20px;line-height:1}
 .tabs a.on{color:var(--navy)}
 
@@ -121,6 +125,11 @@ a{color:inherit;text-decoration:none}
 .muted{color:var(--muted)}
 .center{text-align:center}
 .big{font-size:34px;font-weight:900;letter-spacing:-1.2px;line-height:1}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
 .num{font-variant-numeric:tabular-nums}
 .hr{height:1px;background:var(--line);margin:14px 0}
 .tag{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--crimson)}
