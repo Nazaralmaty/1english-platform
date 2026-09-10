@@ -78,17 +78,53 @@ create trigger en_progress_touch before update on public.en_progress
 
 -- ── 4. Кто смотрит дашборд ─────────────────────────────────────────────────
 -- Ученик видит только себя. Чтобы видеть всех, аккаунт должен лежать в этой
--- таблице. Добавить себя (подставьте свой номер):
+-- таблице. Номер сюда не пишется: здесь id пользователя из auth.users.
 --
---   insert into public.en_admins (id, note)
---   select id, 'Элжан' from auth.users where email = '77011234567@1eng.kz'
---   on conflict (id) do nothing;
+-- КАК ДОБАВИТЬ СЕБЯ.
+--   1. Сначала войдите в платформу своим номером — без этого аккаунта нет.
+--   2. Потом одной строкой, со своим номером в любом виде:
+--
+--        select public.en_make_admin('+7 701 123 45 67');
+--
+--      Функция сама найдёт id и ответит словами, что получилось.
 
 create table if not exists public.en_admins (
   id         uuid primary key references auth.users on delete cascade,
   note       text,
   created_at timestamptz not null default now()
 );
+
+-- Ищет пользователя по номеру и кладёт его в en_admins.
+-- security definer нужен, чтобы функция дотянулась до auth.users; сразу
+-- после неё права на вызов отбираются у всех, кроме владельца базы —
+-- иначе любой залогиненный сделал бы админом сам себя и увидел всех.
+create or replace function public.en_make_admin(p_phone text)
+returns text language plpgsql security definer set search_path = public, auth as $$
+declare
+  v_digits text;
+  v_id     uuid;
+begin
+  v_digits := regexp_replace(coalesce(p_phone, ''), '[^0-9]', '', 'g');
+  if length(v_digits) = 10 then v_digits := '7' || v_digits; end if;
+  if length(v_digits) = 11 and left(v_digits, 1) = '8' then
+    v_digits := '7' || substring(v_digits from 2);
+  end if;
+  if length(v_digits) <> 11 then
+    return 'Не похоже на номер: ' || coalesce(p_phone, '');
+  end if;
+
+  select id into v_id from auth.users where email = v_digits || '@1eng.kz';
+  if v_id is null then
+    return 'Аккаунта с номером ' || v_digits || ' ещё нет. Сначала войдите в платформу этим номером.';
+  end if;
+
+  insert into public.en_admins (id, note) values (v_id, v_digits)
+  on conflict (id) do nothing;
+  return 'Готово: ' || v_digits || ' видит дашборд.';
+end $$;
+
+revoke execute on function public.en_make_admin(text) from public;
+revoke execute on function public.en_make_admin(text) from anon, authenticated;
 
 -- security definer: функция читает en_admins в обход RLS, иначе политика,
 -- которая спрашивает «а он админ?», уходила бы в бесконечную рекурсию.
