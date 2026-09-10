@@ -40,9 +40,9 @@ ctx.DB.listAll = () => Promise.resolve({
   progress: [
     { student_id: 'a', lesson: 'b1', step: 'read', updated_at: now },
     { student_id: 'a', lesson: 'b2', step: 'read', updated_at: now },
-    { student_id: 'b', lesson: 'e2', step: 'read', updated_at: '2026-09-01T10:00:00Z' },
-    { student_id: 'b', lesson: 'e2', step: 'task', right_count: 5, total_count: 6, updated_at: '2026-09-01T10:00:00Z' },
-    { student_id: 'b', lesson: 'e2', step: 'words', updated_at: '2026-09-01T10:00:00Z' }
+    { student_id: 'b', lesson: 'e13', step: 'read', updated_at: '2026-09-01T10:00:00Z' },
+    { student_id: 'b', lesson: 'e13', step: 'task', right_count: 5, total_count: 6, updated_at: '2026-09-01T10:00:00Z' },
+    { student_id: 'b', lesson: 'e13', step: 'words', updated_at: '2026-09-01T10:00:00Z' }
   ]
 });
 ctx.DB.init = () => true;
@@ -60,10 +60,13 @@ has('Beginner', 'уровень');
 has('Elementary', 'уровень');
 has('>2<', 'учеников всего');
 has('>5<', 'шагов пройдено');
-/* у Айсұлтана 2 шага из 14 видеоуроков Beginner = 14 % */
-has('14%', 'процент по Beginner');
-/* у второго закрыт весь урок e2: три шага из трёх */
-has('100%', 'процент по Elementary');
+/* Проценты считаем тем же способом, что и дашборд, а не цифрой в тексте:
+   иначе проверка будет падать каждый раз, когда в курс добавят материал. */
+const capacity = (lvl) => ctx.COURSE.levels
+  .find(l => l.id === lvl).lessons
+  .reduce((n, s) => n + ((ctx.VIDEOS[s.id] || s.rule) ? 1 : 0) + (s.tasks.length ? 1 : 0) + (s.words.length ? 1 : 0), 0);
+has(Math.round(2 / capacity('beginner') * 100) + '%', 'процент по Beginner');
+has(Math.round(3 / capacity('elementary') * 100) + '%', 'процент по Elementary');
 if (!/Уроков закрыто[\s\S]*?<td>1<\/td>/.test(rendered)) fails.push('закрытые уроки не посчитались');
 
 console.log(fails.length ? '✗ ' + fails.join('\n✗ ') : 'OK: дашборд собирается, цифры сходятся');

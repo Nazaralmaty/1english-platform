@@ -217,6 +217,67 @@
       });
     },
 
+    /* Пускают ли этого ученика. Пустой список допущенных означает «всех». */
+    amIAllowed: function () {
+      if (!DB.ready) return Promise.resolve(true);
+      return token().then(function (tk) {
+        return req('/rest/v1/rpc/en_am_i_allowed', { method: 'POST', token: tk, body: {} });
+      }).then(function (v) { return v !== false; })
+        .catch(function () { return true; });   /* база молчит — не запираем ученика */
+    },
+
+    /* Журнал падений: без него о поломке у ученика не узнает никто. */
+    logError: function (message, source) {
+      if (!DB.ready) return Promise.resolve(false);
+      return token().then(function (tk) {
+        return req('/rest/v1/en_errors', {
+          method: 'POST', token: tk, headers: { Prefer: 'return=minimal' },
+          body: {
+            student_id: session.user_id,
+            message: String(message).slice(0, 500),
+            source: String(source || '').slice(0, 200),
+            agent: navigator.userAgent.slice(0, 200)
+          }
+        });
+      }).then(function () { return true; }).catch(function () { return false; });
+    },
+
+    /* Список допущенных номеров: читает и правит только админ. */
+    allowed: {
+      list: function () {
+        return token().then(function (tk) {
+          return req('/rest/v1/en_allowed?select=*&order=created_at.desc', { token: tk });
+        });
+      },
+      add: function (phone, note) {
+        var p = normPhone(phone);
+        if (!p) return Promise.reject(new Error('Проверьте номер'));
+        return token().then(function (tk) {
+          return req('/rest/v1/en_allowed?on_conflict=phone', {
+            method: 'POST', token: tk,
+            headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+            body: { phone: p, note: note || null }
+          });
+        });
+      },
+      remove: function (phone) {
+        return token().then(function (tk) {
+          return req('/rest/v1/en_allowed?phone=eq.' + encodeURIComponent(phone), {
+            method: 'DELETE', token: tk, headers: { Prefer: 'return=minimal' }
+          });
+        });
+      }
+    },
+
+    /* Новый код вместо забытого. Проверку прав делает сама функция в базе. */
+    resetCode: function (phone, code) {
+      return token().then(function (tk) {
+        return req('/rest/v1/rpc/en_reset_code', {
+          method: 'POST', token: tk, body: { p_phone: phone, p_code: code }
+        });
+      });
+    },
+
     /* Дашборд: всё, что есть в базе. Обычному ученику RLS отдаст только
        его собственные строки, поэтому запрос безопасен сам по себе. */
     listAll: function () {
@@ -224,10 +285,15 @@
         return Promise.all([
           req('/rest/v1/en_students?select=*&order=updated_at.desc', { token: tk }),
           req('/rest/v1/en_progress?select=*', { token: tk }),
-          req('/rest/v1/en_admins?select=id', { token: tk })
+          req('/rest/v1/en_admins?select=id', { token: tk }),
+          req('/rest/v1/en_errors?select=*&order=created_at.desc&limit=20', { token: tk })
+            .catch(function () { return []; })
         ]);
       }).then(function (r) {
-        return { students: r[0] || [], progress: r[1] || [], isAdmin: (r[2] || []).length > 0 };
+        return {
+          students: r[0] || [], progress: r[1] || [],
+          isAdmin: (r[2] || []).length > 0, errors: r[3] || []
+        };
       });
     },
 

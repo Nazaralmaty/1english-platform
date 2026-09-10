@@ -46,6 +46,33 @@
   .ago{color:var(--muted);font-variant-numeric:tabular-nums}
   .ago.hot{color:var(--ok);font-weight:700}
   .empty{padding:40px 18px;text-align:center;color:var(--muted)}
+
+  .panel{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);
+         padding:18px;margin-top:22px}
+  .panel h2{font-size:18px;letter-spacing:-.02em;margin-bottom:4px}
+  .panel .hint{font-size:13.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+  .row2{display:flex;gap:8px;flex-wrap:wrap}
+  .row2 input{flex:1;min-width:150px;background:var(--bg);border:0;border-radius:12px;
+              padding:12px 14px;font:inherit;font-size:15px;color:var(--ink)}
+  .row2 button{background:var(--navy);color:var(--on-navy);border-radius:12px;
+               padding:12px 18px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;border:0}
+  .row2 button.quiet{background:var(--bg);color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip2{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border-radius:999px;
+         padding:8px 8px 8px 14px;font-size:14px;font-variant-numeric:tabular-nums}
+  .chip2 b{font-weight:700}
+  .chip2 span{color:var(--muted);font-size:13px}
+  .chip2 button{width:24px;height:24px;border-radius:50%;border:0;cursor:pointer;
+                background:var(--card);color:var(--accent);font:inherit;font-size:14px;line-height:1}
+  .state{font-size:13.5px;margin-top:12px;min-height:20px}
+  .state.ok{color:var(--ok)}
+  .state.bad{color:var(--accent)}
+  .errs{margin-top:10px;font-size:13.5px}
+  .errs div{padding:9px 0;border-top:1px solid var(--line);color:var(--muted);line-height:1.45}
+  .errs div b{color:var(--ink);font-weight:600;display:block}
+  .mini2{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  td .reset{background:var(--bg);border:0;border-radius:999px;padding:6px 12px;font:inherit;
+            font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer}
   .auth{max-width:380px;margin:8vh auto 0}
   .err{color:var(--accent);font-size:14px;min-height:20px;margin:10px 0}
 </style>
@@ -197,7 +224,7 @@
         (rows.length
           ? '<table><thead><tr>' +
               '<th>Ученик</th><th>Уровень</th><th>Прогресс</th>' +
-              '<th>Уроков закрыто</th><th>Шагов</th><th>Последний заход</th>' +
+              '<th>Уроков закрыто</th><th>Шагов</th><th>Последний заход</th><th></th>' +
             '</tr></thead><tbody>' +
             rows.map(function (r) {
               var hot = Date.now() - new Date(r.last).getTime() < 864e5;
@@ -210,13 +237,93 @@
                 '<td>' + r.done + '</td>' +
                 '<td>' + r.steps + '</td>' +
                 '<td class="ago' + (hot ? ' hot' : '') + '">' + ago(r.last) + '</td>' +
+                '<td><button class="reset" data-reset="' + esc(r.st.phone) + '">Сбросить код</button></td>' +
               '</tr>';
             }).join('') +
             '</tbody></table>'
           : '<div class="empty">Учеников пока нет. Как только кто-то войдёт в платформу, строка появится здесь.</div>') +
-      '</div></div>';
+      '</div></div>' +
+
+      /* Список допущенных номеров. Пустой список пускает всех — так удобно
+         на пробном этапе, поэтому состояние написано словами. */
+      '<div class="panel">' +
+        '<h2>Кто допущен</h2>' +
+        '<div class="hint" id="allowHint">Загружаю…</div>' +
+        '<div class="row2">' +
+          '<input id="apPhone" type="tel" placeholder="+7 701 123 45 67">' +
+          '<input id="apNote" type="text" placeholder="Имя, необязательно">' +
+          '<button id="apAdd">Добавить</button>' +
+        '</div>' +
+        '<div class="chips" id="apList"></div>' +
+        '<div class="state" id="apState"></div>' +
+      '</div>' +
+
+      '<div class="panel">' +
+        '<h2>Падения у учеников</h2>' +
+        '<div class="hint">Последние двадцать. Пусто — значит ни у кого ничего не сломалось.</div>' +
+        (d.errors && d.errors.length
+          ? '<div class="errs">' + d.errors.map(function (e) {
+              return '<div><b>' + esc(e.message) + '</b>' +
+                     esc(e.source || '') + ' · ' + ago(e.created_at) + '</div>';
+            }).join('') + '</div>'
+          : '<div class="mini2">Пока чисто.</div>') +
+      '</div>';
 
     root.querySelector('#out').onclick = function () { stop(); DB.signOut(); auth(''); };
+
+    Array.prototype.forEach.call(root.querySelectorAll('[data-reset]'), function (b) {
+      b.onclick = function () { resetCode(b.getAttribute('data-reset')); };
+    });
+    wireAllowed();
+  }
+
+  /* ── список допущенных ────────────────────────────────────────────── */
+  function wireAllowed() {
+    var hint = root.querySelector('#allowHint');
+    var list = root.querySelector('#apList');
+    var state = root.querySelector('#apState');
+    if (!hint) return;
+
+    function say(text, bad) { state.className = 'state ' + (bad ? 'bad' : 'ok'); state.textContent = text; }
+
+    function draw() {
+      DB.allowed.list().then(function (rows) {
+        hint.textContent = rows.length
+          ? 'В списке ' + rows.length + '. Остальные номера зарегистрируются, но их прогресс в базу не ляжет.'
+          : 'Список пуст — заходят все. Как только добавите первый номер, остальных перестанет пускать, поэтому начните со своего.';
+        list.innerHTML = rows.map(function (r) {
+          return '<span class="chip2"><b>' + esc(phoneFmt(r.phone)) + '</b>' +
+                 (r.note ? '<span>' + esc(r.note) + '</span>' : '') +
+                 '<button data-del="' + esc(r.phone) + '" title="Убрать">✕</button></span>';
+        }).join('');
+        Array.prototype.forEach.call(list.querySelectorAll('[data-del]'), function (b) {
+          b.onclick = function () {
+            DB.allowed.remove(b.getAttribute('data-del'))
+              .then(function () { say('Убрали'); draw(); })
+              .catch(function (e) { say(e.message, true); });
+          };
+        });
+      }).catch(function (e) { hint.textContent = e.message; });
+    }
+
+    root.querySelector('#apAdd').onclick = function () {
+      var ph = root.querySelector('#apPhone'), nt = root.querySelector('#apNote');
+      DB.allowed.add(ph.value, nt.value.trim()).then(function () {
+        ph.value = ''; nt.value = ''; say('Добавили'); draw();
+      }).catch(function (e) { say(e.message, true); });
+    };
+
+    draw();
+  }
+
+  /* ── сброс кода ───────────────────────────────────────────────────── */
+  function resetCode(phone) {
+    var code = prompt('Новый код из шести цифр для ' + phoneFmt(phone) + ':', '');
+    if (!code) return;
+    DB.resetCode(phone, code.trim()).then(function (answer) {
+      alert(answer);
+      pull();
+    }).catch(function (e) { alert(e.message); });
   }
 
   /* Обновление раз в 10 секунд вместо подписки на изменения: для десятков

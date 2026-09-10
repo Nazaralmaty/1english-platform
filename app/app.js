@@ -25,7 +25,6 @@ function blank() {
     lang: 'ru',           /* ru | kk */
     theme: 'system',      /* system | light | dark */
     name: '',
-    birth: '',            /* ГГГГ-ММ-ДД, как отдаёт input[type=date] */
     gender: '',           /* m | f */
     consent: '',          /* дата согласия на обработку данных */
     p: {}                 /* lessonId: {read:true, task:{right,total}, words:true} */
@@ -52,7 +51,7 @@ function mergeServer(data) {
   if (!data) return;
   var p = data.profile;
   if (p) {
-    ['name', 'birth', 'gender', 'level', 'lang', 'theme'].forEach(function (k) {
+    ['name', 'gender', 'level', 'lang', 'theme'].forEach(function (k) {
       if (p[k]) S[k] = p[k];
     });
     applyTheme();
@@ -71,7 +70,7 @@ function mergeServer(data) {
 function syncProfile() {
   if (!global_DB()) return;
   DB.saveProfile({
-    phone: S.phone, name: S.name, birth: S.birth, gender: S.gender,
+    phone: S.phone, name: S.name, gender: S.gender,
     level: S.level, lang: S.lang, theme: S.theme,
     consent_at: S.consent || null, consent_v: S.consent ? 'v1' : null
   });
@@ -116,8 +115,8 @@ var LANG = {
     gWordOrder:'Порядок слов', gWordOrderNote:'Собрать предложение из слов',
     gSort:'Сортировка', gSortNote:'Разложить слова по группам',
     gFlappyNote:'Лететь в тот проём, где верный перевод',
-    profile:'Профиль', name:'Имя', notSetF:'Не указана', notSetM:'Не указан',
-    notSetN:'Не указано', birth:'Дата рождения', gender:'Пол',
+    profile:'Профиль', name:'Имя', notSetM:'Не указан',
+    notSetN:'Не указано', gender:'Пол',
     male:'Мужской', female:'Женский',
     langLabel:'Язык интерфейса', langName:'Русский',
     theme:'Тема оформления', themeSystem:'Системная', themeLight:'Светлая', themeDark:'Тёмная',
@@ -128,6 +127,7 @@ var LANG = {
     consentText:'1English хранит ваш номер телефона, имя, дату рождения, пол и то, какие уроки вы прошли. Это нужно, чтобы прогресс не терялся при смене телефона и чтобы преподаватель видел, кому нужна помощь.\n\nДанные лежат в базе Supabase и третьим лицам не передаются. Чтобы их удалили, напишите преподавателю с того же номера: аккаунт и всё, что с ним связано, стирается.',
     consentNeed:'Отметьте согласие, чтобы продолжить',
     tooMany:'Слишком много попыток. Подождите минуту.',
+    notAllowed:'Этого номера нет в списке группы. Напишите преподавателю.',
     wipe:'Удалить мои данные', wipeCap:'Профиль, прогресс и сам аккаунт',
     wipeText:'Из базы пропадут: номер телефона, имя, дата рождения, пол и весь пройденный курс. Вернуть это будет нельзя — вход по этому номеру начнётся с чистого листа.',
     wipeGo:'Удалить', cancel:'Отмена', wiped:'Данные удалены'
@@ -159,8 +159,8 @@ var LANG = {
     gWordOrder:'Сөз реті', gWordOrderNote:'Сөздерден сөйлем құрастыру',
     gSort:'Сұрыптау', gSortNote:'Сөздерді топтарға бөлу',
     gFlappyNote:'Дұрыс аудармасы бар саңылауға ұшу',
-    profile:'Профиль', name:'Аты', notSetF:'Көрсетілмеген', notSetM:'Көрсетілмеген',
-    notSetN:'Көрсетілмеген', birth:'Туған күні', gender:'Жынысы',
+    profile:'Профиль', name:'Аты', notSetM:'Көрсетілмеген',
+    notSetN:'Көрсетілмеген', gender:'Жынысы',
     male:'Ер', female:'Әйел',
     langLabel:'Интерфейс тілі', langName:'Қазақша',
     theme:'Безендіру тақырыбы', themeSystem:'Жүйелік', themeLight:'Ашық', themeDark:'Қараңғы',
@@ -171,6 +171,7 @@ var LANG = {
     consentText:'1English сіздің телефон нөміріңізді, атыңызды, туған күніңізді, жынысыңызды және қандай сабақтарды өткеніңізді сақтайды. Бұл телефон ауысқанда прогресс жоғалмауы үшін және ұстаз кімге көмек керегін көруі үшін қажет.\n\nДеректер Supabase базасында жатыр, үшінші тұлғаларға берілмейді. Өшіру үшін ұстазға сол нөмірден жазыңыз: аккаунт және онымен байланысты бәрі жойылады.',
     consentNeed:'Жалғастыру үшін келісімді белгілеңіз',
     tooMany:'Тым көп әрекет. Бір минут күтіңіз.',
+    notAllowed:'Бұл нөмір топ тізімінде жоқ. Ұстазға жазыңыз.',
     wipe:'Деректерімді өшіру', wipeCap:'Профиль, прогресс және аккаунт',
     wipeText:'Базадан телефон нөмірі, аты, туған күні, жынысы және өтілген курс жойылады. Қайтару мүмкін болмайды — осы нөмірмен кіру таза беттен басталады.',
     wipeGo:'Өшіру', cancel:'Болдырмау', wiped:'Деректер өшірілді'
@@ -282,7 +283,6 @@ var IC = {
   profile: '<circle cx="12" cy="8.2" r="3.9"/><path d="M4.6 20.2a7.4 7.4 0 0 1 14.8 0"/>',
   edit:    '<path d="M4.4 19.6h3.6l9.7-9.7-3.6-3.6-9.7 9.7z"/><path d="M14.1 6.3 16.6 3.8l3.6 3.6-2.5 2.5"/>',
   cam:     '<path d="M3.6 8.6h3.2l1.4-2.2h7.6l1.4 2.2h3.2v9.8H3.6z"/><circle cx="12" cy="13.3" r="3.1"/>',
-  cal:     '<rect x="3.6" y="5.2" width="16.8" height="15.2" rx="3.2"/><path d="M3.6 10h16.8M8.4 3.4v3.4M15.6 3.4v3.4"/>',
   globe:   '<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.3 2.4 3.4 5.3 3.4 8.6s-1.1 6.2-3.4 8.6c-2.3-2.4-3.4-5.3-3.4-8.6S9.7 5.8 12 3.4z"/>',
   moon:    '<circle cx="12" cy="12" r="8.6"/><path d="M12 3.4v17.2a8.6 8.6 0 0 0 0-17.2z" fill="currentColor" stroke="none"/>'
 };
@@ -422,6 +422,12 @@ function scrLogin() {
       btn.disabled = true; btn.textContent = t('wait'); err.textContent = '';
 
       DB.enter(phone, cd.value).then(function () {
+        /* Список допущенных пуст — пускают всех; появился первый номер —
+           только своих. Проверяет база, браузер лишь показывает ответ. */
+        return DB.amIAllowed().then(function (okay) {
+          if (!okay) { DB.signOut(); throw new Error(t('notAllowed')); }
+        });
+      }).then(function () {
         clearTries(phone);
         S.phone = phone;
         if (!S.consent) S.consent = new Date().toISOString();
@@ -828,15 +834,6 @@ function scrProfile() {
     var hit = list.filter(function (x) { return x.v === v; })[0];
     return hit ? hit.name : dflt;
   }
-  /* Дата хранится как ГГГГ-ММ-ДД, а показывается по-человечески. */
-  function birthText() {
-    if (!S.birth) return t('notSetF');
-    var d = new Date(S.birth + 'T00:00:00');
-    if (isNaN(d)) return t('notSetF');
-    return d.toLocaleDateString(S.lang === 'kk' ? 'kk-KZ' : 'ru-RU',
-                                { day:'numeric', month:'long', year:'numeric' });
-  }
-
   function row(ic, label, value, id) {
     return '<button class="gr" id="' + id + '">' +
       '<span class="ic">' + icon(ic, 22) + '</span>' +
@@ -857,7 +854,6 @@ function scrProfile() {
 
     '<div class="group">' +
       row('edit', t('name'), S.name || t('notSetN'), 'rName') +
-      row('cal', t('birth'), birthText(), 'rBirth') +
       row('profile', t('gender'), nameOf(GENDERS, S.gender, t('notSetM')), 'rGender') +
     '</div>' +
 
@@ -905,19 +901,6 @@ function scrProfile() {
         setTimeout(function () { inp.focus(); }, 250);
         veil.querySelector('#ok').onclick = function () {
           S.name = inp.value.trim().slice(0, 40); save(); syncProfile(); close(); route();
-        };
-      });
-  };
-
-  $('#rBirth').onclick = function () {
-    openSheet(
-      '<h2 style="margin-bottom:16px">' + t('birth') + '</h2>' +
-      '<input class="field" id="v" type="date" value="' + esc(S.birth) + '" max="' +
-        new Date().toISOString().slice(0, 10) + '">' +
-      '<div class="gap-lg"></div><button class="btn" id="ok">' + t('save') + '</button>',
-      function (veil, close) {
-        veil.querySelector('#ok').onclick = function () {
-          S.birth = veil.querySelector('#v').value; save(); syncProfile(); close(); route();
         };
       });
   };
@@ -998,6 +981,15 @@ function route() {
   drawTabs('#/lessons');
   return scrLessons();
 }
+
+/* Падение у ученика иначе никто не увидит: он просто закроет вкладку. */
+window.addEventListener('error', function (e) {
+  if (window.DB && DB.ready) DB.logError(e.message, (e.filename || '') + ':' + (e.lineno || 0));
+});
+window.addEventListener('unhandledrejection', function (e) {
+  var r = e.reason;
+  if (window.DB && DB.ready) DB.logError((r && r.message) || String(r), 'promise');
+});
 
 window.addEventListener('hashchange', route);
 
