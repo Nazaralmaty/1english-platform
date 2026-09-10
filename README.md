@@ -77,6 +77,7 @@ window.VIDEOS = {
 | [`app/db.js`](app/db.js) | Supabase: вход, профиль, прогресс |
 | [`dashboard.html`](dashboard.html) | все ученики и успеваемость, обновление раз в 10 с |
 | [`backend/backup.mjs`](backend/backup.mjs) | выгрузка базы в JSON |
+| [`ИНСТРУКЦИЯ.html`](ИНСТРУКЦИЯ.html) | как устроен backend, открыть двойным кликом |
 | [`app/check.mjs`](app/check.mjs) | проверка данных курса |
 | [`app/check_dashboard.mjs`](app/check_dashboard.mjs) | проверка расчётов дашборда |
 | [`backend/supabase_min.sql`](backend/supabase_min.sql) | схема, которую нужно применить |

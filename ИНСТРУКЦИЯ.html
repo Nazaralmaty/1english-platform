@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1English · как устроен backend</title>
+<style>
+:root{
+  --bg:#F5F4F0; --card:#fff; --ink:#0E1B2E; --muted:#6B7A8C; --line:#E4E1DA;
+  --navy:#0A3161; --accent:#B31942; --accent-soft:#FBECEF; --ok:#1E7F4D; --ok-soft:#E8F3EC;
+  --r:18px; --sh:0 1px 2px rgba(10,49,97,.05),0 6px 18px rgba(10,49,97,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px;
+     font-family:'Golos Text',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+     -webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px 80px}
+
+/* шапка */
+header{padding:56px 0 30px}
+header .kicker{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+header h1{font-size:clamp(30px,7vw,44px);line-height:1.05;letter-spacing:-.04em;font-weight:800;margin:12px 0 14px}
+header p{color:var(--muted);font-size:17px;max-width:60ch}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.links a{background:var(--navy);color:#fff;border-radius:999px;padding:12px 20px;
+         font-size:15px;font-weight:700;text-decoration:none}
+.links a.ghost{background:transparent;color:var(--navy);box-shadow:inset 0 0 0 1.5px var(--line)}
+
+/* навигация */
+nav{position:sticky;top:0;z-index:10;background:rgba(245,244,240,.92);backdrop-filter:blur(12px);
+    margin:0 -20px;padding:12px 20px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav ol{display:flex;gap:8px;list-style:none;white-space:nowrap}
+nav a{font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none;
+      padding:6px 12px;border-radius:999px;background:var(--card);box-shadow:var(--sh)}
+nav a:hover{color:var(--navy)}
+
+/* секции */
+section{padding:46px 0 0;scroll-margin-top:64px}
+h2{font-size:clamp(22px,4.6vw,28px);line-height:1.15;letter-spacing:-.03em;font-weight:800;margin-bottom:8px}
+h2 span{color:var(--accent);font-size:15px;font-weight:700;display:block;margin-bottom:6px;letter-spacing:0}
+h3{font-size:18px;font-weight:700;letter-spacing:-.01em;margin:26px 0 8px}
+p{margin:10px 0;max-width:68ch}
+ul,ol{margin:10px 0 10px 22px;max-width:68ch}
+li{margin:5px 0}
+strong{font-weight:700}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;
+     background:#EDEBE5;padding:2px 6px;border-radius:6px}
+
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin:16px 0}
+.card h3{margin-top:0}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:680px){.grid.two{grid-template-columns:1fr 1fr}}
+
+/* схема */
+.flow{display:grid;gap:10px;margin:20px 0}
+@media(min-width:680px){.flow{grid-template-columns:1fr auto 1fr auto 1fr;align-items:center}}
+.node{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px}
+.node b{display:block;font-size:16px}
+.node span{display:block;font-size:13.5px;color:var(--muted);margin-top:3px}
+.arrow{text-align:center;color:var(--muted);font-size:20px}
+
+/* таблицы */
+.tbl{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin:16px 0}
+.tbl .scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{text-align:left;padding:11px 16px;font-size:14.5px;vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);
+   border-bottom:1px solid var(--line);font-weight:700}
+tr+tr td{border-top:1px solid var(--line)}
+td code{background:var(--bg)}
+
+/* код */
+.sql{background:#0E1B2E;color:#E7EDF5;border-radius:var(--r);padding:16px 18px;margin:14px 0;
+     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;line-height:1.55;
+     overflow-x:auto;position:relative}
+.sql pre{white-space:pre}
+.sql b{color:#8FB8F0;font-weight:400}
+.copy{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.12);color:#fff;border:0;
+      border-radius:8px;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer}
+.copy:active{transform:scale(.95)}
+
+/* пометки */
+.note{border-radius:var(--r);padding:15px 18px;margin:14px 0;font-size:15px}
+.note.red{background:var(--accent-soft);color:#7C1230}
+.note.green{background:var(--ok-soft);color:#12603A}
+.note b{font-weight:700}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;
+      background:var(--bg);color:var(--navy);margin-right:6px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.no{background:var(--accent-soft);color:var(--accent)}
+.steps{counter-reset:s;list-style:none;margin-left:0}
+.steps li{counter-increment:s;position:relative;padding-left:40px;margin:14px 0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:-1px;width:28px;height:28px;
+  border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;
+  font-size:14px;font-weight:700}
+footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">1English</div>
+  <h1>Как устроен backend платформы</h1>
+  <p>Что лежит в базе, кто это видит, что вы можете менять сами и что осталось сделать
+     до состояния, когда платформу можно давать незнакомому ученику.</p>
+  <div class="links">
+    <a href="https://nazaralmaty.github.io/1english-platform/">Платформа</a>
+    <a class="ghost" href="https://nazaralmaty.github.io/1english-platform/dashboard.html">Дашборд</a>
+    <a class="ghost" href="https://supabase.com/dashboard">Supabase</a>
+  </div>
+</header>
+
+<nav><ol>
+  <li><a href="#s1">Схема</a></li>
+  <li><a href="#s2">Вход</a></li>
+  <li><a href="#s3">База</a></li>
+  <li><a href="#s4">Кто что видит</a></li>
+  <li><a href="#s5">Ключи</a></li>
+  <li><a href="#s6">Рецепты</a></li>
+  <li><a href="#s7">Защита</a></li>
+  <li><a href="#s8">Чего нет</a></li>
+  <li><a href="#s9">До запуска</a></li>
+  <li><a href="#s10">Если сломалось</a></li>
+</ol></nav>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s1">
+  <h2><span>01</span>Три части и больше ничего</h2>
+  <p>Сервера у платформы нет. Есть статические файлы, которые раздаёт GitHub, и база
+     Supabase, куда браузер ходит напрямую.</p>
+
+  <div class="flow">
+    <div class="node"><b>Телефон ученика</b><span>HTML, CSS, JS. Работает и без сети</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>GitHub Pages</b><span>раздаёт файлы, бесплатно</span></div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Supabase</b><span>вход и база данных</span></div>
+  </div>
+
+  <p>Из этого следуют две вещи, которые определяют всё остальное. Первая: любой код,
+     который вы видите в браузере, видит и ученик. Прятать в нём нечего. Вторая: раз
+     защиты в коде быть не может, она целиком лежит в базе, в правилах доступа.</p>
+
+  <div class="grid two">
+    <div class="card">
+      <h3>Что выкатывает новую версию</h3>
+      <p>Каждый <code>git push</code> в ветку <code>main</code>. Через минуту-две ученики
+         открывают обновлённую платформу, ничего не устанавливая.</p>
+    </div>
+    <div class="card">
+      <h3>Что стоит денег</h3>
+      <p>Пока ничего. GitHub Pages бесплатен, Supabase на бесплатном тарифе, видео лежит
+         на YouTube и раздаётся его серверами.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s2">
+  <h2><span>02</span>Вход по номеру телефона</h2>
+  <p>Ученик вводит номер и код из шести цифр. Первый раз код придумывает сам, дальше
+     входит с ним же.</p>
+
+  <h3>Почему без SMS</h3>
+  <p>Телефонный вход в Supabase требует платного провайдера: около 30 ₸ за сообщение, и
+     при регистрации, и при каждом входе. У 300 учеников с двумя входами в месяц это
+     18 000 ₸ в месяц на пустом месте. Поэтому номер превращается в технический адрес
+     <code>77011234567@1eng.kz</code>, письма туда физически не уходят, а настоящий номер
+     лежит в базе отдельным полем. Когда подключите SMS-шлюз, переход пройдёт без потери
+     аккаунтов.</p>
+
+  <h3>Что происходит при первом входе</h3>
+  <ol class="steps">
+    <li>Платформа пробует войти с этим номером и кодом.</li>
+    <li>Не вышло — заводит аккаунт с тем же кодом в качестве пароля.</li>
+    <li>Ошибка «уже зарегистрирован» означает, что человек ошибся кодом, а не что он новый.</li>
+    <li>После входа создаётся строка в <code>en_students</code> и подтягивается всё, что
+        уже есть в базе: имя, уровень, пройденные шаги.</li>
+  </ol>
+
+  <div class="note red">
+    <b>Забытый код восстановить нечем.</b> Почты нет, SMS нет. Пока выход один: удалить
+    пользователя в панели Supabase, ученик заходит заново и заводит новый код. Прогресс
+    при этом теряется. Кнопка сброса в дашборде — полдня работы.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s3">
+  <h2><span>03</span>Что лежит в базе</h2>
+  <p>Четыре таблицы. Открываются в Supabase → Table Editor.</p>
+
+  <div class="tbl"><div class="scroll"><table>
+    <thead><tr><th>Таблица</th><th>Что внутри</th><th>Кто пишет</th></tr></thead>
+    <tbody>
+      <tr><td><code>en_students</code></td>
+          <td>Одна строка на ученика: номер, имя, дата рождения, пол, уровень, язык
+              интерфейса, тема, дата согласия на обработку данных</td>
+          <td>Платформа при входе и при правке профиля</td></tr>
+      <tr><td><code>en_progress</code></td>
+          <td>Одна строка на «урок + шаг». Шага три: <code>read</code> — урок,
+              <code>task</code> — задание, <code>words</code> — словарь. У задания
+              дополнительно счёт: сколько верных из скольких</td>
+          <td>Платформа, когда ученик закончил шаг</td></tr>
+      <tr><td><code>en_admins</code></td>
+          <td>Кто видит дашборд. Только id пользователя, номер сюда не пишется</td>
+          <td>Вы, вручную</td></tr>
+      <tr><td><code>en_allowed</code></td>
+          <td>Список допущенных номеров. Пустая таблица значит «пускаем всех»</td>
+          <td>Вы, вручную</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <p>Прогресс лежит по шагам, а не одной цифрой «60 %», нарочно: из шагов процент
+     считается в любой момент, а из процента шаги обратно не достанешь. Дашборд поэтому
+     умеет показать, кто застрял на конкретном уроке.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s4">
+  <h2><span>04</span>Кто что видит</h2>
+  <p>Правила доступа (RLS) живут в самой базе и работают до того, как запрос дойдёт до
+     данных. Обойти их из браузера нельзя: браузер вообще не участвует в этой проверке.</p>
+
+  <div class="tbl"><div class="scroll"><table>
+    <thead><tr><th>Кто</th><th>Читает</th><th>Пишет</th><th>Удаляет</th></tr></thead>
+    <tbody>
+      <tr><td>Ученик</td><td>только свои строки</td><td>только свои</td><td>только свои</td></tr>
+      <tr><td>Аккаунт из <code>en_admins</code></td><td>всех учеников и весь прогресс</td>
+          <td>только свои</td><td>только свои</td></tr>
+      <tr><td>Незалогиненный</td><td>ничего</td><td>ничего</td><td>ничего</td></tr>
+      <tr><td>Вы в панели Supabase</td><td>всё</td><td>всё</td><td>всё</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="note green">
+    <b>Проверено на живой базе.</b> Тестовый ученик видел ровно одну строку — свою.
+    Запрос «покажи всех» вернул ему один результат вместо списка.
+  </div>
+
+  <p>Дашборд не проверяет права в браузере. Он просто просит «дай всех учеников», и база
+     сама решает, сколько строк отдать. Если аккаунта нет в <code>en_admins</code>, придёт
+     одна строка, и дашборд честно скажет, что смотреть нечего.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s5">
+  <h2><span>05</span>Два ключа: который можно показывать и который нельзя</h2>
+
+  <div class="grid two">
+    <div class="card">
+      <h3><span class="pill ok">можно</span> anon</h3>
+      <p>Лежит открыто в <code>app/db.js</code>, виден любому, кто откроет исходник
+         страницы. Так и задумано: сам по себе он ничего не открывает, все запросы с ним
+         проходят через правила доступа.</p>
+    </div>
+    <div class="card">
+      <h3><span class="pill no">нельзя</span> service_role</h3>
+      <p>Игнорирует все правила и видит всю базу. В браузере его нет и быть не должно.
+         Живёт только в панели Supabase. Если он куда-то утечёт, ключ нужно менять
+         в тот же день.</p>
+    </div>
+  </div>
+
+  <p>Правило простое: в файлы платформы попадает только <code>anon</code>. Всё, что
+     работает с <code>service_role</code>, запускается с вашего компьютера или с сервера,
+     но не из браузера ученика.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s6">
+  <h2><span>06</span>Что вы можете сделать сами</h2>
+  <p>Всё ниже выполняется в Supabase → SQL Editor → New query → Run.</p>
+
+  <h3>Дать себе дашборд</h3>
+  <p>Сначала войдите в платформу своим номером, иначе аккаунта ещё нет.</p>
+  <div class="sql"><button class="copy">Копировать</button><pre>select public.en_make_admin('+7 701 123 45 67');</pre></div>
+  <p>Функция сама найдёт аккаунт по номеру и ответит словами, что получилось.</p>
+
+  <h3>Пускать только своих учеников</h3>
+  <p>Пока таблица <code>en_allowed</code> пуста, платформа принимает всех. Добавили первый
+     номер — писать в базу смогут только номера из списка. Чужой человек по ссылке
+     зарегистрируется, но его прогресс никуда не ляжет.</p>
+  <div class="sql"><button class="copy">Копировать</button><pre>insert into public.en_allowed (phone, note)
+values ('77011234567', 'Айсұлтан')
+on conflict do nothing;</pre></div>
+  <p>Выключить фильтр обратно: <code>delete from public.en_allowed;</code></p>
+
+  <h3>Посмотреть, кто сколько прошёл</h3>
+  <div class="sql"><button class="copy">Копировать</button><pre>select s.phone, s.name, s.level, count(p.*) as steps, max(p.updated_at) as last_seen
+from public.en_students s
+left join public.en_progress p on p.student_id = s.id
+group by s.id
+order by last_seen desc nulls last;</pre></div>
+
+  <h3>Удалить ученика</h3>
+  <p>Authentication → Users, найти адрес вида <code>77011234567@1eng.kz</code>, удалить.
+     Профиль и прогресс уйдут следом сами. Сам ученик может стереть себя кнопкой
+     «Удалить мои данные» в профиле.</p>
+
+  <h3>Выгрузить базу в файл</h3>
+  <p>На бесплатном тарифе автоматических бэкапов нет. Запускать раз в неделю из папки
+     проекта:</p>
+  <div class="sql"><button class="copy">Копировать</button><pre>EN_PHONE=77011234567 EN_CODE=123456 node backend/backup.mjs</pre></div>
+  <p>Файл ложится в <code>backups/ГГГГ-ММ-ДД.json</code> и в репозиторий не попадает.</p>
+
+  <h3>Привязать видео к уроку</h3>
+  <p>В файле <code>app/course.js</code>, таблица <code>window.VIDEOS</code>. Из ссылки
+     <code>youtu.be/3ZkombMruHM</code> берётся хвост <code>3ZkombMruHM</code>. Ключ — id
+     урока: <code>b</code> Beginner, <code>e</code> Elementary, <code>p</code>
+     Pre-Intermediate, <code>i</code> Intermediate, дальше номер от 1 до 14.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s7">
+  <h2><span>07</span>Защита: три слоя и один открытый бок</h2>
+
+  <div class="card">
+    <h3>1. Правила доступа в базе <span class="pill ok">работает</span></h3>
+    <p>Ученик читает и пишет только свои строки. Это единственная защита данных, и она
+       не зависит от браузера. Работает уже сейчас.</p>
+  </div>
+
+  <div class="card">
+    <h3>2. Лимит попыток входа <span class="pill no">включите в панели</span></h3>
+    <p>Код из шести цифр — миллион вариантов. Опасен не код, а возможность перебирать его
+       быстро. Dashboard → Authentication → Rate Limits: поставьте 20–30 попыток в час с
+       одного адреса. Живому человеку хватает, перебор растягивается на десятилетия.
+       Это единственный слой, который работает против скрипта: скрипт стучится прямо в
+       API, минуя все экраны.</p>
+  </div>
+
+  <div class="card">
+    <h3>3. Список допущенных номеров <span class="pill">готов, выключен</span></h3>
+    <p>Держит подальше посторонних, пришедших по ссылке. Включается одной строкой SQL из
+       раздела выше.</p>
+  </div>
+
+  <div class="note red">
+    <b>Открытый бок: правильные ответы видны в исходнике.</b> Файл
+    <code>app/course.js</code> уходит в браузер целиком, вместе с индексами верных
+    ответов. Ученик, который умеет открыть исходник страницы, найдёт их. Пока учеников
+    десяток и это свои — терпимо. Лечится переносом проверки в базу: вопросы отдаёт
+    функция, ответ проверяет Postgres, в браузер приходит «верно / неверно» по одному
+    заданию. Два дня работы.
+  </div>
+
+  <p>Что защитой <b>не</b> является: пауза на минуту после пяти неверных кодов. Она
+     останавливает соседа, взявшего чужой телефон, и ничего не значит для скрипта.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s8">
+  <h2><span>08</span>Чего платформа сейчас не умеет</h2>
+  <ul>
+    <li>Восстанавливать забытый код. Только удалить пользователя и завести заново.</li>
+    <li>Показывать ученику, что он офлайн. Прогресс сохранится на телефоне и уедет в базу
+        при следующем сохранении, но человек об этом не узнает.</li>
+    <li>Отправлять напоминания. Ни SMS, ни push.</li>
+    <li>Собирать статистику по конкретному заданию: видно, что задание пройдено на 5 из 6,
+        но не видно, на каком именно вопросе ошиблись.</li>
+    <li>Работать с содержанием уроков на казахском. Интерфейс переключается, правила и
+        переводы слов пока только русские.</li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s9">
+  <h2><span>09</span>Что осталось до production ready</h2>
+
+  <div class="tbl"><div class="scroll"><table>
+    <thead><tr><th>Шаг</th><th>Зачем</th><th>Сколько</th></tr></thead>
+    <tbody>
+      <tr><td>Лимит попыток в панели</td><td>единственная защита от перебора кода</td><td>1 минута, ваша</td></tr>
+      <tr><td>Мониторинг ошибок</td><td>сейчас, если у ученика падает, не знает никто</td><td>полдня</td></tr>
+      <tr><td>Сброс кода из дашборда</td><td>забытый код перестанет стоить прогресса</td><td>полдня</td></tr>
+      <tr><td>Проверка восстановления из выгрузки</td><td>бэкап без проверки не бэкап</td><td>2 часа</td></tr>
+      <tr><td>Ответы на сервере</td><td>когда платформу увидит чужой ребёнок</td><td>2 дня, отложено</td></tr>
+      <tr><td>Нагрузочный прогон</td><td>перед массовым запуском, от 100 учеников</td><td>1 день</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <p>Без отложенного пункта — <b>около двух рабочих дней</b>.</p>
+
+  <h3>Когда переходить на платный Supabase</h3>
+  <p>Бесплатного тарифа хватает примерно до 50 активных учеников. Два повода перейти на
+     Pro за $25 в месяц: проект перестанет засыпать после недели без запросов (первый
+     ученик сейчас ждёт секунд тридцать) и появятся ежедневные бэкапы, которые не нужно
+     помнить запускать.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="s10">
+  <h2><span>10</span>Если что-то сломалось</h2>
+
+  <h3>Ученик говорит, что прогресс не сохраняется</h3>
+  <p>Откройте платформу, нажмите F12 → Console и найдите строки, начинающиеся с
+     <code>[db]</code>. Там причина словами, а не кодом ошибки. Частые:</p>
+  <ul>
+    <li><code>Could not find the table</code> — схему не применили, запустите
+        <code>backend/supabase_min.sql</code> заново.</li>
+    <li><code>Could not find the column</code> — в базе нет колонки, которую ждёт код.
+        Платформа отправит запрос без неё и сохранит остальное, но колонку стоит дописать
+        тем же скриптом.</li>
+    <li><code>violates row-level security</code> — номер не в списке
+        <code>en_allowed</code>.</li>
+  </ul>
+
+  <h3>Дашборд показывает одного ученика вместо всех</h3>
+  <p>Аккаунт не в <code>en_admins</code>. Выполните <code>select public.en_make_admin(...)</code>
+     со своим номером и перезагрузите страницу.</p>
+
+  <h3>Платформа не обновилась после правок</h3>
+  <p>GitHub собирает страницу минуту-две. Если и после этого старая версия — откройте с
+     добавкой <code>?v=2</code> в адресе: браузер держит файлы в кеше.</p>
+
+  <h3>Проверить, что данные вообще доходят</h3>
+  <p>Supabase → Table Editor → <code>en_students</code>. После входа ученика там появляется
+     строка с его номером, после первого урока строка появляется в
+     <code>en_progress</code>.</p>
+</section>
+
+<footer>
+  Обновлено 11.09.2026. Файлы: <code>backend/supabase_min.sql</code> — схема,
+  <code>app/db.js</code> — работа с базой, <code>РАЗВЁРТЫВАНИЕ.md</code> — план работ,
+  <code>README.md</code> — устройство репозитория.
+</footer>
+
+</div>
+
+<script>
+/* Копирование SQL: без этого блоки приходится выделять пальцем на телефоне. */
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.onclick = function () {
+    var text = b.parentNode.querySelector('pre').textContent;
+    navigator.clipboard.writeText(text).then(function () {
+      var was = b.textContent; b.textContent = 'Скопировано';
+      setTimeout(function () { b.textContent = was; }, 1600);
+    }).catch(function () { b.textContent = 'Не вышло'; });
+  };
+});
+</script>
+</body>
+</html>
