@@ -147,20 +147,38 @@
 
     signOut: function () { keep(null); DB.ready = false; DB.userId = null; },
 
-    /* Профиль: одна строка на ученика, перезаписывается целиком. */
+    /* Профиль: одна строка на ученика, перезаписывается целиком.
+       Если в базе ещё нет какой-то колонки (схему обновили позже кода),
+       PostgREST называет её по имени — выкидываем и пробуем снова, чтобы
+       из-за одного нового поля не потерялось всё остальное. */
     saveProfile: function (fields) {
       if (!DB.ready) return Promise.resolve(null);
-      return token().then(function (tk) {
-        var body = { id: session.user_id };
-        Object.keys(fields).forEach(function (k) {
-          if (fields[k] !== undefined && fields[k] !== '') body[k] = fields[k];
+
+      var body = { id: session.user_id };
+      Object.keys(fields).forEach(function (k) {
+        if (fields[k] !== undefined && fields[k] !== '' && fields[k] !== null) body[k] = fields[k];
+      });
+
+      function attempt(left) {
+        return token().then(function (tk) {
+          return req('/rest/v1/en_students?on_conflict=id', {
+            method: 'POST', token: tk,
+            headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+            body: body
+          });
+        }).catch(function (err) {
+          var miss = /Could not find the '([a-z_]+)' column/i.exec(err.message || '');
+          if (miss && left > 0 && (miss[1] in body)) {
+            console.warn('[db] в базе нет колонки ' + miss[1] + ', отправляю без неё');
+            delete body[miss[1]];
+            return attempt(left - 1);
+          }
+          throw err;
         });
-        return req('/rest/v1/en_students?on_conflict=id', {
-          method: 'POST', token: tk,
-          headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-          body: body
-        });
-      }).then(function (rows) { DB.online = true; return (rows && rows[0]) || null; })
+      }
+
+      return attempt(3)
+        .then(function (rows) { DB.online = true; return (rows && rows[0]) || null; })
         .catch(function (err) { DB.online = false; console.warn('[db] профиль не сохранён:', err.message); return null; });
     },
 
