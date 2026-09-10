@@ -42,6 +42,20 @@ comment on table  public.en_students       is '1English: профиль учен
 comment on column public.en_students.phone is 'Настоящий номер. Логин — производный от него адрес';
 
 
+-- Если таблица уже была создана раньше, create table её не трогает. Поэтому
+-- новые колонки добавляются отдельно: скрипт должен доводить до нужного вида
+-- и старую базу, а не только пустую.
+alter table public.en_students add column if not exists phone      text;
+alter table public.en_students add column if not exists name       text;
+alter table public.en_students add column if not exists birth      date;
+alter table public.en_students add column if not exists gender     text;
+alter table public.en_students add column if not exists level      text;
+alter table public.en_students add column if not exists lang       text not null default 'ru';
+alter table public.en_students add column if not exists theme      text not null default 'system';
+alter table public.en_students add column if not exists consent_at timestamptz;
+alter table public.en_students add column if not exists consent_v  text;
+
+
 -- ── 2. Прогресс по шагам ───────────────────────────────────────────────────
 -- Одна строка на «урок + шаг». Шага три: read (урок), task (задание),
 -- words (словарь). У задания дополнительно счёт: сколько верных из скольких.
