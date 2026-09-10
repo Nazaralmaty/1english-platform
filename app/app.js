@@ -27,7 +27,7 @@ function blank() {
     name: '',
     birth: '',            /* ГГГГ-ММ-ДД, как отдаёт input[type=date] */
     gender: '',           /* m | f */
-    photo: '',            /* data:URL, ужатый до 256 px */
+    consent: '',          /* дата согласия на обработку данных */
     p: {}                 /* lessonId: {read:true, task:{right,total}, words:true} */
   };
 }
@@ -52,7 +52,7 @@ function mergeServer(data) {
   if (!data) return;
   var p = data.profile;
   if (p) {
-    ['name', 'birth', 'gender', 'level', 'lang', 'theme', 'photo'].forEach(function (k) {
+    ['name', 'birth', 'gender', 'level', 'lang', 'theme'].forEach(function (k) {
       if (p[k]) S[k] = p[k];
     });
     applyTheme();
@@ -72,7 +72,8 @@ function syncProfile() {
   if (!global_DB()) return;
   DB.saveProfile({
     phone: S.phone, name: S.name, birth: S.birth, gender: S.gender,
-    level: S.level, lang: S.lang, theme: S.theme, photo: S.photo
+    level: S.level, lang: S.lang, theme: S.theme,
+    consent_at: S.consent || null, consent_v: S.consent ? 'v1' : null
   });
 }
 function syncStep(lesson, step, right, total) {
@@ -120,7 +121,13 @@ var LANG = {
     male:'Мужской', female:'Женский',
     langLabel:'Язык интерфейса', langName:'Русский',
     theme:'Тема оформления', themeSystem:'Системная', themeLight:'Светлая', themeDark:'Тёмная',
-    save:'Сохранить', logout:'Выйти', photo:'Фото не больше 5 МБ'
+    save:'Сохранить', logout:'Выйти',
+    consentShort:'Согласен на обработку моих данных',
+    consentLink:'Что это значит',
+    consentTitle:'Обработка персональных данных',
+    consentText:'1English хранит ваш номер телефона, имя, дату рождения, пол и то, какие уроки вы прошли. Это нужно, чтобы прогресс не терялся при смене телефона и чтобы преподаватель видел, кому нужна помощь.\n\nДанные лежат в базе Supabase и третьим лицам не передаются. Чтобы их удалили, напишите преподавателю с того же номера: аккаунт и всё, что с ним связано, стирается.',
+    consentNeed:'Отметьте согласие, чтобы продолжить',
+    tooMany:'Слишком много попыток. Подождите минуту.'
   },
   kk: {
     next:'Әрі қарай', enter:'Кіру', phone:'Телефон нөмірі',
@@ -154,7 +161,13 @@ var LANG = {
     male:'Ер', female:'Әйел',
     langLabel:'Интерфейс тілі', langName:'Қазақша',
     theme:'Безендіру тақырыбы', themeSystem:'Жүйелік', themeLight:'Ашық', themeDark:'Қараңғы',
-    save:'Сақтау', logout:'Шығу', photo:'Сурет 5 МБ-тан аспауы керек'
+    save:'Сақтау', logout:'Шығу',
+    consentShort:'Деректерімді өңдеуге келісемін',
+    consentLink:'Бұл нені білдіреді',
+    consentTitle:'Дербес деректерді өңдеу',
+    consentText:'1English сіздің телефон нөміріңізді, атыңызды, туған күніңізді, жынысыңызды және қандай сабақтарды өткеніңізді сақтайды. Бұл телефон ауысқанда прогресс жоғалмауы үшін және ұстаз кімге көмек керегін көруі үшін қажет.\n\nДеректер Supabase базасында жатыр, үшінші тұлғаларға берілмейді. Өшіру үшін ұстазға сол нөмірден жазыңыз: аккаунт және онымен байланысты бәрі жойылады.',
+    consentNeed:'Жалғастыру үшін келісімді белгілеңіз',
+    tooMany:'Тым көп әрекет. Бір минут күтіңіз.'
   }
 };
 function t(k) {
@@ -310,6 +323,29 @@ function pickSheet(title, items, current, onPick) {
     });
 }
 
+
+/* Подбор кода. Шесть цифр перебираются, поэтому после пяти промахов ввод
+   замирает на минуту. Это защита от соседа с чужим телефоном, а не от
+   скрипта: скрипт пойдёт мимо экрана, прямо в API. Настоящая защита —
+   список разрешённых номеров на сервере, см. РАЗВЁРТЫВАНИЕ.md. */
+var TRY_KEY = '1eng.tries';
+function tries() { try { return JSON.parse(localStorage.getItem(TRY_KEY)) || {}; } catch (e) { return {}; } }
+function lockLeft(phone) {
+  var t = tries()[phone];
+  return t && t.until > Date.now() ? Math.ceil((t.until - Date.now()) / 1000) : 0;
+}
+function addTry(phone) {
+  var all = tries(), t = all[phone] || { n: 0, until: 0 };
+  t.n++;
+  if (t.n >= 5) { t.until = Date.now() + 60000; t.n = 0; }
+  all[phone] = t;
+  try { localStorage.setItem(TRY_KEY, JSON.stringify(all)); } catch (e) {}
+}
+function clearTries(phone) {
+  var all = tries(); delete all[phone];
+  try { localStorage.setItem(TRY_KEY, JSON.stringify(all)); } catch (e) {}
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    ЭКРАН: ВХОД
    ══════════════════════════════════════════════════════════════════ */
@@ -349,7 +385,9 @@ function scrLogin() {
         '<h1 style="margin-bottom:8px">' + t('smsTitle') + '</h1>' +
         '<p class="sub" style="margin-bottom:22px">' + t('smsTo') + esc(phone) + '</p>' +
         '<input class="field" id="cd" type="tel" inputmode="numeric" maxlength="6" placeholder="000000">' +
-        '<p class="note" id="err" style="color:var(--accent);min-height:20px;margin-top:10px"></p>' +
+        '<label class="agree"><input type="checkbox" id="ag">' +
+          '<span>' + t('consentShort') + '. <b id="more">' + t('consentLink') + '</b></span></label>' +
+        '<p class="note" id="err" style="color:var(--accent);min-height:20px;margin:2px 0 10px"></p>' +
         '<button class="btn" id="go" disabled>' + t('enter') + '</button>' +
         '<div class="gap-sm"></div>' +
         '<button class="btn ghost" id="bk">' + t('changePhone') + '</button>' +
@@ -357,21 +395,37 @@ function scrLogin() {
         '<p class="note">' + t('smsHint') + '</p>' +
       '</div>', true);
 
-    var cd = $('#cd');
-    cd.oninput = function () {
-      cd.value = cd.value.replace(/\D/g, '');
-      $('#go').disabled = cd.value.length < 6;
+    var cd = $('#cd'), ag = $('#ag');
+    function ok() { $('#go').disabled = !(cd.value.length === 6 && ag.checked); }
+    cd.oninput = function () { cd.value = cd.value.replace(/\D/g, ''); ok(); };
+    ag.onchange = ok;
+
+    $('#more').onclick = function (e) {
+      e.preventDefault();
+      openSheet('<h2 style="margin-bottom:14px">' + t('consentTitle') + '</h2>' +
+        '<p class="sub" style="white-space:pre-line;margin-bottom:22px">' + esc(t('consentText')) + '</p>' +
+        '<button class="btn" id="cl">' + t('got') + '</button>',
+        function (veil, close) { veil.querySelector('#cl').onclick = close; });
     };
+
     $('#go').onclick = function () {
       var btn = $('#go'), err = $('#err');
+      var left = lockLeft(phone);
+      if (left) { err.textContent = t('tooMany'); return; }
+
       btn.disabled = true; btn.textContent = t('wait'); err.textContent = '';
 
       DB.enter(phone, cd.value).then(function () {
-        S.phone = phone; save();
+        clearTries(phone);
+        S.phone = phone;
+        if (!S.consent) S.consent = new Date().toISOString();
+        save();
+        syncProfile();
         return DB.pull().then(mergeServer);
       }).then(function () {
         go(S.level ? '#/lessons' : '#/level');
       }).catch(function (e) {
+        addTry(phone);
         btn.disabled = false; btn.textContent = t('enter');
         err.textContent = e.message;
       });
@@ -726,6 +780,29 @@ function scrGames() {
     '</div>');
 }
 
+
+/* Аватар вместо фото. Фото никто не ставит, а пустой кружок с иконкой
+   выглядит как недоделка, поэтому рисуем силуэт по полу. Волосы — цветом
+   текста, лицо и плечи — тоном светлее (--skin), иначе на тёмной теме
+   картинка сливается в пятно. */
+function avatar(g, size) {
+  var hair = '', front = '';
+  if (g === 'm') {
+    hair = '<ellipse cx="32" cy="25" rx="14.5" ry="14" fill="currentColor"/>';
+  } else if (g === 'f') {
+    hair  = '<ellipse cx="32" cy="28" rx="17.5" ry="18" fill="currentColor"/>';
+    front = '<rect x="14.5" y="28" width="7" height="24" rx="3.5" fill="currentColor"/>' +
+            '<rect x="42.5" y="28" width="7" height="24" rx="3.5" fill="currentColor"/>';
+  }
+  var cy = g === 'f' ? 31 : (g === 'm' ? 29 : 27);
+  return '<svg viewBox="0 0 64 64" width="' + (size || 96) + '" height="' + (size || 96) + '" aria-hidden="true">' +
+    hair +
+    '<circle cx="32" cy="' + cy + '" r="12.5" fill="var(--skin)"/>' +
+    '<path d="M10 60c0-11 10-17 22-17s22 6 22 17z" fill="var(--skin)"/>' +
+    front +
+  '</svg>';
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    ЭКРАН: ПРОФИЛЬ
    Уровень отсюда убран: он меняется нажатием на обложку курса, там же,
@@ -765,11 +842,7 @@ function scrProfile() {
   paint(
     '<div class="head" style="justify-content:center"><h1 style="flex:0;font-size:22px">' + t('profile') + '</h1></div>' +
 
-    '<button class="ava" id="ava">' +
-      (S.photo ? '<img src="' + S.photo + '" alt="">' : icon('profile', 42)) +
-      '<span class="cam">' + icon('cam', 18) + '</span>' +
-    '</button>' +
-    '<input type="file" id="file" accept="image/*" hidden>' +
+    '<div class="ava' + (S.gender ? ' set' : '') + '">' + avatar(S.gender, 96) + '</div>' +
 
     '<div class="who">' +
       '<h2 id="nm">' + esc(S.name || t('notSetN')) + '</h2>' +
@@ -787,30 +860,6 @@ function scrProfile() {
 
     '<div class="gap-sm"></div>' +
     '<button class="btn danger" id="out">' + t('logout') + '</button>');
-
-  /* ── фото ──────────────────────────────────────────────────────────
-     Кадр ужимается до 256 px и ложится в localStorage строкой: сервера
-     ещё нет, а таскать в него мегабайты с камеры незачем. */
-  $('#ava').onclick = function () { $('#file').click(); };
-  $('#file').onchange = function () {
-    var f = this.files && this.files[0];
-    if (!f) return;
-    if (f.size > 5 * 1024 * 1024) return toast(t('photo'));
-    var fr = new FileReader();
-    fr.onload = function () {
-      var img = new Image();
-      img.onload = function () {
-        var side = Math.min(img.width, img.height), c = document.createElement('canvas');
-        c.width = c.height = 256;
-        c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2,
-                                     side, side, 0, 0, 256, 256);
-        S.photo = c.toDataURL('image/jpeg', 0.82);
-        save(); syncProfile(); route();
-      };
-      img.src = fr.result;
-    };
-    fr.readAsDataURL(f);
-  };
 
   $('#rName').onclick = function () {
     openSheet(

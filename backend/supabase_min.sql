@@ -30,9 +30,10 @@ create table if not exists public.en_students (
   level      text check (level in ('beginner','elementary','pre-intermediate','intermediate')),
   lang       text not null default 'ru'     check (lang  in ('ru','kk')),
   theme      text not null default 'system' check (theme in ('system','light','dark')),
-  -- фото ужато до 256 px и лежит строкой data:URL. Когда фото станет много,
-  -- поле переезжает в Supabase Storage, здесь останется ссылка.
-  photo      text check (photo is null or length(photo) < 400000),
+  -- согласие на обработку персональных данных: когда нажал и какую версию
+  -- текста видел. Без даты согласие ничего не значит.
+  consent_at timestamptz,
+  consent_v  text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -75,24 +76,69 @@ create trigger en_progress_touch before update on public.en_progress
   for each row execute function public.en_touch();
 
 
--- ── 4. Правила доступа ─────────────────────────────────────────────────────
+-- ── 4. Кто смотрит дашборд ─────────────────────────────────────────────────
+-- Ученик видит только себя. Чтобы видеть всех, аккаунт должен лежать в этой
+-- таблице. Добавить себя (подставьте свой номер):
+--
+--   insert into public.en_admins (id, note)
+--   select id, 'Элжан' from auth.users where email = '77011234567@1eng.kz'
+--   on conflict (id) do nothing;
+
+create table if not exists public.en_admins (
+  id         uuid primary key references auth.users on delete cascade,
+  note       text,
+  created_at timestamptz not null default now()
+);
+
+-- security definer: функция читает en_admins в обход RLS, иначе политика,
+-- которая спрашивает «а он админ?», уходила бы в бесконечную рекурсию.
+create or replace function public.en_is_admin()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.en_admins where id = auth.uid());
+$$;
+
+
+-- ── 5. Правила доступа ─────────────────────────────────────────────────────
 -- Без этого anon-ключ открыл бы базу любому. Включать обязательно.
 
 alter table public.en_students enable row level security;
 alter table public.en_progress enable row level security;
+alter table public.en_admins   enable row level security;
 
-drop policy if exists en_students_own on public.en_students;
-create policy en_students_own on public.en_students
-  for all using (auth.uid() = id) with check (auth.uid() = id);
+-- старая политика «всё своё» заменяется на разделённые: писать — только своё,
+-- читать — своё либо всё, если аккаунт в en_admins
+drop policy if exists en_students_own    on public.en_students;
+drop policy if exists en_students_read   on public.en_students;
+drop policy if exists en_students_write  on public.en_students;
+drop policy if exists en_students_update on public.en_students;
 
-drop policy if exists en_progress_own on public.en_progress;
-create policy en_progress_own on public.en_progress
-  for all using (auth.uid() = student_id) with check (auth.uid() = student_id);
+create policy en_students_read on public.en_students
+  for select using (auth.uid() = id or public.en_is_admin());
+create policy en_students_write on public.en_students
+  for insert with check (auth.uid() = id);
+create policy en_students_update on public.en_students
+  for update using (auth.uid() = id) with check (auth.uid() = id);
+
+drop policy if exists en_progress_own    on public.en_progress;
+drop policy if exists en_progress_read   on public.en_progress;
+drop policy if exists en_progress_write  on public.en_progress;
+drop policy if exists en_progress_update on public.en_progress;
+
+create policy en_progress_read on public.en_progress
+  for select using (auth.uid() = student_id or public.en_is_admin());
+create policy en_progress_write on public.en_progress
+  for insert with check (auth.uid() = student_id);
+create policy en_progress_update on public.en_progress
+  for update using (auth.uid() = student_id) with check (auth.uid() = student_id);
+
+drop policy if exists en_admins_self on public.en_admins;
+create policy en_admins_self on public.en_admins
+  for select using (auth.uid() = id);
 
 
--- ── 5. Проверка ────────────────────────────────────────────────────────────
--- После Run должно вернуться две строки: en_students и en_progress.
+-- ── 6. Проверка ────────────────────────────────────────────────────────────
+-- После Run должно вернуться три строки, у всех rls_on = true.
 
 select tablename, rowsecurity as rls_on
 from pg_tables
-where schemaname = 'public' and tablename in ('en_students','en_progress');
+where schemaname = 'public' and tablename in ('en_students','en_progress','en_admins');

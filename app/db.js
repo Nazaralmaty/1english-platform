@@ -199,6 +199,20 @@
       });
     },
 
+    /* Дашборд: всё, что есть в базе. Обычному ученику RLS отдаст только
+       его собственные строки, поэтому запрос безопасен сам по себе. */
+    listAll: function () {
+      return token().then(function (tk) {
+        return Promise.all([
+          req('/rest/v1/en_students?select=*&order=updated_at.desc', { token: tk }),
+          req('/rest/v1/en_progress?select=*', { token: tk }),
+          req('/rest/v1/en_admins?select=id', { token: tk })
+        ]);
+      }).then(function (r) {
+        return { students: r[0] || [], progress: r[1] || [], isAdmin: (r[2] || []).length > 0 };
+      });
+    },
+
     normPhone: normPhone
   };
 

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F5F4F0">
+<title>1English · дашборд</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="app/style.css">
+<style>
+  /* Дашборд — та же таблица Supabase, просто читаемая. Смотрят с ноутбука,
+     поэтому колонка одна, но широкая; на телефоне таблица едет вбок внутри
+     своей рамки, а страница стоит на месте. */
+  body{background:var(--bg)}
+  .dash{max-width:1100px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 20px 60px}
+  .bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .bar h1{font-size:24px;flex:1;min-width:200px}
+  .live{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);
+        font-variant-numeric:tabular-nums}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none;
+          animation:pulse 2.4s var(--ease) infinite}
+  .live.off i{background:var(--accent);animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:22px}
+  .kpi{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:16px 18px}
+  .kpi b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1;
+         font-variant-numeric:tabular-nums}
+  .kpi span{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+
+  .wrap{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);overflow:hidden}
+  .scrollx{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:660px}
+  th,td{text-align:left;padding:13px 16px;font-size:14.5px;white-space:nowrap}
+  th{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em;
+     border-bottom:1px solid var(--line)}
+  tr + tr td{border-top:1px solid var(--line)}
+  td b{font-weight:700}
+  td .ph{display:block;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .lvl{display:inline-block;padding:3px 9px;border-radius:999px;background:var(--bg);
+       font-size:12px;font-weight:700;color:var(--navy)}
+  .mini{display:flex;align-items:center;gap:9px;min-width:150px}
+  .mini .bar2{flex:1;height:6px;border-radius:999px;background:var(--track);overflow:hidden}
+  .mini .bar2 i{display:block;height:100%;background:var(--accent)}
+  .mini span{font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);width:38px;text-align:right}
+  .ago{color:var(--muted);font-variant-numeric:tabular-nums}
+  .ago.hot{color:var(--ok);font-weight:700}
+  .empty{padding:40px 18px;text-align:center;color:var(--muted)}
+  .auth{max-width:380px;margin:8vh auto 0}
+  .err{color:var(--accent);font-size:14px;min-height:20px;margin:10px 0}
+</style>
+</head>
+<body>
+<div class="dash" id="root"></div>
+
+<script src="app/db.js"></script>
+<script src="app/course.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var root = document.getElementById('root');
+  var timer = null, lastData = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+    });
+  }
+
+  /* Сколько шагов у урока вообще есть: пустой урок в знаменатель не идёт,
+     иначе прогресс всегда упирается в потолок из будущих уроков. */
+  function stepsOf(lesson) {
+    var n = 0;
+    if ((window.VIDEOS || {})[lesson.id] || lesson.rule) n++;
+    if (lesson.tasks.length) n++;
+    if (lesson.words.length) n++;
+    return n;
+  }
+  function levelCapacity(levelId) {
+    var lv = COURSE.levels.filter(function (l) { return l.id === levelId; })[0];
+    if (!lv) return 0;
+    return lv.lessons.reduce(function (n, s) { return n + stepsOf(s); }, 0);
+  }
+  function levelTitle(levelId) {
+    var lv = COURSE.levels.filter(function (l) { return l.id === levelId; })[0];
+    return lv ? lv.title : '—';
+  }
+
+  function ago(iso) {
+    if (!iso) return '—';
+    var m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (m < 1) return 'сейчас';
+    if (m < 60) return m + ' мин назад';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + ' ч назад';
+    var d = Math.floor(h / 24);
+    return d + ' дн назад';
+  }
+  function phoneFmt(p) {
+    var d = String(p || '').replace(/\D/g, '');
+    return d.length === 11
+      ? '+' + d[0] + ' (' + d.slice(1, 4) + ') ' + d.slice(4, 7) + ' ' + d.slice(7, 9) + ' ' + d.slice(9)
+      : (p || '—');
+  }
+
+  /* ── вход ─────────────────────────────────────────────────────────── */
+  function auth(message) {
+    root.innerHTML =
+      '<div class="auth">' +
+        '<h1 style="margin-bottom:8px">Дашборд</h1>' +
+        '<p class="sub" style="margin-bottom:22px">Вход тем же номером, что и в платформе. Список видит только аккаунт из таблицы en_admins.</p>' +
+        '<input class="field" id="ph" type="tel" inputmode="numeric" value="+7">' +
+        '<div class="gap-sm"></div>' +
+        '<input class="field" id="cd" type="tel" inputmode="numeric" maxlength="6" placeholder="000000">' +
+        '<p class="err" id="err">' + esc(message || '') + '</p>' +
+        '<button class="btn" id="go">Войти</button>' +
+      '</div>';
+
+    root.querySelector('#go').onclick = function () {
+      var btn = this, err = root.querySelector('#err');
+      btn.disabled = true; btn.textContent = 'Секунду…'; err.textContent = '';
+      DB.enter(root.querySelector('#ph').value, root.querySelector('#cd').value)
+        .then(start)
+        .catch(function (e) {
+          btn.disabled = false; btn.textContent = 'Войти';
+          err.textContent = e.message;
+        });
+    };
+  }
+
+  /* ── данные ───────────────────────────────────────────────────────── */
+  function pull() {
+    return DB.listAll().then(function (d) {
+      if (!d.isAdmin) {
+        stop();
+        DB.signOut();
+        return auth('Этот аккаунт не в списке en_admins. Добавьте его строкой из backend/supabase_min.sql.');
+      }
+      lastData = d;
+      render(d);
+    }).catch(function (e) {
+      var live = root.querySelector('.live');
+      if (live) { live.className = 'live off'; live.lastChild.textContent = ' ' + e.message; }
+      else auth(e.message);
+    });
+  }
+
+  function render(d) {
+    var byStudent = {};
+    d.progress.forEach(function (r) {
+      var s = byStudent[r.student_id] || (byStudent[r.student_id] = { steps: 0, lessons: {}, last: null });
+      s.steps++;
+      (s.lessons[r.lesson] = s.lessons[r.lesson] || []).push(r.step);
+      if (!s.last || r.updated_at > s.last) s.last = r.updated_at;
+    });
+
+    var week = Date.now() - 7 * 864e5, today = new Date().toISOString().slice(0, 10);
+    var active = 0, todaySteps = 0;
+    d.progress.forEach(function (r) { if (String(r.updated_at).slice(0, 10) === today) todaySteps++; });
+
+    var rows = d.students.map(function (st) {
+      var p = byStudent[st.id] || { steps: 0, lessons: {}, last: null };
+      var cap = levelCapacity(st.level);
+      var pct = cap ? Math.round(p.steps / cap * 100) : 0;
+      var last = p.last && p.last > st.updated_at ? p.last : st.updated_at;
+      if (new Date(last).getTime() > week) active++;
+
+      var done = 0;
+      Object.keys(p.lessons).forEach(function (id) {
+        var lesson = null;
+        COURSE.levels.forEach(function (l) {
+          l.lessons.forEach(function (x) { if (x.id === id) lesson = x; });
+        });
+        if (lesson && p.lessons[id].length >= stepsOf(lesson)) done++;
+      });
+
+      return { st: st, pct: pct, steps: p.steps, done: done, last: last };
+    }).sort(function (a, b) { return (b.last || '').localeCompare(a.last || ''); });
+
+    root.innerHTML =
+      '<div class="bar">' +
+        '<h1>Дашборд</h1>' +
+        '<span class="live"><i></i><span>обновлено ' +
+          new Date().toLocaleTimeString('ru-RU') + '</span></span>' +
+        '<button class="btn quiet" id="out" style="width:auto;padding:10px 18px;font-size:14px">Выйти</button>' +
+      '</div>' +
+
+      '<div class="cards">' +
+        '<div class="kpi"><b>' + d.students.length + '</b><span>учеников всего</span></div>' +
+        '<div class="kpi"><b>' + active + '</b><span>заходили за 7 дней</span></div>' +
+        '<div class="kpi"><b>' + d.progress.length + '</b><span>шагов пройдено</span></div>' +
+        '<div class="kpi"><b>' + todaySteps + '</b><span>шагов сегодня</span></div>' +
+      '</div>' +
+
+      '<div class="wrap"><div class="scrollx">' +
+        (rows.length
+          ? '<table><thead><tr>' +
+              '<th>Ученик</th><th>Уровень</th><th>Прогресс</th>' +
+              '<th>Уроков закрыто</th><th>Шагов</th><th>Последний заход</th>' +
+            '</tr></thead><tbody>' +
+            rows.map(function (r) {
+              var hot = Date.now() - new Date(r.last).getTime() < 864e5;
+              return '<tr>' +
+                '<td><b>' + esc(r.st.name || 'Без имени') + '</b>' +
+                    '<span class="ph">' + esc(phoneFmt(r.st.phone)) + '</span></td>' +
+                '<td><span class="lvl">' + esc(levelTitle(r.st.level)) + '</span></td>' +
+                '<td><span class="mini"><span class="bar2"><i style="width:' + r.pct + '%"></i></span>' +
+                    '<span>' + r.pct + '%</span></span></td>' +
+                '<td>' + r.done + '</td>' +
+                '<td>' + r.steps + '</td>' +
+                '<td class="ago' + (hot ? ' hot' : '') + '">' + ago(r.last) + '</td>' +
+              '</tr>';
+            }).join('') +
+            '</tbody></table>'
+          : '<div class="empty">Учеников пока нет. Как только кто-то войдёт в платформу, строка появится здесь.</div>') +
+      '</div></div>';
+
+    root.querySelector('#out').onclick = function () { stop(); DB.signOut(); auth(''); };
+  }
+
+  /* Обновление раз в 10 секунд вместо подписки на изменения: для десятков
+     учеников разницы не видно, а websocket и переподключения не нужны.
+     Вкладка в фоне не опрашивает — это лишние запросы в бесплатный тариф. */
+  function start() {
+    pull();
+    stop();
+    timer = setInterval(function () { if (!document.hidden) pull(); }, 10000);
+  }
+  function stop() { if (timer) clearInterval(timer); timer = null; }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && timer) pull(); });
+
+  if (DB.init()) start(); else auth('');
+})();
+</script>
+</body>
+</html>
