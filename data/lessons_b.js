@@ -11,6 +11,17 @@
 window.LESSONS = window.LESSONS || {};
 
 LESSONS.b1 = {
+  video: { src:'../media/b1_sabaq.mp4', poster:'../media/b1_poster.jpg', checkpoints:[
+    { t:7, q:'«Мен дайынмын» сөйлемін қалай дұрыс айтамыз?',
+      opts:['I am ready.','I ready.','I is ready.'], a:0,
+      ex:'Ағылшынша сөйлемде етістік (am / is / are) міндетті түрде болады.' },
+    { t:12, q:'«She» есімдігімен қайсысы қолданылады?',
+      opts:['is','am','are'], a:0,
+      ex:'he · she · it → is қолданылады.' },
+    { t:16, q:'Сұрақта am, is, are қайда тұрады?',
+      opts:['сөйлемнің басында','сөйлемнің соңында','орны өзгермейді'], a:0,
+      ex:'Сұрақта етістік (am/is/are) есімдіктің алдына шығады.' }
+  ] },
   notes: [
     { en:'I am ready.',        kk:'Мен дайынмын.' },
     { en:"I'm not ready yet.", kk:'Мен әлі дайын емеспін.' },

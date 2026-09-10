@@ -114,6 +114,9 @@
     + '.ak-top h3{font-size:17px;font-weight:900;letter-spacing:-.3px}'
     + '.ak-top .ak-sub{font-size:11.5px;color:var(--ak-dim,#9fd6b6);font-weight:800;margin-top:2px}'
     + '.ak-week{margin-left:auto;display:flex;gap:4px}'
+    + '.ak-x{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.26);'
+    + '  background:rgba(255,255,255,.10);color:#fff;font-size:15px;line-height:1;cursor:pointer}'
+    + '.ak-x:active{transform:scale(.92)}'
     + '.ak-week i{width:9px;height:9px;border-radius:3px;background:rgba(255,255,255,.18);font-style:normal}'
     + '.ak-week i.on{background:var(--ak-accent,#9be870)}'
     /* min-height:0 обязателен: без него flex-элемент растягивается под всю
@@ -180,10 +183,18 @@
     el.innerHTML =
       '<div class="ak-top"><div><h3>' + opt.title + '</h3>' +
       '<div class="ak-sub" data-sub>' + (opt.subtitle || '') + '</div></div>' +
-      '<div class="ak-week" data-week></div></div>' +
+      '<div class="ak-week" data-week></div>' +
+      '<button class="ak-x" data-exit title="Выход">✕</button></div>' +
       '<div class="ak-scroll" data-scroll><svg class="ak-path" data-svg></svg></div>' +
-      '<div class="ak-dock"><button class="btn" data-play>Ойнау</button></div>';
+      '<div class="ak-dock"><button class="btn" data-play>Играть</button></div>';
     host.appendChild(el);
+
+    var exit = el.querySelector('[data-exit]');
+    if (exit) exit.addEventListener('click', function () {
+      if (typeof opt.onExit === 'function') return opt.onExit();
+      if (global.SL && global.SL.close) return global.SL.close();
+      history.back();
+    });
 
     var scroll = el.querySelector('[data-scroll]');
     var svg = el.querySelector('[data-svg]');
@@ -255,7 +266,7 @@
       var sub = el.querySelector('[data-sub]');
       if (sub) sub.textContent = (opt.subtitle || '') +
         ' · ★ ' + save.total() + '/' + nodes * 3;
-      btn.textContent = save.data.cur > nodes ? 'Қайта ойнау' : 'Ойнау';
+      btn.textContent = save.data.cur > nodes ? 'Играть заново' : 'Играть';
     }
 
     btn.addEventListener('click', function () {
@@ -297,7 +308,7 @@
       '<div class="ak-sub2" data-sub></div>' +
       '<div class="ak-opts" data-opts></div>' +
       '<div class="ak-dots" data-dots></div>' +
-      '<div class="ak-hint">' + (opt.hint || 'Қателескен жерді бекітеміз') + '</div>' +
+      '<div class="ak-hint">' + (opt.hint || 'Закрепляем то, где ошиблись') + '</div>' +
       '</div>';
     opt.host.appendChild(el);
 
@@ -310,7 +321,7 @@
       var q = qs[qi];
       tag$.textContent = q.topic || '';
       q$.textContent = q.text;
-      sub$.textContent = q.sub || opt.ask || 'Дұрысын тап';
+      sub$.textContent = q.sub || opt.ask || 'Выберите верное';
       opts$.innerHTML = '';
       q.opts.forEach(function (o) {
         var b = document.createElement('button');
@@ -349,7 +360,7 @@
       } else {
         btn.classList.add('gone');
         lockT = Date.now() + MISS_MS;     /* пауза: перебором не пройти */
-        sub$.textContent = opt.slow || 'Асықпа, тағы ойлан';
+        sub$.textContent = opt.slow || 'Не спешите, подумайте';
       }
     }
 

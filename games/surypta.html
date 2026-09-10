@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>1English · Сөз сұрыптау 🧺</title>
+<title>1English · Сортировка слов</title>
 <link rel="stylesheet" href="../assets/app.css">
 <style>
   /* Своя арена, а не порт sort_arena: там учебный слой — эквивалентность
@@ -48,15 +48,16 @@
   <div class="baskets" id="bs"></div>
 </div>
 <script src="../assets/app.js"></script>
-<script src="../data/words.js"></script>
+<script src="../app/course.js"></script>
+<script src="../app/words_bridge.js"></script>
 <script src="bridge.js"></script>
 <script>
 (function(){
   var $ = App.$;
   document.getElementById('x').href = window.SL_BACK;
 
-  var GROUPS = { talk:'Сөйлесу', people:'Адамдар', family:'Отбасы', number:'Сандар',
-                 school:'Мектеп', colour:'Түстер' };
+  var GROUPS = { act:'Действие', thing:'Предмет', sign:'Признак',
+                 time:'Время', word:'Служебное' };
 
   var q = App.qs('u');
   var pool = (q ? WORDS.filter(function(w){ return w.u === q; }) : WORDS).slice();
@@ -92,7 +93,7 @@
     $('#sc').textContent = right + ' / ' + deck.length;
     $('#w').textContent = w.en; $('#w').className = 'word';
     $('#kk').textContent = '';
-    $('#cm').textContent = combo >= 2 ? combo + ' қатарынан 🔥' : '';
+    $('#cm').textContent = combo >= 2 ? combo + ' подряд' : '';
     drawBaskets(w);
     speak(w.en);
   }
@@ -116,8 +117,8 @@
     $('#stage').innerHTML =
       '<div class="end"><div style="font-size:44px">' + (stars ? '⭐️'.repeat(stars) : '💪') + '</div>' +
       '<div class="big" style="margin:8px 0 2px">' + right + ' / ' + deck.length + '</div>' +
-      '<div style="opacity:.7">ең ұзын серия: ' + best + '</div></div>';
-    var b = App.el('button','b','Аяқтау'); b.style.maxWidth='240px'; b.style.margin='0 auto';
+      '<div style="opacity:.7">лучшая серия: ' + best + '</div></div>';
+    var b = App.el('button','b','Завершить'); b.style.maxWidth='240px'; b.style.margin='0 auto';
     b.onclick = function(){ SL.close(); };
     $('#bs').appendChild(b);
     SL.finish({ game:'surypta', correct:right, mistakes:deck.length-right, stars:stars,
@@ -130,7 +131,7 @@
     var guard = 0;
     (function step(){
       var bs = App.$$('.b').filter(function(b){ return !!b.onclick; });
-      if (bs.length && guard++ < 40 && !/Аяқтау/.test(bs[0].textContent)) {
+      if (bs.length && guard++ < 40 && !/Завершить/.test(bs[0].textContent)) {
         /* тыкаем всегда в первую — часть будет неверной, игра обязана дожить до конца */
         bs[0].click(); return setTimeout(step, 40);
       }

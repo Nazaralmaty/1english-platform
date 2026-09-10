@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>1English · Сөйлем құрастыр 🧩</title>
+<title>1English · Порядок слов</title>
 <link rel="stylesheet" href="../assets/app.css">
 <style>
   /* Единственная механика, которой нет ни в одной перенесённой арене:
@@ -43,13 +43,14 @@
     <div class="line" id="line"></div>
     <div class="bank" id="bank"></div>
     <div class="row2">
-      <button class="btn2" id="undo">↩ Кері</button>
-      <button class="btn2 main" id="ck">Тексеру</button>
+      <button class="btn2" id="undo">↩ Назад</button>
+      <button class="btn2 main" id="ck">Проверить</button>
     </div>
   </div>
 </div>
 <script src="../assets/app.js"></script>
-<script src="../data/words.js"></script>
+<script src="../app/course.js"></script>
+<script src="../app/words_bridge.js"></script>
 <script src="bridge.js"></script>
 <script>
 (function(){
@@ -76,7 +77,7 @@
     placed = [];
     $('#sc').textContent = (i+1) + ' / ' + deck.length;
     $('#hp').textContent = '⭐️ ' + stars;
-    $('#kk').textContent = w.kk.toUpperCase() + ' — сөйлемді құрастыр';
+    $('#kk').textContent = 'Соберите предложение со словом «' + w.kk + '»';
     $('#line').className = 'line'; $('#line').innerHTML = '';
     var bank = $('#bank'); bank.innerHTML = '';
     var order = target.map(function(t, n){ return { t:t, n:n }; }).sort(function(){ return Math.random()-.5; });
@@ -103,7 +104,7 @@
   $('#ck').onclick = function(){
     var w = deck[i];
     if (!w) return;                         /* партия уже закончилась */
-    if (placed.length !== target.length) return App.toast('Барлық сөзді қой');
+    if (placed.length !== target.length) return App.toast('Поставьте все слова');
     var got = placed.map(function(p){ return p.t; }).join(' ');
     var good = got === target.join(' ');
     $('#line').className = 'line ' + (good ? 'ok' : 'no');
@@ -116,7 +117,7 @@
     } else {
       errors.push({ word:w.en, kk:w.kk, topic:'word order' });
       App.seeWord(w.en, false);
-      App.toast('Сөз реті басқа. Ағылшында: кім → не істейді → не');
+      App.toast('Порядок другой. В английском: кто → что делает → что');
       setTimeout(function(){ $('#line').className = 'line'; }, App.d(900));
     }
   };
@@ -125,8 +126,8 @@
     $('#stage').innerHTML =
       '<div class="end"><div style="font-size:44px">' + (stars >= 10 ? '🏆' : stars >= 6 ? '⭐️' : '💪') + '</div>' +
       '<div style="font-size:40px;font-weight:900;margin:8px 0 2px">' + stars + '</div>' +
-      '<div style="opacity:.75">жұлдыз · ' + deck.length + ' сөйлем</div>' +
-      '<button class="btn2 main" id="ok" style="margin-top:20px;width:100%">Аяқтау</button></div>';
+      '<div style="opacity:.75">звёзд · предложений: ' + deck.length + '</div>' +
+      '<button class="btn2 main" id="ok" style="margin-top:20px;width:100%">Завершить</button></div>';
     $('#ok').onclick = function(){ SL.close(); };
     SL.finish({ game:'soilem', correct:deck.length, stars:Math.min(3, Math.round(stars/4)),
                 words:learned, errors:errors });

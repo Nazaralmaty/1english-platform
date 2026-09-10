@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>1English · Ағылшын аренасы 🐤</title>
+<title>1English · Flappy English</title>
 <script src="../assets/app.js"></script>
-<script src="../data/words.js"></script>
+<script src="../app/course.js"></script>
+<script src="../app/words_bridge.js"></script>
 <script src="bridge.js"></script>
 <script src="arena_kit.js"></script>
 <style>
@@ -74,8 +75,8 @@
   <canvas id="cv"></canvas>
 
   <div id="hud">
-    <button class="ibtn" id="backBtn" title="Картаға">🗺</button>
-    <div class="pill" id="pTitle">Ағылшын аренасы</div>
+    <button class="ibtn" id="backBtn" title="Карта">🗺</button>
+    <div class="pill" id="pTitle">Flappy English</div>
     <div id="hudRight">
       <button class="ibtn" id="muteBtn">🔊</button>
       <button class="ibtn" id="slCloseBtn" style="display:none">✕</button>
@@ -84,18 +85,18 @@
 
   <div class="screen" id="sWin">
     <div class="card">
-      <h2 id="winTitle">Жарайсың!</h2>
+      <h2 id="winTitle">Готово</h2>
       <div class="stars"><span id="st1">★</span><span id="st2">★</span><span id="st3">★</span></div>
-      <p id="winSub">Барлық сөзді дұрыс таптың.</p>
+      <p id="winSub">Все слова угаданы.</p>
       <div class="stat">
-        <div>Дұрыс<b id="wOk">0</b></div>
+        <div>Верно<b id="wOk">0</b></div>
         <div>Қате<b id="wErr">0</b></div>
-        <div>Тізбек<b id="wCombo">0</b></div>
+        <div>Подряд<b id="wCombo">0</b></div>
       </div>
       <div class="learned" id="wLearn"></div>
       <div class="row">
         <button class="btn ghost sm" id="againBtn">Қайталау</button>
-        <button class="btn sm" id="nextBtn">Келесі</button>
+        <button class="btn sm" id="nextBtn">Дальше</button>
       </div>
       <div class="hint" id="winHint"></div>
     </div>
@@ -103,11 +104,11 @@
 
   <div class="screen" id="sLose">
     <div class="card">
-      <h2>Тағы бір реттен 💪</h2>
-      <p id="loseSub">Жүрек бітті. Сол тапсырма, сол сөздер — қайталап көр.</p>
+      <h2>Ещё раз</h2>
+      <p id="loseSub">Жизни кончились. То же задание, те же слова.</p>
       <div class="learned" id="lLearn"></div>
       <div class="row">
-        <button class="btn ghost sm" id="mapBtn2">Картаға</button>
+        <button class="btn ghost sm" id="mapBtn2">К карте</button>
         <button class="btn sm" id="retryBtn">Қайталау</button>
       </div>
     </div>
@@ -115,13 +116,13 @@
 
   <div class="screen" id="sBiome">
     <div class="card">
-      <h2>🏆 Ағылшын биомы бітті!</h2>
-      <p>17 тапсырманың бәрін өттің. Келесі биом жаңа атақпен ашылады.</p>
+      <h2>Биом пройден</h2>
+      <p>Все 17 заданий пройдены. Следующий биом открывается с новым званием.</p>
       <div class="stat">
-        <div>Жинаған жұлдыз<b id="bStars">0</b></div>
+        <div>Звёзды<b id="bStars">0</b></div>
         <div>Тапсырма<b id="bNodes">17</b></div>
       </div>
-      <div class="row"><button class="btn" id="biomeBtn">Картаға</button></div>
+      <div class="row"><button class="btn" id="biomeBtn">К карте</button></div>
     </div>
   </div>
 </div>
@@ -362,12 +363,12 @@ var Game=(function(){
     flash=0; invuln=0; shake=0; scroll=0; parts=[]; pops=[];
     state='ready';
     Map.hide();
-    $('pTitle').textContent=n+'-тапсырма';
+    $('pTitle').textContent='Задание '+n;
     Sound.unlock(); Sound.startMusic(124);
   }
   function openMap(){
     state='map'; Sound.stopMusic();
-    $('pTitle').textContent='Ағылшын аренасы';
+    $('pTitle').textContent='Flappy English';
     Map.show();
   }
 
@@ -469,14 +470,14 @@ var Game=(function(){
                     errors:missed.map(function(w){ return {word:w.en,kk:w.kk,topic:w.g}; }) });
     }catch(e){}
 
-    $('winTitle').textContent=stars===3?'Мінсіз!':'Жарайсың!';
-    $('winSub').textContent=stars===3?'Бірде-бір қате жоқ.':'Тапсырма орындалды.';
+    $('winTitle').textContent=stars===3?'Без ошибок':'Готово';
+    $('winSub').textContent=stars===3?'Ни одной ошибки.':'Задание выполнено.';
     $('wOk').textContent=ok; $('wErr').textContent=miss; $('wCombo').textContent=maxCombo;
     $('wLearn').innerHTML=chips(learned);
-    $('nextBtn').textContent=level>=NODES?'Аяқтау':'Келесі';
+    $('nextBtn').textContent=level>=NODES?'Завершить':'Дальше';
     $('winHint').textContent=newDay
-      ? ('Осы аптада '+Save.daysThisWeek()+' күн ойнадың 🔥')
-      : (stars===3?'':'3 жұлдыз: қатесіз өт.');
+      ? ('На этой неделе играли '+Save.daysThisWeek()+' дн.')
+      : (stars===3?'':'Три звезды дают за игру без ошибок.');
     ['st1','st2','st3'].forEach(function(id){ $(id).classList.remove('on'); });
     $('sWin').classList.add('on');
     for(var s=0;s<stars;s++)(function(s){
@@ -485,7 +486,7 @@ var Game=(function(){
   }
   function lose(){
     state='over'; Sound.stopMusic(); Sound.over();
-    $('loseSub').textContent='Жүрек бітті. '+ok+' / '+cfg.goal+' сөз дұрыс болды — қайталап көр.';
+    $('loseSub').textContent='Жизни кончились. Верных слов: '+ok+' из '+cfg.goal+'.';
     $('lLearn').innerHTML=chips(missed,true);
     $('sLose').classList.add('on');
   }
@@ -616,9 +617,9 @@ var Game=(function(){
     if(state==='ready'){
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillStyle='rgba(255,255,255,.92)'; ctx.font='900 '+Math.round(H*0.030)+'px Inter,Arial';
-      ctx.fillText('Экранды бас — ұш 👆',W/2,H*0.52);
+      ctx.fillText('Нажимайте на экран, чтобы лететь',W/2,H*0.52);
       ctx.fillStyle='#9be870'; ctx.font='800 '+Math.round(H*0.021)+'px Inter,Arial';
-      ctx.fillText('Дұрыс аудармасы бар саңылауға ұш',W/2,H*0.58);
+      ctx.fillText('Летите в проём с верным переводом',W/2,H*0.58);
     }
     if(flash>0){ ctx.fillStyle='rgba(255,77,109,'+(flash*0.26)+')'; ctx.fillRect(0,0,W,H); }
   }
@@ -678,14 +679,14 @@ function drillQuestions(missed,seed){
 
   var Map=AK.map({
     host:wrap, save:Save, nodes:NODES,
-    title:'🐤 Ағылшын аренасы',
-    subtitle:'Ағылшын тілі · 1-биом',
+    title:'Flappy English',
+    subtitle:'Английский · биом 1',
     onPick:function(n){ Sound.unlock(); Sound.click(); Game.start(n); },
     onLocked:function(){ Sound.nope(); }
   });
   var Drill=AK.drill({
-    host:wrap, ask:'Аудармасы қайсы?', slow:'Асықпа, тағы ойлан',
-    hint:'Жаңылған сөздерді бекітеміз',
+    host:wrap, ask:'Какой перевод?', slow:'Не спешите, подумайте',
+    hint:'Закрепляем слова, где ошиблись',
     onAnswer:function(q,ok){
       if(ok) Sound.correct(); else Sound.nope();
       try{ SL.progress({type:'drill',topic:'vocab',word:q.text,correct:ok}); }catch(e){}
@@ -756,7 +757,7 @@ function drillQuestions(missed,seed){
   (function(){
     var c=$('slCloseBtn');
     c.style.display='block';
-    c.title='Шығу';
+    c.title='Выход';
     c.addEventListener('click',function(){ Sound.click(); sendSession(); SL.close(); });
   })();
   SL.on('pause',function(){ try{ Game.pause(); }catch(e){} });

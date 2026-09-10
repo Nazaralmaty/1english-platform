@@ -166,7 +166,8 @@ if (want('stend')) {
 if (want('sabaq') || want('video')) {
   const { readFileSync } = await import('fs');
   const les = readFileSync(path.join(HERE, 'data/lessons_b.js'), 'utf8');
-  const times = [...les.matchAll(/\{ t:(\d+),/g)].map((m) => +m[1]);
+  const b2Match = les.match(/LESSONS\.b2\s*=\s*\{[\s\S]*?checkpoints:\[([\s\S]*?)\]/);
+  const times = b2Match ? [...b2Match[1].matchAll(/\{ t:(\d+),/g)].map((m) => +m[1]) : [];
   if (!times.length) { rows.push(['Видеоурок', '—', 'у урока b2 не осталось чекпоинтов']); totalFails++; }
   const p = await browser.newPage();
   await p.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
