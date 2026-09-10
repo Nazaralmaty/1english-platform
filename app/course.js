@@ -62,17 +62,23 @@ window.VIDEOS = {
   b9:'DIW5heyt3Ok',  b10:'BLG3UOkkLEI', b11:'i4mNTsBkiuI', b12:'M-OmCZteTog',
   b13:'Ha1OnkE9Gkg', b14:'PtwWgIZuLIk',
 
-  /* Elementary */
-  e1:'',  e2:'3ZkombMruHM',       e3:'',  e4:'',  e5:'',  e6:'',  e7:'',
-  e8:'',  e9:'',  e10:'', e11:'', e12:'', e13:'', e14:'',
+  /* Elementary · Damu */
+  e1: 'VB0EqXnRn-0',   e2: 'lyWAizWGFFM',   e3: 'OQbeZ86dD4A',   e4: 'jMmiCCQgPw0',
+  e5: 'nh6Exmr5g2A',   e6: 'OhpkcMVuVBM',   e7: 'bJkHYyhOK5E',   e8: 'ZxQvwtLOR4s',
+  e9: 'U37AocSjufk',   e10:'sG9HKHUcfl4',   e11:'FrKD2mi6CYE',   e12:'1u3ZmMdqnR8',
+  e13:'J56U3DELZg0',   e14:'noxRjUgiczA',
 
-  /* Pre-Intermediate */
-  p1:'',  p2:'',  p3:'',  p4:'',  p5:'',  p6:'',  p7:'',
-  p8:'',  p9:'',  p10:'', p11:'', p12:'', p13:'', p14:'',
+  /* Pre-Intermediate · Junior */
+  p1: 'fAVWTIrpjwI',   p2: 'Hc9C13nbyws',   p3: 'bHAv8ILcvLc',   p4: '5nJxHW7CB54',
+  p5: 'HH1MWqxaHfc',   p6: 'iogBqQx8UxQ',   p7: 's4jXSmhyz-M',   p8: 'BNnTlyw-3F4',
+  p9: 'uue0eLuP8As',   p10:'xkXQtq0yHYU',   p11:'rji0gJA5CSg',   p12:'ZioSsdYCM20',
+  p13:'6lBnqmp3WgQ',   p14:'3F4jLhrtjPQ',
 
-  /* Intermediate */
-  i1:'',  i2:'',  i3:'',  i4:'',  i5:'',  i6:'',  i7:'',
-  i8:'',  i9:'',  i10:'', i11:'', i12:'', i13:'', i14:''
+  /* Intermediate · Senior */
+  i1: 'pMv5TQ42BnE',   i2: '1yxW3WnVWYk',   i3: 'raf6-vUKkew',   i4: 'W6a_AVRPBjk',
+  i5: 'fHPzEkE0Qf8',   i6: '3pDvuCgDxEA',   i7: '20nkd_BSRoA',   i8: '6ddhFDYoPcM',
+  i9: 'C7dPPQFeN14',   i10:'CtS9EsXm_jE',   i11:'c22jopxcXyM',   i12:'7DsgzGiygao',
+  i13:'Kz7BYCq-888',   i14:'r92FIW9JEhY',
 };
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -112,8 +118,55 @@ window.CONTENT = {
   b13: { title:'My Family' },
   b14: { title:'How Much' },
 
-  e2: {
-    title:'Can / can’t', subtitle:'Умею и можно',
+  /* Elementary · Damu */
+  e1:  { title:'To Be' },
+  e2:  { title:'Possessive Adjectives' },
+  e3:  { title:'Possessive Pronouns' },
+  e4:  { title:'Articles' },
+  e5:  { title:'Demonstratives' },
+  e6:  { title:'There Is' },
+  e7:  { title:'Have Got' },
+  e8:  { title:'Present Continuous' },
+  e9:  { title:'Present Simple' },
+  e10: { title:'Would You' },
+  e11: { title:'Adverbs' },
+  e12: { title:'Prepositions of Place' },
+  e14: { title:'Imperatives' },
+
+  /* Pre-Intermediate · Junior */
+  p1:  { title:'Past Simple' },
+  p2:  { title:'Past Continuous' },
+  p3:  { title:'Used To' },
+  p4:  { title:'Future Simple' },
+  p5:  { title:'Going To' },
+  p6:  { title:'Present Continuous' },
+  p7:  { title:'Have To' },
+  p8:  { title:'Should' },
+  p9:  { title:'Get Used To' },
+  p10: { title:'Quantifiers' },
+  p11: { title:'However' },
+  p12: { title:'Present Perfect' },
+  p13: { title:'Expressing Purpose' },
+  p14: { title:'First Conditional' },
+
+  /* Intermediate · Senior */
+  i1:  { title:'Past Perfect' },
+  i2:  { title:'Past Perfect Continuous' },
+  i3:  { title:'Present Perfect Continuous' },
+  i4:  { title:'Future Continuous' },
+  i5:  { title:'Future Perfect' },
+  i6:  { title:'Second Conditional' },
+  i7:  { title:'Passive Voice' },
+  i8:  { title:'Relative Clauses' },
+  i9:  { title:'Modals' },
+  i10: { title:'Gerund and Infinitive' },
+  i11: { title:'Reported Speech' },
+  i12: { title:'Question Tags' },
+  i13: { title:'Enough' },
+  i14: { title:'Reflexive Pronouns' },
+
+  e13: {
+    title:'Can', subtitle:'Умею и можно',
     rule:'can — умею или можно, can’t — не умею или нельзя. После can глагол идёт голым, без to и без окончания: I can swim, а не I can to swim.',
     examples:[
       {en:'I can swim.',              ru:'Я умею плавать.'},
