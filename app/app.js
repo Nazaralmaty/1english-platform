@@ -127,7 +127,10 @@ var LANG = {
     consentTitle:'Обработка персональных данных',
     consentText:'1English хранит ваш номер телефона, имя, дату рождения, пол и то, какие уроки вы прошли. Это нужно, чтобы прогресс не терялся при смене телефона и чтобы преподаватель видел, кому нужна помощь.\n\nДанные лежат в базе Supabase и третьим лицам не передаются. Чтобы их удалили, напишите преподавателю с того же номера: аккаунт и всё, что с ним связано, стирается.',
     consentNeed:'Отметьте согласие, чтобы продолжить',
-    tooMany:'Слишком много попыток. Подождите минуту.'
+    tooMany:'Слишком много попыток. Подождите минуту.',
+    wipe:'Удалить мои данные', wipeCap:'Профиль, прогресс и сам аккаунт',
+    wipeText:'Из базы пропадут: номер телефона, имя, дата рождения, пол и весь пройденный курс. Вернуть это будет нельзя — вход по этому номеру начнётся с чистого листа.',
+    wipeGo:'Удалить', cancel:'Отмена', wiped:'Данные удалены'
   },
   kk: {
     next:'Әрі қарай', enter:'Кіру', phone:'Телефон нөмірі',
@@ -167,7 +170,10 @@ var LANG = {
     consentTitle:'Дербес деректерді өңдеу',
     consentText:'1English сіздің телефон нөміріңізді, атыңызды, туған күніңізді, жынысыңызды және қандай сабақтарды өткеніңізді сақтайды. Бұл телефон ауысқанда прогресс жоғалмауы үшін және ұстаз кімге көмек керегін көруі үшін қажет.\n\nДеректер Supabase базасында жатыр, үшінші тұлғаларға берілмейді. Өшіру үшін ұстазға сол нөмірден жазыңыз: аккаунт және онымен байланысты бәрі жойылады.',
     consentNeed:'Жалғастыру үшін келісімді белгілеңіз',
-    tooMany:'Тым көп әрекет. Бір минут күтіңіз.'
+    tooMany:'Тым көп әрекет. Бір минут күтіңіз.',
+    wipe:'Деректерімді өшіру', wipeCap:'Профиль, прогресс және аккаунт',
+    wipeText:'Базадан телефон нөмірі, аты, туған күні, жынысы және өтілген курс жойылады. Қайтару мүмкін болмайды — осы нөмірмен кіру таза беттен басталады.',
+    wipeGo:'Өшіру', cancel:'Болдырмау', wiped:'Деректер өшірілді'
   }
 };
 function t(k) {
@@ -858,8 +864,36 @@ function scrProfile() {
     '<div class="group">' + row('globe', t('langLabel'), nameOf(LANGS, S.lang, 'Русский'), 'rLang') + '</div>' +
     '<div class="group">' + row('moon', t('theme'), nameOf(THEMES, S.theme, t('themeSystem')), 'rTheme') + '</div>' +
 
+    '<div class="group">' +
+      '<button class="gr" id="rWipe">' +
+        '<span class="ic" style="color:var(--accent)">' + icon('close', 22) + '</span>' +
+        '<span class="grow"><span class="lbl">' + t('wipeCap') + '</span>' +
+          '<span class="val" style="color:var(--accent)">' + t('wipe') + '</span></span>' +
+      '</button>' +
+    '</div>' +
+
     '<div class="gap-sm"></div>' +
     '<button class="btn danger" id="out">' + t('logout') + '</button>');
+
+  $('#rWipe').onclick = function () {
+    openSheet(
+      '<h2 style="margin-bottom:12px">' + t('wipe') + '</h2>' +
+      '<p class="sub" style="margin-bottom:22px">' + esc(t('wipeText')) + '</p>' +
+      '<button class="btn danger" id="yes">' + t('wipeGo') + '</button>' +
+      '<div class="gap-sm"></div>' +
+      '<button class="btn quiet" id="no">' + t('cancel') + '</button>',
+      function (veil, close) {
+        veil.querySelector('#no').onclick = close;
+        veil.querySelector('#yes').onclick = function () {
+          var b = this; b.disabled = true; b.textContent = t('wait');
+          DB.deleteMe().then(function () {
+            close(); S = blank(); save(); applyTheme(); toast(t('wiped')); go('#/login');
+          }).catch(function (e) {
+            b.disabled = false; b.textContent = t('wipeGo'); toast(e.message);
+          });
+        };
+      });
+  };
 
   $('#rName').onclick = function () {
     openSheet(

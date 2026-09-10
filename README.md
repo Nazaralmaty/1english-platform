@@ -76,6 +76,7 @@ window.VIDEOS = {
 | [`app/words_bridge.js`](app/words_bridge.js) | банк слов для игр из курса |
 | [`app/db.js`](app/db.js) | Supabase: вход, профиль, прогресс |
 | [`dashboard.html`](dashboard.html) | все ученики и успеваемость, обновление раз в 10 с |
+| [`backend/backup.mjs`](backend/backup.mjs) | выгрузка базы в JSON |
 | [`app/check.mjs`](app/check.mjs) | проверка данных курса |
 | [`app/check_dashboard.mjs`](app/check_dashboard.mjs) | проверка расчётов дашборда |
 | [`backend/supabase_min.sql`](backend/supabase_min.sql) | схема, которую нужно применить |
@@ -86,6 +87,7 @@ window.VIDEOS = {
 ## Проверки
 
 ```bash
+node backend/backup.mjs 77011234567 123456   # выгрузка базы в backups/
 node app/check.mjs            # данные курса и банк слов для игр
 node app/check_dashboard.mjs  # дашборд: сборка таблицы и подсчёт процентов
 open "index.html?test=1"      # экраны: смотреть консоль

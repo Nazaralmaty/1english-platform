@@ -181,14 +181,81 @@ create policy en_progress_write on public.en_progress
 create policy en_progress_update on public.en_progress
   for update using (auth.uid() = student_id) with check (auth.uid() = student_id);
 
+-- удалять — только своё. Без этой политики кнопка «удалить мои данные»
+-- молча ничего не делает: PostgREST вернёт 0 строк и код 204.
+drop policy if exists en_students_delete on public.en_students;
+create policy en_students_delete on public.en_students
+  for delete using (auth.uid() = id);
+
+drop policy if exists en_progress_delete on public.en_progress;
+create policy en_progress_delete on public.en_progress
+  for delete using (auth.uid() = student_id);
+
 drop policy if exists en_admins_self on public.en_admins;
 create policy en_admins_self on public.en_admins
   for select using (auth.uid() = id);
 
 
--- ── 6. Проверка ────────────────────────────────────────────────────────────
--- После Run должно вернуться три строки, у всех rls_on = true.
+-- ── 6. «Удалить мои данные» ────────────────────────────────────────────────
+-- Строки ученик может стереть и сам, а вот запись в auth.users — только
+-- через функцию: удаление пользователей закрыто от браузера. Функция
+-- трогает исключительно auth.uid(), то есть того, кто её вызвал, поэтому
+-- отдать её залогиненным безопасно.
+
+create or replace function public.en_delete_me()
+returns text language plpgsql security definer set search_path = public, auth as $$
+declare v_id uuid := auth.uid();
+begin
+  if v_id is null then return 'Не вошли'; end if;
+  delete from public.en_progress where student_id = v_id;
+  delete from public.en_students where id = v_id;
+  delete from auth.users where id = v_id;
+  return 'Удалено';
+end $$;
+
+revoke execute on function public.en_delete_me() from public, anon;
+grant   execute on function public.en_delete_me() to authenticated;
+
+
+-- ── 7. Кого вообще пускать ─────────────────────────────────────────────────
+-- Пока таблица пуста — пускаем всех, это удобно на пробном этапе. Как только
+-- в ней появится хоть один номер, писать в базу смогут только те, кто в
+-- списке: чужой человек зарегистрируется, но данные его никуда не лягут.
+--
+-- Добавить ученика:   insert into public.en_allowed (phone, note)
+--                     values ('77011234567', 'Айсұлтан') on conflict do nothing;
+-- Выключить фильтр:   delete from public.en_allowed;
+
+create table if not exists public.en_allowed (
+  phone      text primary key,
+  note       text,
+  created_at timestamptz not null default now()
+);
+alter table public.en_allowed enable row level security;
+
+create or replace function public.en_phone_ok()
+returns boolean language sql stable security definer set search_path = public, auth as $$
+  select not exists (select 1 from public.en_allowed)
+      or exists (
+        select 1 from public.en_allowed a
+        where a.phone = split_part((select email from auth.users where id = auth.uid()), '@', 1)
+      );
+$$;
+
+-- фильтр вешается на запись: читать своё пустое ученику не вредно
+drop policy if exists en_students_write on public.en_students;
+create policy en_students_write on public.en_students
+  for insert with check (auth.uid() = id and public.en_phone_ok());
+
+drop policy if exists en_progress_write on public.en_progress;
+create policy en_progress_write on public.en_progress
+  for insert with check (auth.uid() = student_id and public.en_phone_ok());
+
+
+-- ── 8. Проверка ────────────────────────────────────────────────────────────
+-- После Run должно вернуться четыре строки, у всех rls_on = true.
 
 select tablename, rowsecurity as rls_on
 from pg_tables
-where schemaname = 'public' and tablename in ('en_students','en_progress','en_admins');
+where schemaname = 'public'
+  and tablename in ('en_students','en_progress','en_admins','en_allowed');

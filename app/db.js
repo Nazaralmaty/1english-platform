@@ -231,6 +231,15 @@
       });
     },
 
+    /* Удалить себя целиком: строки и сам аккаунт. Делает функция в базе,
+       потому что удаление пользователей из браузера закрыто. */
+    deleteMe: function () {
+      if (!DB.ready) return Promise.resolve(false);
+      return token().then(function (tk) {
+        return req('/rest/v1/rpc/en_delete_me', { method: 'POST', token: tk, body: {} });
+      }).then(function () { keep(null); DB.ready = false; DB.userId = null; return true; });
+    },
+
     normPhone: normPhone
   };
 
