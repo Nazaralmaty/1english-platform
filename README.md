@@ -77,6 +77,7 @@ window.VIDEOS = {
 | [`app/db.js`](app/db.js) | Supabase: вход, профиль, прогресс |
 | [`dashboard.html`](dashboard.html) | все ученики и успеваемость, обновление раз в 10 с |
 | [`app/check.mjs`](app/check.mjs) | проверка данных курса |
+| [`app/check_dashboard.mjs`](app/check_dashboard.mjs) | проверка расчётов дашборда |
 | [`backend/supabase_min.sql`](backend/supabase_min.sql) | схема, которую нужно применить |
 | [`games/`](games/) | три игры, каждая — самостоятельный файл |
 | [`backend/schema.sql`](backend/schema.sql) | схема Supabase на будущее |
@@ -85,8 +86,9 @@ window.VIDEOS = {
 ## Проверки
 
 ```bash
-node app/check.mjs          # данные курса и банк слов для игр
-open "index.html?test=1"    # экраны: смотреть консоль
+node app/check.mjs            # данные курса и банк слов для игр
+node app/check_dashboard.mjs  # дашборд: сборка таблицы и подсчёт процентов
+open "index.html?test=1"      # экраны: смотреть консоль
 ```
 
 `check.mjs` ловит то, что ломается опечаткой: индекс верного ответа за
