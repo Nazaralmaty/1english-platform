@@ -41,6 +41,46 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e
 function prog(id) { return S.p[id] || (S.p[id] = {}); }
 
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   СИНХРОНИЗАЦИЯ
+   На экране всегда локальное состояние — оно рисуется мгновенно и живёт
+   без сети. База — зеркало: при входе оттуда забираем всё, что уже есть,
+   дальше отправляем копию каждого изменения.
+   ══════════════════════════════════════════════════════════════════ */
+function mergeServer(data) {
+  if (!data) return;
+  var p = data.profile;
+  if (p) {
+    ['name', 'birth', 'gender', 'level', 'lang', 'theme', 'photo'].forEach(function (k) {
+      if (p[k]) S[k] = p[k];
+    });
+    applyTheme();
+  }
+  (data.progress || []).forEach(function (r) {
+    var mine = prog(r.lesson);
+    if (r.step === 'task') {
+      /* результат не ухудшаем: на другом телефоне могло быть лучше */
+      if (!mine.task || mine.task.right < r.right_count)
+        mine.task = { right: r.right_count, total: r.total_count };
+    } else mine[r.step] = true;
+  });
+  save();
+}
+
+function syncProfile() {
+  if (!global_DB()) return;
+  DB.saveProfile({
+    phone: S.phone, name: S.name, birth: S.birth, gender: S.gender,
+    level: S.level, lang: S.lang, theme: S.theme, photo: S.photo
+  });
+}
+function syncStep(lesson, step, right, total) {
+  if (!global_DB()) return;
+  DB.saveStep(lesson, step, right, total);
+}
+function global_DB() { return window.DB && DB.ready; }
+
 /* ══════════════════════════════════════════════════════════════════════
    ЯЗЫК ИНТЕРФЕЙСА
    Русский — основной. Казахский заведён здесь же: переключатель меняет
@@ -51,8 +91,9 @@ var LANG = {
   ru: {
     next:'Далее', enter:'Войти', phone:'Номер телефона',
     phoneNote:'Тот, на который вас записали на курс.',
-    smsTitle:'Код из SMS', smsTo:'Отправили на ', changePhone:'Изменить номер',
-    smsHint:'SMS придут, когда подключим Supabase. Пока подойдут любые четыре цифры.',
+    smsTitle:'Код доступа', smsTo:'Номер ', changePhone:'Изменить номер',
+    smsHint:'Первый раз — придумайте код из шести цифр, он станет вашим паролем. Дальше входите с ним же.',
+    wait:'Секунду…', offline:'Нет связи с базой. Прогресс сохранится на этом телефоне.',
     yourLevel:'Ваш уровень', levelNote:'Можно поменять в любой момент.',
     choose:'Выбрать', level:'Уровень',
     lessonsOf:function (a, b) { return a + ' из ' + b + ' уроков'; },
@@ -84,8 +125,9 @@ var LANG = {
   kk: {
     next:'Әрі қарай', enter:'Кіру', phone:'Телефон нөмірі',
     phoneNote:'Курсқа тіркелген нөмір.',
-    smsTitle:'SMS коды', smsTo:'Жіберілді: ', changePhone:'Нөмірді өзгерту',
-    smsHint:'SMS Supabase қосылғанда келеді. Әзірге кез келген төрт сан жарайды.',
+    smsTitle:'Кіру коды', smsTo:'Нөмір ', changePhone:'Нөмірді өзгерту',
+    smsHint:'Алғаш рет — алты саннан код ойлап табыңыз, ол сіздің құпиясөзіңіз болады. Әрі қарай сол кодпен кіресіз.',
+    wait:'Бір секунд…', offline:'Базамен байланыс жоқ. Прогресс осы телефонда сақталады.',
     yourLevel:'Сіздің деңгейіңіз', levelNote:'Кез келген уақытта ауыстыруға болады.',
     choose:'Таңдау', level:'Деңгей',
     lessonsOf:function (a, b) { return a + ' / ' + b + ' сабақ'; },
@@ -306,8 +348,8 @@ function scrLogin() {
       '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 0 40px">' +
         '<h1 style="margin-bottom:8px">' + t('smsTitle') + '</h1>' +
         '<p class="sub" style="margin-bottom:22px">' + t('smsTo') + esc(phone) + '</p>' +
-        '<input class="field" id="cd" type="tel" inputmode="numeric" maxlength="4" placeholder="0000">' +
-        '<div class="gap-lg"></div>' +
+        '<input class="field" id="cd" type="tel" inputmode="numeric" maxlength="6" placeholder="000000">' +
+        '<p class="note" id="err" style="color:var(--accent);min-height:20px;margin-top:10px"></p>' +
         '<button class="btn" id="go" disabled>' + t('enter') + '</button>' +
         '<div class="gap-sm"></div>' +
         '<button class="btn ghost" id="bk">' + t('changePhone') + '</button>' +
@@ -318,11 +360,21 @@ function scrLogin() {
     var cd = $('#cd');
     cd.oninput = function () {
       cd.value = cd.value.replace(/\D/g, '');
-      $('#go').disabled = cd.value.length < 4;
+      $('#go').disabled = cd.value.length < 6;
     };
     $('#go').onclick = function () {
-      S.phone = phone; save();
-      go(S.level ? '#/lessons' : '#/level');
+      var btn = $('#go'), err = $('#err');
+      btn.disabled = true; btn.textContent = t('wait'); err.textContent = '';
+
+      DB.enter(phone, cd.value).then(function () {
+        S.phone = phone; save();
+        return DB.pull().then(mergeServer);
+      }).then(function () {
+        go(S.level ? '#/lessons' : '#/level');
+      }).catch(function (e) {
+        btn.disabled = false; btn.textContent = t('enter');
+        err.textContent = e.message;
+      });
     };
     $('#bk').onclick = askPhone;
     setTimeout(function () { cd.focus(); }, 250);
@@ -362,7 +414,7 @@ function scrLevel() {
       '<button class="btn" id="pick">' + t('choose') + '</button>',
       function (veil, close) {
         veil.querySelector('#pick').onclick = function () {
-          S.level = id; save(); close(); go('#/lessons');
+          S.level = id; save(); syncProfile(); close(); go('#/lessons');
         };
       });
   }
@@ -472,7 +524,7 @@ function scrRead(id) {
     b.onclick = function () { speak(s.examples[+b.getAttribute('data-say')].en); };
   });
   $('#ok').onclick = function () {
-    prog(id).read = true; save(); go('#/lessons');
+    prog(id).read = true; save(); syncStep(id, 'read'); go('#/lessons');
   };
 }
 
@@ -582,7 +634,7 @@ function scrTask(id) {
     var was = S.p[id] && S.p[id].task;
     /* Результат не ухудшаем: перепройти задание можно, но лучший счёт остаётся. */
     if (!was || was.right < right) prog(id).task = { right: right, total: deck.length };
-    save();
+    save(); syncStep(id, 'task', right, deck.length);
     paint(
       head(t('task'), '#/lessons') +
       '<div class="done">' +
@@ -636,7 +688,7 @@ function scrWords(id) {
   }
 
   function end() {
-    prog(id).words = true; save();
+    prog(id).words = true; save(); syncStep(id, 'words');
     paint(
       head(t('dict'), '#/lessons') +
       '<div class="done">' +
@@ -753,7 +805,7 @@ function scrProfile() {
         c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2,
                                      side, side, 0, 0, 256, 256);
         S.photo = c.toDataURL('image/jpeg', 0.82);
-        save(); route();
+        save(); syncProfile(); route();
       };
       img.src = fr.result;
     };
@@ -769,7 +821,7 @@ function scrProfile() {
         var inp = veil.querySelector('#v');
         setTimeout(function () { inp.focus(); }, 250);
         veil.querySelector('#ok').onclick = function () {
-          S.name = inp.value.trim().slice(0, 40); save(); close(); route();
+          S.name = inp.value.trim().slice(0, 40); save(); syncProfile(); close(); route();
         };
       });
   };
@@ -782,24 +834,24 @@ function scrProfile() {
       '<div class="gap-lg"></div><button class="btn" id="ok">' + t('save') + '</button>',
       function (veil, close) {
         veil.querySelector('#ok').onclick = function () {
-          S.birth = veil.querySelector('#v').value; save(); close(); route();
+          S.birth = veil.querySelector('#v').value; save(); syncProfile(); close(); route();
         };
       });
   };
 
   $('#rGender').onclick = function () {
-    pickSheet(t('gender'), GENDERS, S.gender, function (v) { S.gender = v; save(); route(); });
+    pickSheet(t('gender'), GENDERS, S.gender, function (v) { S.gender = v; save(); syncProfile(); route(); });
   };
   $('#rLang').onclick = function () {
-    pickSheet(t('langLabel'), LANGS, S.lang, function (v) { S.lang = v; save(); route(); });
+    pickSheet(t('langLabel'), LANGS, S.lang, function (v) { S.lang = v; save(); syncProfile(); route(); });
   };
   $('#rTheme').onclick = function () {
     pickSheet(t('theme'), THEMES, S.theme, function (v) {
-      S.theme = v; save(); applyTheme(); route();
+      S.theme = v; save(); applyTheme(); syncProfile(); route();
     });
   };
 
-  $('#out').onclick = function () { S = blank(); save(); applyTheme(); go('#/login'); };
+  $('#out').onclick = function () { DB.signOut(); S = blank(); save(); applyTheme(); go('#/login'); };
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -865,6 +917,12 @@ function route() {
 }
 
 window.addEventListener('hashchange', route);
+
+/* Сессия могла остаться с прошлого раза: поднимаем её до первой отрисовки,
+   а свежие данные подтягиваем следом и перерисовываем экран. */
+if (window.DB && DB.init() && S.phone) {
+  DB.pull().then(function (d) { if (d) { mergeServer(d); route(); } });
+}
 route();
 
 /* автопроверка экрана: открыть index.html?test=1 и посмотреть консоль.
