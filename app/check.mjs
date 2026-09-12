@@ -34,7 +34,9 @@ function canForm(tokens, answer) {
 
 /* ── курс ─────────────────────────────────────────────────────────── */
 const ids = new Set();
-let lessons = 0, filled = 0, withVideo = 0;
+/* Группы для игровых арен: по ним сортировка строит корзины. */
+const GROUPS = new Set(['act', 'thing', 'sign', 'time', 'word']);
+let lessons = 0, filled = 0, withVideo = 0, kkWords = 0;
 for (const lv of COURSE.levels) {
   if (lv.lessons.length !== 14) fail(`уровень ${lv.id}: уроков ${lv.lessons.length}, а надо 14`);
   for (const s of lv.lessons) {
@@ -50,12 +52,19 @@ for (const lv of COURSE.levels) {
     /* Пустой урок — нормальное состояние. Проверяем только заполненные. */
     if (!s.words.length && !s.tasks.length && !s.rule) continue;
     filled++;
-    for (const w of s.words) if (!w.ru || !w.ex) fail(`${s.id}/${w.en}: нет перевода или примера`);
+    for (const w of s.words) {
+      if (!w.ru || !w.ex) fail(`${s.id}/${w.en}: нет перевода или примера`);
+      if (w.g && !GROUPS.has(w.g)) fail(`${s.id}/${w.en}: группа «${w.g}» не из списка ${[...GROUPS].join(', ')}`);
+      if (w.kk) kkWords++;
+    }
     for (const t of s.tasks) {
       if (t.t === 'choice') {
         if (t.opts.length !== 3) fail(`${s.id}: у вопроса «${t.q}» вариантов ${t.opts.length}`);
         if (t.opts[t.a] == null) fail(`${s.id}: индекс верного ответа за пределами вариантов`);
         if (!t.why) fail(`${s.id}: у вопроса «${t.q}» нет объяснения`);
+        /* Пропуск — это целое слово: ученик жмёт плитку, а не набирает буквы. */
+        if (t.q.includes('___') && !/(^|[\s«"(])___($|[\s.,!?»")])/.test(t.q))
+          fail(`${s.id}: пропуск стоит внутри слова — «${t.q}»`);
       } else if (t.t === 'order') {
         if (!canForm(t.words, t.a)) fail(`${s.id}: из слов не собирается ответ «${t.a}»`);
       } else fail(`${s.id}: неизвестный тип задания ${t.t}`);
@@ -84,5 +93,6 @@ if (WORDS.length >= 12) {
 console.log(bad
   ? `\n${bad} ошибок в данных`
   : `OK: уровней ${COURSE.levels.length}, уроков ${lessons} (с материалом ${filled}, с видео ${withVideo}), ` +
-    `слов в банке ${WORDS.length}, групп ${Object.keys(groups).length}`);
+    `слов в банке ${WORDS.length}, групп ${Object.keys(groups).length}, ` +
+    `с казахским переводом ${kkWords}`);
 process.exit(bad ? 1 : 0);
