@@ -279,7 +279,13 @@ declare
   v_digits text;
   v_id     uuid;
 begin
-  if not public.en_is_admin() then return 'Только для аккаунта из en_admins'; end if;
+  -- Из браузера роль всегда anon или authenticated, и тогда спрашиваем
+  -- en_admins. В SQL Editor запрос идёт под postgres, где auth.uid() пустой:
+  -- владельцу базы разрешаем без вопросов, иначе функцию нельзя было бы
+  -- вызвать руками до появления первого админа.
+  if current_user in ('anon', 'authenticated') and not public.en_is_admin() then
+    return 'Только для аккаунта из en_admins';
+  end if;
   if p_code is null or p_code !~ '^[0-9]{6}$' then return 'Код — ровно шесть цифр'; end if;
 
   v_digits := regexp_replace(coalesce(p_phone, ''), '[^0-9]', '', 'g');
@@ -301,6 +307,81 @@ end $$;
 
 revoke execute on function public.en_reset_code(text, text) from public, anon;
 grant   execute on function public.en_reset_code(text, text) to authenticated;
+
+
+-- ── 8б. Завести ученика ────────────────────────────────────────────────────
+-- Сам себя зарегистрировать никто не может: в Supabase → Authentication →
+-- Sign In / Providers → Email надо снять «Allow new users to sign up».
+-- После этого аккаунты появляются только отсюда.
+--
+--   select public.en_add_student('+7 701 123 45 67', '481902', 'Айсұлтан', 'beginner');
+--
+-- Номер и шесть цифр кода вы диктуете ученику сами. Заодно номер кладётся в
+-- en_allowed, чтобы не делать это второй строкой. Уровень необязателен —
+-- ученик выберет сам при первом входе.
+--
+-- В дашборде то же самое лежит в форме «Новый ученик», SQL руками не нужен.
+
+create or replace function public.en_add_student(
+  p_phone text, p_code text, p_name text default null, p_level text default null)
+returns text language plpgsql security definer set search_path = public, auth, extensions as $$
+declare
+  v_digits text;
+  v_id     uuid := gen_random_uuid();
+  v_email  text;
+begin
+  -- Из браузера роль всегда anon или authenticated, и тогда спрашиваем
+  -- en_admins. В SQL Editor запрос идёт под postgres, где auth.uid() пустой:
+  -- владельцу базы разрешаем без вопросов, иначе функцию нельзя было бы
+  -- вызвать руками до появления первого админа.
+  if current_user in ('anon', 'authenticated') and not public.en_is_admin() then
+    return 'Только для аккаунта из en_admins';
+  end if;
+  if p_code is null or p_code !~ '^[0-9]{6}$' then return 'Код — ровно шесть цифр'; end if;
+
+  v_digits := regexp_replace(coalesce(p_phone, ''), '[^0-9]', '', 'g');
+  if length(v_digits) = 10 then v_digits := '7' || v_digits; end if;
+  if length(v_digits) = 11 and left(v_digits, 1) = '8' then
+    v_digits := '7' || substring(v_digits from 2);
+  end if;
+  if length(v_digits) <> 11 then return 'Не похоже на номер: ' || coalesce(p_phone, ''); end if;
+  v_email := v_digits || '@1eng.kz';
+
+  if exists (select 1 from auth.users where email = v_email) then
+    return 'Такой номер уже заведён. Новый код — en_reset_code';
+  end if;
+
+  insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+  ) values (
+    '00000000-0000-0000-0000-000000000000', v_id, 'authenticated', 'authenticated',
+    v_email, extensions.crypt(p_code, extensions.gen_salt('bf', 10)), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()
+  );
+
+  -- без строки в identities GoTrue не считает пароль рабочим
+  insert into auth.identities (
+    id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at
+  ) values (
+    gen_random_uuid(), v_id, v_id::text,
+    jsonb_build_object('sub', v_id::text, 'email', v_email, 'email_verified', true),
+    'email', now(), now(), now()
+  );
+
+  insert into public.en_students (id, phone, name, level)
+    values (v_id, v_digits, nullif(p_name, ''), nullif(p_level, ''))
+    on conflict (id) do nothing;
+  insert into public.en_allowed (phone, note) values (v_digits, nullif(p_name, ''))
+    on conflict do nothing;
+
+  return 'Готово: ' || v_digits || ' входит с кодом ' || p_code;
+end $$;
+
+revoke execute on function public.en_add_student(text, text, text, text) from public, anon;
+grant   execute on function public.en_add_student(text, text, text, text) to authenticated;
+-- старая трёхаргументная версия, если успели применить прошлый вариант
+drop function if exists public.en_add_student(text, text, text);
 
 
 -- ── 9. Ошибки платформы ────────────────────────────────────────────────────

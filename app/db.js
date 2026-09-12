@@ -111,9 +111,9 @@
       return DB.ready;
     },
 
-    /* Вход и регистрация одной кнопкой: сначала пробуем войти, и только
-       если такого аккаунта нет — заводим. Ошибка «уже зарегистрирован»
-       означает, что человек ошибся кодом, а не что он новый. */
+    /* Только вход. Аккаунт заводит администратор (en_add_student в базе),
+       сам себя зарегистрировать нельзя: в проекте выключены sign-ups, а
+       запасной /auth/v1/signup отсюда убран намеренно. */
     enter: function (rawPhone, pin) {
       var phone = normPhone(rawPhone);
       if (!phone) return Promise.reject(new Error('Проверьте номер'));
@@ -121,27 +121,16 @@
 
       return req('/auth/v1/token?grant_type=password', {
         method: 'POST', body: { email: asEmail(phone), password: pin }
+      }).catch(function (err) {
+        /* база не различает «код не тот» и «такого номера нет» — и не должна:
+           иначе по ответу можно перебирать, кто в группе есть. */
+        if (err.status === 400) { err = new Error('NO_ACCESS'); err.noAccess = true; }
+        throw err;
       }).then(function (d) {
         store(d);
-        return { created: false };
-      }).catch(function (err) {
-        if (err.status !== 400) throw err;
-        return req('/auth/v1/signup', {
-          method: 'POST', body: { email: asEmail(phone), password: pin }
-        }).then(function (d) {
-          if (d && d.access_token) { store(d); return { created: true }; }
-          /* в проекте включено подтверждение — входим сразу */
-          return req('/auth/v1/token?grant_type=password', {
-            method: 'POST', body: { email: asEmail(phone), password: pin }
-          }).then(function (d2) { store(d2); return { created: true }; });
-        }).catch(function (e2) {
-          if (/already/i.test(e2.message)) throw new Error('Неверный код');
-          throw e2;
-        });
-      }).then(function (res) {
         DB.ready = true;
         DB.userId = session.user_id;
-        return DB.saveProfile({ phone: phone }).then(function () { return res; });
+        return DB.saveProfile({ phone: phone }).then(function () { return { created: false }; });
       });
     },
 
@@ -267,6 +256,17 @@
           });
         });
       }
+    },
+
+    /* Завести ученика. Права проверяет сама функция в базе; форма в
+       дашборде — единственный способ, регистрация с улицы выключена. */
+    addStudent: function (phone, code, name, level) {
+      return token().then(function (tk) {
+        return req('/rest/v1/rpc/en_add_student', {
+          method: 'POST', token: tk,
+          body: { p_phone: phone, p_code: code, p_name: name || null, p_level: level || null }
+        });
+      });
     },
 
     /* Новый код вместо забытого. Проверку прав делает сама функция в базе. */

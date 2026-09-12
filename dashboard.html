@@ -10,11 +10,18 @@
 <style>
   /* Дашборд — та же таблица Supabase, просто читаемая. Смотрят с ноутбука,
      поэтому колонка одна, но широкая; на телефоне таблица едет вбок внутри
-     своей рамки, а страница стоит на месте. */
+     своей рамки, а страница стоит на месте.
+
+     ВАЖНО про имена классов. Здесь живёт та же app/style.css, что и на
+     экранах ученика, а в ней уже заняты .bar (полоска прогресса, 6px и
+     overflow:hidden) и .panel (аккордеон урока, max-height:0). Раньше шапка
+     дашборда и обе нижние секции попадали под эти правила и обрезались.
+     Поэтому всё своё — с приставкой d-. */
   body{background:var(--bg)}
-  .dash{max-width:1100px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 20px 60px}
-  .bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}
-  .bar h1{font-size:24px;flex:1;min-width:200px}
+  .dash{max-width:1180px;margin:0 auto;padding:calc(24px + env(safe-area-inset-top)) 20px 72px}
+
+  .d-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+  .d-head h1{font-size:26px;letter-spacing:-.03em;flex:1;min-width:200px}
   .live{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);
         font-variant-numeric:tabular-nums}
   .live i{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none;
@@ -22,41 +29,59 @@
   .live.off i{background:var(--accent);animation:none}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:22px}
-  .kpi{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:16px 18px}
-  .kpi b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1;
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+  .kpi{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:18px 20px;
+       position:relative;overflow:hidden}
+  .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--track)}
+  .kpi.hot::before{background:var(--accent)}
+  .kpi b{display:block;font-size:32px;font-weight:800;letter-spacing:-.045em;line-height:1.05;
          font-variant-numeric:tabular-nums}
-  .kpi span{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+  .kpi span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
 
   .wrap{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);overflow:hidden}
   .scrollx{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;min-width:660px}
-  th,td{text-align:left;padding:13px 16px;font-size:14.5px;white-space:nowrap}
-  th{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em;
-     border-bottom:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;min-width:760px}
+  th,td{text-align:left;padding:14px 18px;font-size:14.5px;white-space:nowrap;vertical-align:middle}
+  th{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;
+     border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:1}
   tr + tr td{border-top:1px solid var(--line)}
-  td b{font-weight:700}
-  td .ph{display:block;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-  .lvl{display:inline-block;padding:3px 9px;border-radius:999px;background:var(--bg);
+  tbody tr{transition:background .15s var(--ease)}
+  tbody tr:hover{background:var(--bg)}
+  th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+  /* имя ученика: кружок с инициалом вместо пустого места слева */
+  .who{display:flex;align-items:center;gap:11px}
+  .ava{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;
+       background:var(--navy);color:var(--on-navy);font-weight:800;font-size:14px}
+  .who b{font-weight:700;display:block}
+  .who .ph{display:block;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .lvl{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--bg);
        font-size:12px;font-weight:700;color:var(--navy)}
-  .mini{display:flex;align-items:center;gap:9px;min-width:150px}
-  .mini .bar2{flex:1;height:6px;border-radius:999px;background:var(--track);overflow:hidden}
-  .mini .bar2 i{display:block;height:100%;background:var(--accent)}
+  .lvl.none{color:var(--muted)}
+  .mini{display:flex;align-items:center;gap:10px;min-width:170px}
+  .mini .track{flex:1;height:6px;border-radius:999px;background:var(--track);overflow:hidden}
+  .mini .track i{display:block;height:100%;border-radius:999px;background:var(--accent);
+                 transition:width .4s var(--ease)}
   .mini span{font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);width:38px;text-align:right}
   .ago{color:var(--muted);font-variant-numeric:tabular-nums}
   .ago.hot{color:var(--ok);font-weight:700}
-  .empty{padding:40px 18px;text-align:center;color:var(--muted)}
+  .d-empty{padding:44px 18px;text-align:center;color:var(--muted);line-height:1.5}
 
-  .panel{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);
-         padding:18px;margin-top:22px}
-  .panel h2{font-size:18px;letter-spacing:-.02em;margin-bottom:4px}
-  .panel .hint{font-size:13.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
-  .row2{display:flex;gap:8px;flex-wrap:wrap}
-  .row2 input{flex:1;min-width:150px;background:var(--bg);border:0;border-radius:12px;
-              padding:12px 14px;font:inherit;font-size:15px;color:var(--ink)}
-  .row2 button{background:var(--navy);color:var(--on-navy);border-radius:12px;
-               padding:12px 18px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;border:0}
-  .row2 button.quiet{background:var(--bg);color:var(--ink)}
+  /* нижние секции идут в две колонки на широком экране */
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;margin-top:16px;
+         align-items:start}
+  .d-panel{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:20px}
+  .d-panel h2{font-size:18px;letter-spacing:-.02em;margin-bottom:4px}
+  .d-hint{font-size:13.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+  .d-row{display:flex;gap:8px;flex-wrap:wrap}
+  .d-row input,.d-row select{flex:1;min-width:140px;background:var(--bg);border:0;border-radius:12px;
+              padding:12px 14px;font:inherit;font-size:15px;color:var(--ink);
+              outline:2px solid transparent;transition:outline-color .15s var(--ease)}
+  .d-row input:focus,.d-row select:focus{outline-color:var(--navy)}
+  .d-row button{background:var(--navy);color:var(--on-navy);border-radius:12px;
+               padding:12px 20px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;border:0}
+  .d-row button:disabled{opacity:.5;cursor:default}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
   .chip2{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border-radius:999px;
          padding:8px 8px 8px 14px;font-size:14px;font-variant-numeric:tabular-nums}
@@ -64,15 +89,22 @@
   .chip2 span{color:var(--muted);font-size:13px}
   .chip2 button{width:24px;height:24px;border-radius:50%;border:0;cursor:pointer;
                 background:var(--card);color:var(--accent);font:inherit;font-size:14px;line-height:1}
-  .state{font-size:13.5px;margin-top:12px;min-height:20px}
+  .state{font-size:13.5px;margin-top:12px;min-height:20px;line-height:1.45}
   .state.ok{color:var(--ok)}
   .state.bad{color:var(--accent)}
+  /* выданный код показываем крупно: его диктуют вслух */
+  .issued{margin-top:14px;background:var(--bg);border-radius:14px;padding:14px 16px;line-height:1.5}
+  .issued b{display:block;font-size:26px;font-weight:800;letter-spacing:.12em;
+            font-variant-numeric:tabular-nums}
+  .issued span{font-size:13px;color:var(--muted)}
   .errs{margin-top:10px;font-size:13.5px}
   .errs div{padding:9px 0;border-top:1px solid var(--line);color:var(--muted);line-height:1.45}
   .errs div b{color:var(--ink);font-weight:600;display:block}
   .mini2{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-  td .reset{background:var(--bg);border:0;border-radius:999px;padding:6px 12px;font:inherit;
-            font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer}
+  td .reset{background:var(--bg);border:0;border-radius:999px;padding:7px 13px;font:inherit;
+            font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer;
+            transition:background .15s var(--ease)}
+  td .reset:hover{background:var(--track)}
   .auth{max-width:380px;margin:8vh auto 0}
   .err{color:var(--accent);font-size:14px;min-height:20px;margin:10px 0}
 </style>
@@ -131,6 +163,11 @@
       : (p || '—');
   }
 
+  function initial(name) {
+    var n = String(name || '').trim();
+    return n ? n[0].toUpperCase() : '?';
+  }
+
   /* ── вход ─────────────────────────────────────────────────────────── */
   function auth(message) {
     root.innerHTML =
@@ -165,12 +202,26 @@
         return auth('Этот аккаунт не в списке en_admins. Добавьте его строкой из backend/supabase_min.sql.');
       }
       lastData = d;
+      if (busy()) return;   /* не затирать наполовину заполненную форму */
       render(d);
     }).catch(function (e) {
       var live = root.querySelector('.live');
       if (live) { live.className = 'live off'; live.lastChild.textContent = ' ' + e.message; }
       else auth(e.message);
     });
+  }
+
+  /* Раз в десять секунд страница перерисовывается целиком. Пока админ
+     печатает в любой форме — обновление пропускается, иначе введённое
+     исчезает прямо из-под рук. */
+  function busy() {
+    var el = document.activeElement;
+    if (el && root.contains(el) && /^(INPUT|SELECT)$/.test(el.tagName)) return true;
+    var filled = false;
+    Array.prototype.forEach.call(root.querySelectorAll('.d-panel input'), function (i) {
+      if (i.value.trim()) filled = true;
+    });
+    return filled;
   }
 
   function render(d) {
@@ -206,7 +257,7 @@
     }).sort(function (a, b) { return (b.last || '').localeCompare(a.last || ''); });
 
     root.innerHTML =
-      '<div class="bar">' +
+      '<div class="d-head">' +
         '<h1>Дашборд</h1>' +
         '<span class="live"><i></i><span>обновлено ' +
           new Date().toLocaleTimeString('ru-RU') + '</span></span>' +
@@ -217,56 +268,86 @@
         '<div class="kpi"><b>' + d.students.length + '</b><span>учеников всего</span></div>' +
         '<div class="kpi"><b>' + active + '</b><span>заходили за 7 дней</span></div>' +
         '<div class="kpi"><b>' + d.progress.length + '</b><span>шагов пройдено</span></div>' +
-        '<div class="kpi"><b>' + todaySteps + '</b><span>шагов сегодня</span></div>' +
+        '<div class="kpi' + (todaySteps ? ' hot' : '') + '"><b>' + todaySteps + '</b><span>шагов сегодня</span></div>' +
       '</div>' +
 
       '<div class="wrap"><div class="scrollx">' +
         (rows.length
           ? '<table><thead><tr>' +
               '<th>Ученик</th><th>Уровень</th><th>Прогресс</th>' +
-              '<th>Уроков закрыто</th><th>Шагов</th><th>Последний заход</th><th></th>' +
+              '<th class="num">Уроков закрыто</th><th class="num">Шагов</th>' +
+              '<th>Последний заход</th><th></th>' +
             '</tr></thead><tbody>' +
             rows.map(function (r) {
               var hot = Date.now() - new Date(r.last).getTime() < 864e5;
               return '<tr>' +
-                '<td><b>' + esc(r.st.name || 'Без имени') + '</b>' +
-                    '<span class="ph">' + esc(phoneFmt(r.st.phone)) + '</span></td>' +
-                '<td><span class="lvl">' + esc(levelTitle(r.st.level)) + '</span></td>' +
-                '<td><span class="mini"><span class="bar2"><i style="width:' + r.pct + '%"></i></span>' +
+                '<td><span class="who"><span class="ava">' + esc(initial(r.st.name)) + '</span>' +
+                    '<span><b>' + esc(r.st.name || 'Без имени') + '</b>' +
+                    '<span class="ph">' + esc(phoneFmt(r.st.phone)) + '</span></span></span></td>' +
+                '<td><span class="lvl' + (r.st.level ? '' : ' none') + '">' +
+                    esc(r.st.level ? levelTitle(r.st.level) : 'не выбран') + '</span></td>' +
+                '<td><span class="mini"><span class="track"><i style="width:' + r.pct + '%"></i></span>' +
                     '<span>' + r.pct + '%</span></span></td>' +
-                '<td>' + r.done + '</td>' +
-                '<td>' + r.steps + '</td>' +
+                '<td class="num">' + r.done + '</td>' +
+                '<td class="num">' + r.steps + '</td>' +
                 '<td class="ago' + (hot ? ' hot' : '') + '">' + ago(r.last) + '</td>' +
                 '<td><button class="reset" data-reset="' + esc(r.st.phone) + '">Сбросить код</button></td>' +
               '</tr>';
             }).join('') +
             '</tbody></table>'
-          : '<div class="empty">Учеников пока нет. Как только кто-то войдёт в платформу, строка появится здесь.</div>') +
+          : '<div class="d-empty">Учеников пока нет. Заведите первого формой ниже.</div>') +
       '</div></div>' +
 
-      /* Список допущенных номеров. Пустой список пускает всех — так удобно
-         на пробном этапе, поэтому состояние написано словами. */
-      '<div class="panel">' +
-        '<h2>Кто допущен</h2>' +
-        '<div class="hint" id="allowHint">Загружаю…</div>' +
-        '<div class="row2">' +
-          '<input id="apPhone" type="tel" placeholder="+7 701 123 45 67">' +
-          '<input id="apNote" type="text" placeholder="Имя, необязательно">' +
-          '<button id="apAdd">Добавить</button>' +
+      /* Заявка на ученика. Регистрация с улицы выключена, поэтому это
+         единственный вход в платформу: здесь номер и код рождаются вместе,
+         и их сразу диктуют человеку. */
+      '<div class="d-panel" style="margin-top:16px">' +
+        '<h2>Новый ученик</h2>' +
+        '<div class="d-hint">Аккаунт заводится сразу: номер станет логином, шесть цифр — кодом. ' +
+          'Номер сам попадёт в список допущенных. Уровень можно не ставить — ученик выберет при входе.</div>' +
+        '<div class="d-row">' +
+          '<input id="nsPhone" type="tel" inputmode="numeric" placeholder="+7 701 123 45 67">' +
+          '<input id="nsName" type="text" placeholder="Имя">' +
+          '<input id="nsCode" type="tel" inputmode="numeric" maxlength="6" placeholder="Код, 6 цифр">' +
+          '<select id="nsLevel">' +
+            '<option value="">Уровень — потом</option>' +
+            COURSE.levels.map(function (l) {
+              return '<option value="' + esc(l.id) + '">' + esc(l.title) + '</option>';
+            }).join('') +
+          '</select>' +
+          '<button id="nsAdd">Завести</button>' +
         '</div>' +
-        '<div class="chips" id="apList"></div>' +
-        '<div class="state" id="apState"></div>' +
+        '<div class="state" id="nsState"></div>' +
+        '<div id="nsCard"></div>' +
       '</div>' +
 
-      '<div class="panel">' +
-        '<h2>Падения у учеников</h2>' +
-        '<div class="hint">Последние двадцать. Пусто — значит ни у кого ничего не сломалось.</div>' +
-        (d.errors && d.errors.length
-          ? '<div class="errs">' + d.errors.map(function (e) {
-              return '<div><b>' + esc(e.message) + '</b>' +
-                     esc(e.source || '') + ' · ' + ago(e.created_at) + '</div>';
-            }).join('') + '</div>'
-          : '<div class="mini2">Пока чисто.</div>') +
+      '<div class="grid2">' +
+
+        /* Список допущенных номеров. Пустой список пускает всех — так удобно
+           на пробном этапе, поэтому состояние написано словами. */
+        '<div class="d-panel">' +
+          '<h2>Кто допущен</h2>' +
+          '<div class="d-hint" id="allowHint">Загружаю…</div>' +
+          '<div class="d-row">' +
+            '<input id="apPhone" type="tel" placeholder="+7 701 123 45 67">' +
+            '<input id="apNote" type="text" placeholder="Имя, необязательно">' +
+            '<button id="apAdd">Добавить</button>' +
+          '</div>' +
+          '<div class="chips" id="apList"></div>' +
+          '<div class="state" id="apState"></div>' +
+        '</div>' +
+
+        '<div class="d-panel">' +
+          '<h2>Падения у учеников</h2>' +
+          '<div class="d-hint">Последние двадцать. Пусто — значит ни у кого ничего не сломалось.</div>' +
+          (d.errors && d.errors.length
+            ? '<div class="errs">' + d.errors.map(function (e) {
+                return '<div><b>' + esc(e.message) + '</b>' +
+                       esc(e.source || '') + ' · ' + ago(e.created_at) + '</div>';
+              }).join('') + '</div>'
+            : '<div class="mini2">Пока чисто.</div>') +
+        '</div>' +
+
       '</div>';
 
     root.querySelector('#out').onclick = function () { stop(); DB.signOut(); auth(''); };
@@ -275,6 +356,45 @@
       b.onclick = function () { resetCode(b.getAttribute('data-reset')); };
     });
     wireAllowed();
+    wireNewStudent();
+  }
+
+  /* ── новый ученик ─────────────────────────────────────────────────── */
+  function wireNewStudent() {
+    var ph = root.querySelector('#nsPhone'), nm = root.querySelector('#nsName');
+    var cd = root.querySelector('#nsCode'), lv = root.querySelector('#nsLevel');
+    var btn = root.querySelector('#nsAdd'), state = root.querySelector('#nsState');
+    var card = root.querySelector('#nsCard');
+    if (!btn) return;
+
+    cd.oninput = function () { cd.value = cd.value.replace(/\D/g, ''); };
+
+    btn.onclick = function () {
+      var phone = ph.value.trim(), code = cd.value.trim(), name = nm.value.trim();
+      if (String(phone).replace(/\D/g, '').length < 10) {
+        state.className = 'state bad'; state.textContent = 'Проверьте номер'; return;
+      }
+      if (!/^[0-9]{6}$/.test(code)) {
+        state.className = 'state bad'; state.textContent = 'Код — ровно шесть цифр'; return;
+      }
+
+      btn.disabled = true; state.className = 'state'; state.textContent = 'Завожу…';
+      DB.addStudent(phone, code, name, lv.value).then(function (answer) {
+        /* функция в базе отвечает словами: и про успех, и про «уже заведён» */
+        var okay = /^Готово/.test(answer);
+        state.className = 'state ' + (okay ? 'ok' : 'bad');
+        state.textContent = answer;
+        if (okay) {
+          card.innerHTML = '<div class="issued"><b>' + esc(code) + '</b>' +
+            '<span>Код для ' + esc(phoneFmt(phone)) + (name ? ' · ' + esc(name) : '') +
+            '. Продиктуйте его ученику: восстановить будет нечем, только сбросить.</span></div>';
+          ph.value = ''; nm.value = ''; cd.value = ''; lv.value = '';
+          pull();
+        }
+      }).catch(function (e) {
+        state.className = 'state bad'; state.textContent = e.message;
+      }).then(function () { btn.disabled = false; });
+    };
   }
 
   /* ── список допущенных ────────────────────────────────────────────── */
