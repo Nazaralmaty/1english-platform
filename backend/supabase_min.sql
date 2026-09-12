@@ -328,6 +328,7 @@ returns text language plpgsql security definer set search_path = public, auth, e
 declare
   v_digits text;
   v_id     uuid := gen_random_uuid();
+  v_old    uuid;
   v_email  text;
 begin
   -- Из браузера роль всегда anon или authenticated, и тогда спрашиваем
@@ -347,8 +348,36 @@ begin
   if length(v_digits) <> 11 then return 'Не похоже на номер: ' || coalesce(p_phone, ''); end if;
   v_email := v_digits || '@1eng.kz';
 
-  if exists (select 1 from auth.users where email = v_email) then
-    return 'Такой номер уже заведён. Новый код — en_reset_code';
+  -- Аккаунт может уже существовать: до закрытия регистрации люди заводили
+  -- себя сами. Если профиля при этом нет — платформой не пользовались, и
+  -- такой аккаунт мы дозаводим: ставим продиктованный код и создаём строку.
+  -- Если профиль есть, это живой ученик, и молча менять ему код нельзя.
+  select id into v_old from auth.users where email = v_email;
+  if v_old is not null then
+    if exists (select 1 from public.en_students where id = v_old) then
+      return 'Такой ученик уже есть. Новый код — кнопка «Сбросить код» в строке';
+    end if;
+    update auth.users
+       set encrypted_password = extensions.crypt(p_code, extensions.gen_salt('bf', 10)),
+           email_confirmed_at = coalesce(email_confirmed_at, now()),
+           updated_at = now()
+     where id = v_old;
+    -- у аккаунтов старого образца строки в identities может не быть вовсе
+    insert into auth.identities (
+      id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at
+    ) select gen_random_uuid(), v_old, v_old::text,
+             jsonb_build_object('sub', v_old::text, 'email', v_email, 'email_verified', true),
+             'email', now(), now(), now()
+      where not exists (
+        select 1 from auth.identities where user_id = v_old and provider = 'email');
+    insert into public.en_students (id, phone, name, level)
+      values (v_old, v_digits, nullif(p_name, ''), nullif(p_level, ''))
+      on conflict (id) do update set phone = excluded.phone,
+                                     name  = coalesce(excluded.name,  en_students.name),
+                                     level = coalesce(excluded.level, en_students.level);
+    insert into public.en_allowed (phone, note) values (v_digits, nullif(p_name, ''))
+      on conflict do nothing;
+    return 'Готово: ' || v_digits || ' входит с кодом ' || p_code || ' (аккаунт был заведён раньше)';
   end if;
 
   insert into auth.users (
