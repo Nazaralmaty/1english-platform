@@ -22,7 +22,7 @@ function blank() {
     phone: '',
     level: null,          /* id уровня из COURSE */
     sound: true,
-    lang: 'ru',           /* ru | kk */
+    lang: 'kk',           /* kk | ru — по умолчанию казахский: группа казахоязычная */
     theme: 'system',      /* system | light | dark */
     name: '',
     gender: '',           /* m | f */
@@ -83,9 +83,14 @@ function global_DB() { return window.DB && DB.ready; }
 
 /* ══════════════════════════════════════════════════════════════════════
    ЯЗЫК ИНТЕРФЕЙСА
-   Русский — основной. Казахский заведён здесь же: переключатель меняет
-   один словарь, экраны не трогаются. Содержание уроков (правила,
-   переводы слов) пока только русское — это отдельная работа.
+   Казахский — основной: группа казахоязычная, ролики сняты на казахском.
+   Русский переключается в профиле и с главного экрана. Переключатель
+   меняет один словарь, экраны не трогаются.
+
+   Содержание урока (правило, примеры, слова, объяснения к заданиям)
+   двуязычное тоже: рядом с русским полем лежит поле с хвостом Kk, а
+   перевод слова и примера — пара {ru, kk}. Нет казахского — покажется
+   русский, урок из-за этого не ломается.
    ══════════════════════════════════════════════════════════════════ */
 var LANG = {
   ru: {
@@ -96,6 +101,11 @@ var LANG = {
     wait:'Секунду…', offline:'Нет связи с базой. Прогресс сохранится на этом телефоне.',
     yourLevel:'Ваш уровень', levelNote:'Можно поменять в любой момент.',
     choose:'Выбрать', level:'Уровень',
+    homeTab:'Главная', myCourse:'Мой курс', otherCourses:'Другие курсы',
+    allCourses:'Курсы', pickCourse:'Выберите курс — с него начнётся обучение.',
+    brandLine1:'Видеоуроки, задания и словарь.',
+    brandLine2:'4 уровня · 56 уроков',
+    nLessons:function (n) { return n + ' уроков'; },
     lessonsOf:function (a, b) { return a + ' из ' + b + ' уроков'; },
     soon:'Материалы скоро', videoLesson:'Видеоурок', ruleReview:'Разбор правила',
     lesson:'Урок', task:'Задание', dict:'Словарь',
@@ -141,6 +151,11 @@ var LANG = {
     wait:'Бір секунд…', offline:'Базамен байланыс жоқ. Прогресс осы телефонда сақталады.',
     yourLevel:'Сіздің деңгейіңіз', levelNote:'Кез келген уақытта ауыстыруға болады.',
     choose:'Таңдау', level:'Деңгей',
+    homeTab:'Басты бет', myCourse:'Менің курсым', otherCourses:'Басқа курстар',
+    allCourses:'Курстар', pickCourse:'Курс таңдаңыз — оқу содан басталады.',
+    brandLine1:'Бейнесабақ, тапсырма және сөздік.',
+    brandLine2:'4 деңгей · 56 сабақ',
+    nLessons:function (n) { return n + ' сабақ'; },
     lessonsOf:function (a, b) { return a + ' / ' + b + ' сабақ'; },
     soon:'Материалдар жақында', videoLesson:'Бейнесабақ', ruleReview:'Ереже талдауы',
     lesson:'Сабақ', task:'Тапсырма', dict:'Сөздік',
@@ -182,6 +197,17 @@ var LANG = {
 function t(k) {
   var d = LANG[S.lang] || LANG.ru;
   return d[k] != null ? d[k] : (LANG.ru[k] != null ? LANG.ru[k] : k);
+}
+
+/* Пара переводов рядом: {ru:'…', kk:'…'} — пример, слово, задание. */
+function trn(o) {
+  if (!o) return '';
+  return (S.lang === 'kk' && o.kk) ? o.kk : (o.ru || o.kk || '');
+}
+/* Поле с казахским соседом: rule ↔ ruleKk, subtitle ↔ subtitleKk, why ↔ whyKk. */
+function tx(o, key) {
+  if (!o) return '';
+  return (S.lang === 'kk' && o[key + 'Kk']) ? o[key + 'Kk'] : (o[key] || o[key + 'Kk'] || '');
 }
 
 /* Тема живёт на <html>: system снимает атрибут и отдаёт выбор системе. */
@@ -274,6 +300,7 @@ var IC = {
   book:  '<rect x="3.6" y="3.6" width="16.8" height="16.8" rx="3.4"/><path d="M8.6 3.6v16.8"/><path d="M12.4 8.8h4.6M12.4 12.4h4.6"/>',
   game:  '<rect x="2.2" y="6.4" width="19.6" height="11.2" rx="5.6"/><path d="M7.3 9.8v2.9M5.85 11.25h2.9"/><circle cx="15.9" cy="10.6" r="1.15"/><circle cx="18.3" cy="13.6" r="1.15"/>',
   gear:  '<path d="M3.5 7.5h17M3.5 16.5h17"/><circle cx="9" cy="7.5" r="2.3"/><circle cx="15.5" cy="16.5" r="2.3"/>',
+  home:  '<path d="M3.6 10.4 12 3.6l8.4 6.8v9.2a1 1 0 0 1-1 1h-4.6v-6.2H9.2v6.2H4.6a1 1 0 0 1-1-1z"/>',
   left:  '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
   right: '<path d="M9.5 5.5 16 12l-6.5 6.5"/>',
   check: '<path d="M4.5 12.5 9.5 17.5 19.5 6.5"/>',
@@ -437,7 +464,7 @@ function scrLogin() {
         syncProfile();
         return DB.pull().then(mergeServer);
       }).then(function () {
-        go(S.level ? '#/lessons' : '#/level');
+        go('#/home');
       }).catch(function (e) {
         addTry(phone);
         btn.disabled = false; btn.textContent = t('enter');
@@ -452,25 +479,77 @@ function scrLogin() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   ЭКРАН: ВЫБОР УРОВНЯ
+   ЭКРАН: ГЛАВНАЯ — школа и курсы
+   Первое, что видит ученик после входа. Сверху школа: обложка, логотип,
+   переключатель языка. Ниже «мой курс» с прогрессом и остальные курсы
+   карточками — уровень выбирается и меняется здесь, отдельного экрана
+   выбора уровня больше нет.
    ══════════════════════════════════════════════════════════════════ */
-function scrLevel() {
-  var can = !!S.level;   /* уровень уже выбран — значит сюда пришли из настроек */
+function courseCard(l, mine) {
+  var st = levelStats(l);
+  return '<button class="ccard' + (mine ? ' mine' : '') + '" data-lv="' + l.id + '">' +
+    '<span class="pic">' +
+      '<img src="app/covers/' + l.id + '.jpg" alt="" loading="lazy">' +
+      '<span class="code">' + l.code + '</span>' +
+      '<b' + (l.title.length > 12 ? ' class="long"' : '') + '>' + l.title + '</b>' +
+      '<i>' + esc(tx(l, 'tagline')) + '</i>' +
+    '</span>' +
+    '<span class="foot">' +
+      '<span class="grow"><b>' + l.title + '</b>' +
+        '<span class="cap">' + (mine && st.total
+            ? t('lessonsOf')(st.done, st.total)
+            : t('nLessons')(l.lessons.length)) + '</span></span>' +
+      (mine ? '<span class="pct num">' + st.pct + '%</span>'
+            : '<span class="chev">' + icon('right', 20) + '</span>') +
+    '</span>' +
+    (mine ? '<span class="bar"><i style="width:' + st.pct + '%"></i></span>' : '') +
+  '</button>';
+}
+
+function scrHome() {
+  var mine = S.level ? level(S.level) : null;
+  var rest = COURSE.levels.filter(function (l) { return !mine || l.id !== mine.id; });
 
   paint(
-    (can ? head(t('level'), '#/lessons') : '<div class="head"><h1>' + t('yourLevel') + '</h1></div>') +
-    '<p class="sub" style="margin:-8px 0 20px">' + t('levelNote') + '</p>' +
-    '<div class="rows">' +
-      COURSE.levels.map(function (l) {
-        return '<button class="row" data-lv="' + l.id + '">' +
-          '<span class="mark' + (l.id === S.level ? ' on' : '') + '">' + l.code + '</span>' +
-          '<span class="grow"><b>' + l.title + '</b><span class="cap">' + esc(l.tagline) + '</span></span>' +
-          '<span class="chev">' + icon('right', 20) + '</span></button>';
-      }).join('') +
-    '</div>', true);
+    '<div class="hero">' +
+      /* обложка школы, а не курса: под ней сразу лежит карточка курса
+         со своей картинкой, и две одинаковые читались бы как сбой */
+      '<img src="app/covers/school.jpg" alt="">' +
+      '<img class="brand" src="assets/logo-white.png" alt="1English">' +
+      '<div class="lang">' +
+        '<button data-l="kk"' + (S.lang === 'kk' ? ' class="on"' : '') + '>KZ</button>' +
+        '<button data-l="ru"' + (S.lang === 'ru' ? ' class="on"' : '') + '>RU</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="ava logo"><img src="assets/logo.png" alt=""></div>' +
+    '<div class="who">' +
+      '<h2>1English</h2>' +
+      '<p>' + t('brandLine1') + '<br>' + t('brandLine2') + '</p>' +
+    '</div>' +
+
+    (mine
+      ? '<h2 class="sect">' + t('myCourse') + '</h2>' + courseCard(mine, true) +
+        '<h2 class="sect">' + t('otherCourses') + '</h2>'
+      : '<h2 class="sect">' + t('allCourses') + '</h2>' +
+        '<p class="sub" style="margin:-6px 0 14px">' + t('pickCourse') + '</p>') +
+
+    rest.map(function (l) { return courseCard(l, false); }).join(''));
+
+  $$('[data-l]').forEach(function (b) {
+    b.onclick = function () {
+      var v = b.getAttribute('data-l');
+      if (v === S.lang) return;
+      S.lang = v; save(); syncProfile(); route();
+    };
+  });
 
   $$('[data-lv]').forEach(function (b) {
-    b.onclick = function () { sheet(b.getAttribute('data-lv')); };
+    b.onclick = function () {
+      var id = b.getAttribute('data-lv');
+      if (id === S.level) return go('#/lessons');
+      sheet(id);
+    };
   });
 
   function sheet(id) {
@@ -478,7 +557,7 @@ function scrLevel() {
     openSheet(
       '<span class="chip accent">' + l.code + '</span>' +
       '<h1 style="margin:14px 0 10px">' + l.title + '</h1>' +
-      '<p class="sub" style="margin-bottom:22px">' + esc(l.about) + '</p>' +
+      '<p class="sub" style="margin-bottom:22px">' + esc(tx(l, 'about')) + '</p>' +
       '<button class="btn" id="pick">' + t('choose') + '</button>',
       function (veil, close) {
         veil.querySelector('#pick').onclick = function () {
@@ -495,13 +574,13 @@ function scrLessons() {
   var lv = level(), st = levelStats(lv);
 
   paint(
-    '<button class="cover" data-nav="#/level">' +
+    '<button class="cover" data-nav="#/home">' +
       '<img src="app/covers/' + lv.id + '.jpg" alt="" loading="lazy">' +
       '<img class="brand" src="assets/logo-white.png" alt="1English">' +
       '<span class="code">' + lv.code + '</span>' +
       /* длинное название уровня не должно наезжать на предмет справа */
       '<h2' + (lv.title.length > 12 ? ' style="font-size:clamp(20px,6.2vw,28px)"' : '') + '>' + lv.title + '</h2>' +
-      '<p>' + esc(lv.tagline) + '</p>' +
+      '<p>' + esc(tx(lv, 'tagline')) + '</p>' +
       '<span class="swap">' + icon('right', 18) + '</span>' +
     '</button>' +
 
@@ -515,7 +594,7 @@ function scrLessons() {
 
     lv.lessons.map(function (s) {
       var av = stepsOf(s), n = stepsDone(s), full = av.length && n === av.length;
-      var cap = s.subtitle || (av.length ? (video(s.id) ? t('videoLesson') : t('ruleReview')) : t('soon'));
+      var cap = tx(s, 'subtitle') || (av.length ? (video(s.id) ? t('videoLesson') : t('ruleReview')) : t('soon'));
       return '<div class="item' + (s.id === openId ? ' on' : '') + (av.length ? '' : ' empty') +
              '" data-item="' + s.id + '">' +
         '<button class="itop" data-open="' + s.id + '">' +
@@ -570,18 +649,18 @@ function scrRead(id) {
   var yt = video(id);
 
   paint(
-    head(s.title || ('Урок ' + s.n), '#/lessons') +
+    head(s.title || (t('lesson') + ' ' + s.n), '#/lessons') +
     (yt
       ? '<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/' + yt +
         '?rel=0&modestbranding=1&playsinline=1" title="' + esc(s.title || (t('lesson') + ' ' + s.n)) + '" allowfullscreen ' +
         'allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>'
       : '') +
-    (s.rule ? '<div class="rule">' + esc(s.rule) + '</div>' : '') +
+    (tx(s, 'rule') ? '<div class="rule">' + esc(tx(s, 'rule')) + '</div>' : '') +
     (s.examples.length
       ? '<div class="card" style="padding:4px 16px;margin-bottom:8px">' +
           s.examples.map(function (e, i) {
             return '<button class="ex" data-say="' + i + '">' +
-              '<span class="grow"><b>' + esc(e.en) + '</b><span class="cap">' + esc(e.ru) + '</span></span>' +
+              '<span class="grow"><b>' + esc(e.en) + '</b><span class="cap">' + esc(trn(e)) + '</span></span>' +
               '<span class="snd">' + icon('sound', 20) + '</span></button>';
           }).join('') +
         '</div>'
@@ -634,7 +713,7 @@ function scrTask(id) {
           else if (n === k) o.className = 'opt no';
           else o.className = 'opt mute';
         });
-        feedback(good, q.why);
+        feedback(good, tx(q, 'why'));
       };
     });
   }
@@ -643,7 +722,7 @@ function scrTask(id) {
     var placed = [];
     paint(
       head(t('task'), '#/lessons') + bar() +
-      '<div class="q" style="font-size:20px">' + esc(q.ru) + '</div>' +
+      '<div class="q" style="font-size:20px">' + esc(trn(q)) + '</div>' +
       '<div class="line" id="line"></div>' +
       '<div class="bank" id="bank"></div>' +
       '<div class="gap-lg"></div><div id="fb"></div>' +
@@ -736,7 +815,7 @@ function scrWords(id) {
       '<div class="wcard" id="card">' +
         '<div class="en">' + esc(w.en) + '</div>' +
         (open
-          ? '<div class="ru">' + esc(w.ru) + '</div><div class="wex">' + esc(w.ex) + '</div>'
+          ? '<div class="ru">' + esc(trn(w)) + '</div><div class="wex">' + esc(w.ex) + '</div>'
           : '<div class="hint">' + t('tapTranslate') + '</div>') +
       '</div>' +
       '<div class="dock">' +
@@ -927,6 +1006,7 @@ function scrProfile() {
    ══════════════════════════════════════════════════════════════════ */
 function tabs() {
   return [
+    { to: '#/home',     ic: 'home',    name: t('homeTab') },
     { to: '#/lessons',  ic: 'book',    name: t('lessonsTab') },
     { to: '#/games',    ic: 'game',    name: t('gamesTab') },
     { to: '#/settings', ic: 'profile', name: t('profileTab') }
@@ -962,12 +1042,16 @@ function route() {
   var parts = (location.hash || '').replace(/^#\/?/, '').split('/').filter(Boolean);
   var r = parts[0] || '';
 
-  /* Два входных условия, и оба обязательные: сначала номер, потом уровень. */
+  /* Два входных условия, и оба обязательные: сначала номер, потом курс.
+     Курс выбирается на главной — туда и упирается вход без уровня. */
   if (!S.phone) { if (r !== 'login') return go('#/login'); }
-  else if (!S.level && r !== 'level') return go('#/level');
+  else if (!S.level && r !== 'home' && r !== 'level') return go('#/home');
 
   if (r === 'login')  { drawTabs(null); return scrLogin(); }
-  if (r === 'level')  { drawTabs(null); return scrLevel(); }
+  if (r === 'home' || r === 'level') {
+    drawTabs(S.level ? '#/home' : null);   /* без курса вкладки некуда вести */
+    return scrHome();
+  }
   if (r === 'games')  { drawTabs('#/games'); return scrGames(); }
   if (r === 'settings') { drawTabs('#/settings'); return scrProfile(); }
 

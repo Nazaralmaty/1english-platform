@@ -5,12 +5,13 @@
  * {u, en, kk, g, ex}. Курс живёт в app/course.js и знает только про уроки,
  * поэтому банк собирается здесь, а не дублируется вторым файлом со словами.
  *
- * kk оставлено ради совместимости с кодом арен: в него кладётся русский
- * перевод. Переписывать три игры ради имени поля дороже, чем эта строка.
+ * kk — поле перевода в коде арен. В него кладётся перевод на языке
+ * интерфейса: казахский, если ученик выбрал казахский и слово его имеет,
+ * иначе русский. Переписывать три игры ради имени поля дороже.
  *
  * g — смысловая группа, по ней сортировочная арена строит корзины, а
- * Flappy берёт правдоподобный неверный вариант. Группа игровая, в курсе она
- * не нужна, поэтому таблица лежит рядом с игрой, а не в данных урока.
+ * Flappy берёт правдоподобный неверный вариант. У слова из урока группа
+ * проставлена в данных; для слов без неё работает таблица ниже.
  */
 (function (global) {
   'use strict';
@@ -42,34 +43,30 @@
     probably:'word'
   };
 
-  /* Слова уровня, на котором ученик сейчас. Уровня нет (открыли игру
-     напрямую) — берём весь курс, пустая арена хуже чужих слов. */
-  function levelId() {
-    try { return (JSON.parse(localStorage.getItem('1eng.v2')) || {}).level || null; }
-    catch (e) { return null; }
-  }
+  /* Уровень и язык ученика. Уровня нет (открыли игру напрямую) — берём
+     весь курс, пустая арена хуже чужих слов. */
+  var st = {};
+  try { st = JSON.parse(localStorage.getItem('1eng.v2')) || {}; } catch (e) {}
+  var lv = st.level || null, lang = st.lang || 'kk';
 
-  var lv = levelId(), out = [];
-  (global.COURSE ? global.COURSE.levels : []).forEach(function (l) {
-    if (lv && l.id !== lv) return;
+  function tr(w) { return (lang === 'kk' && w.kk) ? w.kk : (w.ru || w.kk || ''); }
+  function take(l, out) {
     l.lessons.forEach(function (s) {
       s.words.forEach(function (w) {
         /* «go / went» — это пара форм, а не слово: в проёме Flappy и в
            корзине сортировки она читается как ошибка. Оставляем словарю. */
         if (w.en.indexOf('/') >= 0) return;
-        out.push({ u: s.id, en: w.en, kk: w.ru, ru: w.ru, ex: w.ex, g: GROUP[w.en] || 'word' });
-      });
-    });
-  });
-  if (!out.length && global.COURSE) {
-    global.COURSE.levels.forEach(function (l) {
-      l.lessons.forEach(function (s) {
-        s.words.forEach(function (w) {
-          if (w.en.indexOf('/') < 0) out.push({ u: s.id, en: w.en, kk: w.ru, ru: w.ru, ex: w.ex, g: GROUP[w.en] || 'word' });
-        });
+        out.push({ u: s.id, en: w.en, kk: tr(w), ru: w.ru || tr(w), ex: w.ex, g: w.g || GROUP[w.en] || 'word' });
       });
     });
   }
+
+  var out = [];
+  (global.COURSE ? global.COURSE.levels : []).forEach(function (l) {
+    if (lv && l.id !== lv) return;
+    take(l, out);
+  });
+  if (!out.length && global.COURSE) global.COURSE.levels.forEach(function (l) { take(l, out); });
 
   global.WORDS = out;
 })(window);

@@ -244,7 +244,7 @@ h2{font-size:20px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
 /* ── нижние вкладки ─────────────────────────────────────────────────── */
 .tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:30;
-  max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);
+  max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);
   background:var(--tab-bg);backdrop-filter:blur(14px);
   box-shadow:0 -1px 0 var(--line);
   padding-bottom:env(safe-area-inset-bottom);
@@ -342,6 +342,55 @@ h2{font-size:20px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
 .item.empty .itop b{color:var(--muted)}
 .step.off{opacity:.42;pointer-events:none}
 .cover .swap{position:absolute;top:18px;right:16px;color:rgba(255,255,255,.72);z-index:2}
+
+/* ── главная: школа и курсы ─────────────────────────────────────────
+   Шапка во всю ширину экрана, поэтому она выходит из полей .view
+   отрицательными margin. Логотип школы лежит кружком на стыке шапки и
+   белого поля — так же, как в приложениях, откуда взят этот экран. */
+.hero{position:relative;margin:calc(-14px - env(safe-area-inset-top)) calc(-1 * var(--pad)) 0;
+      aspect-ratio:16/9;overflow:hidden;background:#061428}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;align-self:auto}
+.hero::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(6,20,40,.55) 0%,rgba(6,20,40,.30) 45%,rgba(6,20,40,.72) 100%)}
+/* inset:auto снимает растяжку от .hero img и должен стоять до top/left */
+.hero .brand{position:absolute;inset:auto;top:calc(30px + env(safe-area-inset-top));left:16px;
+             width:auto;height:26px;z-index:2;opacity:.95}
+.hero .lang{position:absolute;top:calc(26px + env(safe-area-inset-top));right:12px;z-index:2;
+            display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(6,20,40,.44);
+            backdrop-filter:blur(8px)}
+.hero .lang button{padding:7px 13px;border-radius:999px;font-size:13px;font-weight:800;
+                   letter-spacing:.02em;color:rgba(255,255,255,.72)}
+.hero .lang button.on{background:#fff;color:var(--ink)}
+
+.ava.logo{margin:-46px auto 12px;width:92px;height:92px;background:var(--card);
+          box-shadow:var(--sh-2);position:relative;z-index:3;padding:0}
+.ava.logo img{width:100%;height:100%;object-fit:cover;align-self:auto}
+
+.sect{font-size:19px;margin:24px 0 12px}
+
+/* карточка курса: обложка с названием, под ней строка с прогрессом */
+.ccard{display:block;width:100%;text-align:left;background:var(--card);border-radius:var(--r-card);
+       box-shadow:var(--sh-1);overflow:hidden;margin-bottom:14px;
+       transition:transform .16s var(--ease)}
+.ccard:active{transform:scale(.985)}
+.ccard .pic{position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+            aspect-ratio:16/9;padding:16px;background:#061428;overflow:hidden}
+.ccard .pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;align-self:auto}
+.ccard .pic::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(100deg,rgba(6,20,40,.92) 0%,rgba(6,20,40,.74) 46%,rgba(6,20,40,.12) 100%)}
+.ccard .pic > *{position:relative;z-index:2}
+.ccard .code{align-self:flex-start;display:inline-flex;padding:5px 11px;border-radius:999px;
+             background:rgba(255,255,255,.16);color:#fff;font-size:12px;font-weight:700;
+             letter-spacing:.06em;margin-bottom:8px}
+.ccard .pic b{display:block;color:#fff;font-size:clamp(26px,8.4vw,36px);line-height:.94;
+              font-weight:800;letter-spacing:-.04em;text-transform:uppercase}
+.ccard .pic b.long{font-size:clamp(20px,6.2vw,28px)}
+.ccard .pic i{display:block;color:#A9C0DC;font-size:13.5px;font-weight:600;font-style:normal;margin-top:6px}
+.ccard .foot{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.ccard .foot b{display:block;font-size:17px;font-weight:700;letter-spacing:-.015em}
+.ccard .pct{font-size:17px;font-weight:800;color:var(--accent);letter-spacing:-.02em;flex:none}
+.ccard .chev{color:var(--faint);flex:none}
+.ccard .bar{display:block;margin:0 16px 16px}
 
 /* ── профиль ────────────────────────────────────────────────────────── */
 .ava{--skin:#AEBECF;width:96px;height:96px;border-radius:50%;background:var(--bg);
