@@ -215,6 +215,27 @@
         .catch(function () { return true; });   /* база молчит — не запираем ученика */
     },
 
+    /* Партия в игре. Шагов у урока три и других не будет, поэтому игра
+       не притворяется шагом, а лежит своей строкой: что играли, сколько
+       верных и сколько мимо. Таблицы может ещё не быть (патч к схеме
+       применяется руками) — тогда партия просто не уезжает, игра от
+       этого не ломается. */
+    saveGame: function (game, right, wrong) {
+      if (!DB.ready) return Promise.resolve(false);
+      return token().then(function (tk) {
+        return req('/rest/v1/en_games', {
+          method: 'POST', token: tk, headers: { Prefer: 'return=minimal' },
+          body: {
+            student_id: session.user_id,
+            game: String(game || '').slice(0, 40),
+            right_count: right == null ? null : right,
+            wrong_count: wrong == null ? null : wrong
+          }
+        });
+      }).then(function () { DB.online = true; return true; })
+        .catch(function (err) { console.warn('[db] партия не сохранена:', err.message); return false; });
+    },
+
     /* Журнал падений: без него о поломке у ученика не узнает никто. */
     logError: function (message, source) {
       if (!DB.ready) return Promise.resolve(false);
@@ -287,12 +308,14 @@
           req('/rest/v1/en_progress?select=*', { token: tk }),
           req('/rest/v1/en_admins?select=id', { token: tk }),
           req('/rest/v1/en_errors?select=*&order=created_at.desc&limit=20', { token: tk })
+            .catch(function () { return []; }),
+          req('/rest/v1/en_games?select=*&order=created_at.desc&limit=500', { token: tk })
             .catch(function () { return []; })
         ]);
       }).then(function (r) {
         return {
           students: r[0] || [], progress: r[1] || [],
-          isAdmin: (r[2] || []).length > 0, errors: r[3] || []
+          isAdmin: (r[2] || []).length > 0, errors: r[3] || [], games: r[4] || []
         };
       });
     },

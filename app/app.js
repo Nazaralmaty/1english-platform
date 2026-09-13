@@ -27,7 +27,8 @@ function blank() {
     name: '',
     gender: '',           /* m | f */
     consent: '',          /* дата согласия на обработку данных */
-    p: {}                 /* lessonId: {read:true, task:{right,total}, words:true} */
+    p: {},                /* lessonId: {read:true, task:{right,total}, words:true} */
+    g: {}                 /* game: {plays,best,right,wrong,last} — пишет games/bridge.js */
   };
 }
 
@@ -35,6 +36,25 @@ var S = (function () {
   try { return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); }
   catch (e) { return blank(); }
 })();
+
+/* Номер хранится и уезжает в базу только цифрами — 77011234567. Красивый
+   вид с плюсом и скобками собирается при показе. Раньше при входе в базу
+   ложились цифры, а при первой же правке профиля — строка из поля ввода
+   «+7 (701) 123 45 67», и один и тот же человек лежал в en_students в двух
+   видах: сверять с en_allowed и с выгрузками по такому полю нельзя. */
+function phoneDigits(raw) {
+  var d = String(raw || '').replace(/\D/g, '');
+  if (d.length === 11 && d.charAt(0) === '8') d = '7' + d.slice(1);
+  if (d.length === 10) d = '7' + d;
+  return (d.length === 11 && d.charAt(0) === '7') ? d : '';
+}
+function phoneShow(raw) {
+  var d = phoneDigits(raw);
+  if (!d) return String(raw || '');
+  return '+' + d[0] + ' (' + d.slice(1, 4) + ') ' + d.slice(4, 7) + ' ' + d.slice(7, 9) + ' ' + d.slice(9);
+}
+/* состояние с прошлой версии могло сохранить номер строкой с разделителями */
+if (S.phone) S.phone = phoneDigits(S.phone) || S.phone;
 
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 function prog(id) { return S.p[id] || (S.p[id] = {}); }
@@ -122,6 +142,8 @@ var LANG = {
     know:'Знаю', oneMore:'Ещё раз', wordsDone:'слов пройдено',
     lessonsTab:'Уроки', gamesTab:'Игры', profileTab:'Профиль',
     gamesNote:'Слова берутся из вашего уровня.',
+    gPlays:function (n) { return 'Сыграно ' + n; },
+    gBest:function (n) { return 'лучший счёт ' + n; },
     gWordOrder:'Порядок слов', gWordOrderNote:'Собрать предложение из слов',
     gSort:'Сортировка', gSortNote:'Разложить слова по группам',
     gFlappyNote:'Лететь в тот проём, где верный перевод',
@@ -134,13 +156,13 @@ var LANG = {
     consentShort:'Согласен на обработку моих данных',
     consentLink:'Что это значит',
     consentTitle:'Обработка персональных данных',
-    consentText:'1English хранит ваш номер телефона, имя, дату рождения, пол и то, какие уроки вы прошли. Это нужно, чтобы прогресс не терялся при смене телефона и чтобы преподаватель видел, кому нужна помощь.\n\nДанные лежат в базе Supabase и третьим лицам не передаются. Чтобы их удалили, напишите преподавателю с того же номера: аккаунт и всё, что с ним связано, стирается.',
+    consentText:'1English хранит ваш номер телефона, имя, пол и то, какие уроки вы прошли. Это нужно, чтобы прогресс не терялся при смене телефона и чтобы преподаватель видел, кому нужна помощь.\n\nДанные лежат в базе Supabase и третьим лицам не передаются. Чтобы их удалили, напишите преподавателю с того же номера: аккаунт и всё, что с ним связано, стирается.',
     consentNeed:'Отметьте согласие, чтобы продолжить',
     tooMany:'Слишком много попыток. Подождите минуту.',
     notAllowed:'Этого номера нет в списке группы. Напишите преподавателю.',
     noAccess:'Неверный код, либо аккаунт ещё не заведён. Напишите преподавателю.',
     wipe:'Удалить мои данные', wipeCap:'Профиль, прогресс и сам аккаунт',
-    wipeText:'Из базы пропадут: номер телефона, имя, дата рождения, пол и весь пройденный курс. Вернуть это будет нельзя — вход по этому номеру начнётся с чистого листа.',
+    wipeText:'Из базы пропадут: номер телефона, имя, пол и весь пройденный курс. Вернуть это будет нельзя — вход по этому номеру начнётся с чистого листа.',
     wipeGo:'Удалить', cancel:'Отмена', wiped:'Данные удалены'
   },
   kk: {
@@ -172,6 +194,8 @@ var LANG = {
     know:'Білемін', oneMore:'Тағы бір рет', wordsDone:'сөз өтілді',
     lessonsTab:'Сабақтар', gamesTab:'Ойындар', profileTab:'Профиль',
     gamesNote:'Сөздер деңгейіңізден алынады.',
+    gPlays:function (n) { return n + ' ойын ойналды'; },
+    gBest:function (n) { return 'үздік нәтиже ' + n; },
     gWordOrder:'Сөз реті', gWordOrderNote:'Сөздерден сөйлем құрастыру',
     gSort:'Сұрыптау', gSortNote:'Сөздерді топтарға бөлу',
     gFlappyNote:'Дұрыс аудармасы бар саңылауға ұшу',
@@ -184,13 +208,13 @@ var LANG = {
     consentShort:'Деректерімді өңдеуге келісемін',
     consentLink:'Бұл нені білдіреді',
     consentTitle:'Дербес деректерді өңдеу',
-    consentText:'1English сіздің телефон нөміріңізді, атыңызды, туған күніңізді, жынысыңызды және қандай сабақтарды өткеніңізді сақтайды. Бұл телефон ауысқанда прогресс жоғалмауы үшін және ұстаз кімге көмек керегін көруі үшін қажет.\n\nДеректер Supabase базасында жатыр, үшінші тұлғаларға берілмейді. Өшіру үшін ұстазға сол нөмірден жазыңыз: аккаунт және онымен байланысты бәрі жойылады.',
+    consentText:'1English сіздің телефон нөміріңізді, атыңызды, жынысыңызды және қандай сабақтарды өткеніңізді сақтайды. Бұл телефон ауысқанда прогресс жоғалмауы үшін және ұстаз кімге көмек керегін көруі үшін қажет.\n\nДеректер Supabase базасында жатыр, үшінші тұлғаларға берілмейді. Өшіру үшін ұстазға сол нөмірден жазыңыз: аккаунт және онымен байланысты бәрі жойылады.',
     consentNeed:'Жалғастыру үшін келісімді белгілеңіз',
     tooMany:'Тым көп әрекет. Бір минут күтіңіз.',
     notAllowed:'Бұл нөмір топ тізімінде жоқ. Ұстазға жазыңыз.',
     noAccess:'Код қате, немесе аккаунт әлі ашылмаған. Ұстазға жазыңыз.',
     wipe:'Деректерімді өшіру', wipeCap:'Профиль, прогресс және аккаунт',
-    wipeText:'Базадан телефон нөмірі, аты, туған күні, жынысы және өтілген курс жойылады. Қайтару мүмкін болмайды — осы нөмірмен кіру таза беттен басталады.',
+    wipeText:'Базадан телефон нөмірі, аты, жынысы және өтілген курс жойылады. Қайтару мүмкін болмайды — осы нөмірмен кіру таза беттен басталады.',
     wipeGo:'Өшіру', cancel:'Болдырмау', wiped:'Деректер өшірілді'
   }
 };
@@ -266,7 +290,13 @@ var view = document.getElementById('view');
 var tabsEl = document.getElementById('tabs');
 
 function h(html) { return html; }
-function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]; }); }
+/* Кавычки тоже: часть значений подставляется в атрибуты (value у поля
+   имени, title у плеера), и имя с кавычкой иначе ломает разметку. */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
 function $(sel, root) { return (root || view).querySelector(sel); }
 function $$(sel, root) { return Array.prototype.slice.call((root || view).querySelectorAll(sel)); }
 function go(hash) { location.hash = hash; }
@@ -327,8 +357,8 @@ function head(title, back) {
 }
 
 
-/* Шторка снизу: выбор уровня, дата рождения, пол, язык, тема — всё
-   спрашивается одинаково, поэтому обёртка одна. */
+/* Шторка снизу: выбор уровня, имя, пол, язык, тема — всё спрашивается
+   одинаково, поэтому обёртка одна. */
 function openSheet(html, wire) {
   var veil = document.createElement('div');
   veil.className = 'veil';
@@ -418,7 +448,7 @@ function scrLogin() {
     paint(
       '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 0 40px">' +
         '<h1 style="margin-bottom:8px">' + t('smsTitle') + '</h1>' +
-        '<p class="sub" style="margin-bottom:22px">' + t('smsTo') + esc(phone) + '</p>' +
+        '<p class="sub" style="margin-bottom:22px">' + t('smsTo') + esc(phoneShow(phone)) + '</p>' +
         '<input class="field" id="cd" type="tel" inputmode="numeric" maxlength="6" placeholder="000000">' +
         '<label class="agree"><input type="checkbox" id="ag">' +
           '<span>' + t('consentShort') + '. <b id="more">' + t('consentLink') + '</b></span></label>' +
@@ -458,7 +488,7 @@ function scrLogin() {
         });
       }).then(function () {
         clearTries(phone);
-        S.phone = phone;
+        S.phone = phoneDigits(phone) || phone;
         if (!S.consent) S.consent = new Date().toISOString();
         save();
         syncProfile();
@@ -853,10 +883,19 @@ function scrWords(id) {
    ══════════════════════════════════════════════════════════════════ */
 function games() {
   return [
-    { file: 'flappy.html',  name: 'Flappy English', note: t('gFlappyNote') },
-    { file: 'soilem.html',  name: t('gWordOrder'),  note: t('gWordOrderNote') },
-    { file: 'surypta.html', name: t('gSort'),       note: t('gSortNote') }
+    { file: 'flappy.html',  id: 'flappy_english', name: 'Flappy English', note: t('gFlappyNote') },
+    { file: 'soilem.html',  id: 'soilem',         name: t('gWordOrder'),  note: t('gWordOrderNote') },
+    { file: 'surypta.html', id: 'surypta',        name: t('gSort'),       note: t('gSortNote') }
   ];
+}
+
+/* Что ребёнок уже сыграл. Итог кладёт games/bridge.js после партии, здесь
+   он только показывается: игра без следа читается как игрушка в стороне
+   от курса, а она часть курса. */
+function gameLine(id, dflt) {
+  var it = (S.g || {})[id];
+  if (!it || !it.plays) return dflt;
+  return t('gPlays')(it.plays) + (it.best ? ' · ' + t('gBest')(it.best) : '');
 }
 
 function scrGames() {
@@ -865,9 +904,11 @@ function scrGames() {
     '<p class="sub" style="margin:-8px 0 20px">' + t('gamesNote') + '</p>' +
     '<div class="rows">' +
       games().map(function (g) {
-        return '<a class="row" href="games/' + g.file + '?back=' + encodeURIComponent('../index.html#/games') + '">' +
+        return '<a class="row" href="games/' + g.file + '?g=' + g.id +
+          '&back=' + encodeURIComponent('../index.html#/games') + '">' +
           '<span class="mark">' + icon('game', 24) + '</span>' +
-          '<span class="grow"><b>' + g.name + '</b><span class="cap">' + g.note + '</span></span>' +
+          '<span class="grow"><b>' + g.name + '</b><span class="cap">' +
+            esc(gameLine(g.id, g.note)) + '</span></span>' +
           '<span class="chev">' + icon('right', 20) + '</span></a>';
       }).join('') +
     '</div>');
@@ -930,7 +971,7 @@ function scrProfile() {
 
     '<div class="who">' +
       '<h2 id="nm">' + esc(S.name || t('notSetN')) + '</h2>' +
-      '<p>' + esc(S.phone) + '</p>' +
+      '<p>' + esc(phoneShow(S.phone)) + '</p>' +
     '</div>' +
 
     '<div class="group">' +

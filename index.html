@@ -7,6 +7,7 @@
 <meta name="description" content="1English · платформа обучения английскому: уроки, задания, словарь и игры.">
 <title>1English</title>
 <link rel="icon" href="assets/logo.png">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="assets/logo.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="1English">
@@ -18,5 +19,16 @@
   <script src="app/db.js"></script>
   <script src="app/course.js"></script>
   <script src="app/app.js"></script>
+  <script>
+    /* Офлайн. Регистрация после загрузки, чтобы не отнимать сеть у первого
+       экрана. Не поддерживает браузер — платформа работает как раньше. */
+    var secure = location.protocol === 'https:' ||
+                 location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if ('serviceWorker' in navigator && secure) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>

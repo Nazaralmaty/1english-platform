@@ -121,9 +121,14 @@
   var root = document.getElementById('root');
   var timer = null, lastData = null;
 
+  /* Кавычки экранируются наравне со скобками: почти всё, что здесь
+     рисуется, ученик пишет сам (имя, номер), а часть значений уходит
+     внутрь атрибутов — data-reset, data-del. Без кавычек номер вида
+     77011111111" onmouseover="…  выламывается из атрибута и исполняется
+     уже под админским токеном. */
   function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>]/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
 
@@ -141,6 +146,23 @@
     if (!lv) return 0;
     return lv.lessons.reduce(function (n, s) { return n + stepsOf(s); }, 0);
   }
+  /* Какому уровню принадлежит урок. Ученик может пройти Beginner и уйти на
+     Elementary — его старые строки остаются в базе. Если считать их в
+     знаменателе нового уровня, выходит 263%: проверено на замере. */
+  function levelOfLesson(lessonId) {
+    var out = null;
+    COURSE.levels.forEach(function (l) {
+      l.lessons.forEach(function (s) { if (s.id === lessonId) out = l.id; });
+    });
+    return out;
+  }
+  function lessonById(lessonId) {
+    var out = null;
+    COURSE.levels.forEach(function (l) {
+      l.lessons.forEach(function (s) { if (s.id === lessonId) out = s; });
+    });
+    return out;
+  }
   function levelTitle(levelId) {
     var lv = COURSE.levels.filter(function (l) { return l.id === levelId; })[0];
     return lv ? lv.title : '—';
@@ -156,8 +178,12 @@
     var d = Math.floor(h / 24);
     return d + ' дн назад';
   }
+  /* Номер приходит из строки ученика, а её ученик правит сам. В разметку
+     он попадает только цифрами: всё остальное отрезается здесь. */
+  function digits(p) { return String(p == null ? '' : p).replace(/\D/g, '').slice(0, 11); }
+
   function phoneFmt(p) {
-    var d = String(p || '').replace(/\D/g, '');
+    var d = digits(p);
     return d.length === 11
       ? '+' + d[0] + ' (' + d.slice(1, 4) + ') ' + d.slice(4, 7) + ' ' + d.slice(7, 9) + ' ' + d.slice(9)
       : (p || '—');
@@ -237,23 +263,38 @@
     var active = 0, todaySteps = 0;
     d.progress.forEach(function (r) { if (String(r.updated_at).slice(0, 10) === today) todaySteps++; });
 
+    /* Партии в играх. Таблицы en_games может ещё не быть — тогда здесь
+       пусто, и колонка честно показывает ноль, а не прячется. */
+    var gamesAll = d.games || [], gamesWeek = 0, gamesBy = {};
+    gamesAll.forEach(function (r) {
+      gamesBy[r.student_id] = (gamesBy[r.student_id] || 0) + 1;
+      if (new Date(r.created_at).getTime() > week) gamesWeek++;
+    });
+
     var rows = d.students.map(function (st) {
       var p = byStudent[st.id] || { steps: 0, lessons: {}, last: null };
       var cap = levelCapacity(st.level);
-      var pct = cap ? Math.round(p.steps / cap * 100) : 0;
       var last = p.last && p.last > st.updated_at ? p.last : st.updated_at;
       if (new Date(last).getTime() > week) active++;
 
-      var done = 0;
+      /* Процент и «уроков закрыто» — по текущему уровню ученика: только он
+         стоит в знаменателе. Колонка «шагов» остаётся общей: это всё, что
+         человек сделал на платформе, включая прошлые уровни. */
+      var mine = 0, done = 0;
       Object.keys(p.lessons).forEach(function (id) {
-        var lesson = null;
-        COURSE.levels.forEach(function (l) {
-          l.lessons.forEach(function (x) { if (x.id === id) lesson = x; });
-        });
-        if (lesson && p.lessons[id].length >= stepsOf(lesson)) done++;
+        if (levelOfLesson(id) !== st.level) return;
+        var lesson = lessonById(id);
+        if (!lesson) return;
+        var uniq = {};
+        p.lessons[id].forEach(function (step) { uniq[step] = true; });
+        var n = Object.keys(uniq).length;
+        mine += Math.min(n, stepsOf(lesson));
+        if (n >= stepsOf(lesson)) done++;
       });
+      var pct = cap ? Math.min(100, Math.round(mine / cap * 100)) : 0;
 
-      return { st: st, pct: pct, steps: p.steps, done: done, last: last };
+      return { st: st, pct: pct, steps: p.steps, done: done, last: last,
+               games: gamesBy[st.id] || 0 };
     }).sort(function (a, b) { return (b.last || '').localeCompare(a.last || ''); });
 
     root.innerHTML =
@@ -269,13 +310,14 @@
         '<div class="kpi"><b>' + active + '</b><span>заходили за 7 дней</span></div>' +
         '<div class="kpi"><b>' + d.progress.length + '</b><span>шагов пройдено</span></div>' +
         '<div class="kpi' + (todaySteps ? ' hot' : '') + '"><b>' + todaySteps + '</b><span>шагов сегодня</span></div>' +
+        '<div class="kpi"><b>' + gamesWeek + '</b><span>партий в играх за 7 дней</span></div>' +
       '</div>' +
 
       '<div class="wrap"><div class="scrollx">' +
         (rows.length
           ? '<table><thead><tr>' +
               '<th>Ученик</th><th>Уровень</th><th>Прогресс</th>' +
-              '<th class="num">Уроков закрыто</th><th class="num">Шагов</th>' +
+              '<th class="num">Уроков закрыто</th><th class="num">Шагов</th><th class="num">Игр</th>' +
               '<th>Последний заход</th><th></th>' +
             '</tr></thead><tbody>' +
             rows.map(function (r) {
@@ -290,8 +332,9 @@
                     '<span>' + r.pct + '%</span></span></td>' +
                 '<td class="num">' + r.done + '</td>' +
                 '<td class="num">' + r.steps + '</td>' +
+                '<td class="num">' + r.games + '</td>' +
                 '<td class="ago' + (hot ? ' hot' : '') + '">' + ago(r.last) + '</td>' +
-                '<td><button class="reset" data-reset="' + esc(r.st.phone) + '">Сбросить код</button></td>' +
+                '<td><button class="reset" data-reset="' + esc(digits(r.st.phone)) + '">Сбросить код</button></td>' +
               '</tr>';
             }).join('') +
             '</tbody></table>'
@@ -414,7 +457,7 @@
         list.innerHTML = rows.map(function (r) {
           return '<span class="chip2"><b>' + esc(phoneFmt(r.phone)) + '</b>' +
                  (r.note ? '<span>' + esc(r.note) + '</span>' : '') +
-                 '<button data-del="' + esc(r.phone) + '" title="Убрать">✕</button></span>';
+                 '<button data-del="' + esc(digits(r.phone)) + '" title="Убрать">✕</button></span>';
         }).join('');
         Array.prototype.forEach.call(list.querySelectorAll('[data-del]'), function (b) {
           b.onclick = function () {
