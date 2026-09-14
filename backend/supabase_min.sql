@@ -279,11 +279,13 @@ declare
   v_digits text;
   v_id     uuid;
 begin
-  -- Из браузера роль всегда anon или authenticated, и тогда спрашиваем
-  -- en_admins. В SQL Editor запрос идёт под postgres, где auth.uid() пустой:
-  -- владельцу базы разрешаем без вопросов, иначе функцию нельзя было бы
-  -- вызвать руками до появления первого админа.
-  if current_user in ('anon', 'authenticated') and not public.en_is_admin() then
+  -- Кто зовёт — смотрим по токену запроса. current_user здесь не годится:
+  -- внутри security definer это всегда владелец функции (postgres), и
+  -- проверка с ним молча пропускала любого залогиненного ученика — тот мог
+  -- сбросить код админу и войти в дашборд. Из браузера роль в токене anon
+  -- или authenticated; в SQL Editor токена нет, auth.role() пустой, и
+  -- владельцу базы разрешаем без вопросов — иначе первого админа не завести.
+  if auth.role() in ('anon', 'authenticated') and not public.en_is_admin() then
     return 'Только для аккаунта из en_admins';
   end if;
   if p_code is null or p_code !~ '^[0-9]{6}$' then return 'Код — ровно шесть цифр'; end if;
@@ -331,11 +333,13 @@ declare
   v_old    uuid;
   v_email  text;
 begin
-  -- Из браузера роль всегда anon или authenticated, и тогда спрашиваем
-  -- en_admins. В SQL Editor запрос идёт под postgres, где auth.uid() пустой:
-  -- владельцу базы разрешаем без вопросов, иначе функцию нельзя было бы
-  -- вызвать руками до появления первого админа.
-  if current_user in ('anon', 'authenticated') and not public.en_is_admin() then
+  -- Кто зовёт — смотрим по токену запроса. current_user здесь не годится:
+  -- внутри security definer это всегда владелец функции (postgres), и
+  -- проверка с ним молча пропускала любого залогиненного ученика — тот мог
+  -- сбросить код админу и войти в дашборд. Из браузера роль в токене anon
+  -- или authenticated; в SQL Editor токена нет, auth.role() пустой, и
+  -- владельцу базы разрешаем без вопросов — иначе первого админа не завести.
+  if auth.role() in ('anon', 'authenticated') and not public.en_is_admin() then
     return 'Только для аккаунта из en_admins';
   end if;
   if p_code is null or p_code !~ '^[0-9]{6}$' then return 'Код — ровно шесть цифр'; end if;
@@ -360,6 +364,10 @@ begin
     update auth.users
        set encrypted_password = extensions.crypt(p_code, extensions.gen_salt('bf', 10)),
            email_confirmed_at = coalesce(email_confirmed_at, now()),
+           confirmation_token = coalesce(confirmation_token, ''),
+           recovery_token = coalesce(recovery_token, ''),
+           email_change_token_new = coalesce(email_change_token_new, ''),
+           email_change = coalesce(email_change, ''),
            updated_at = now()
      where id = v_old;
     -- у аккаунтов старого образца строки в identities может не быть вовсе
@@ -380,12 +388,17 @@ begin
     return 'Готово: ' || v_digits || ' входит с кодом ' || p_code || ' (аккаунт был заведён раньше)';
   end if;
 
+  -- Токены — пустые строки, не NULL: на NULL в confirmation_token GoTrue
+  -- падает при входе с 500 «Database error querying schema». Аккаунт при
+  -- этом заведён, а ученик войти не может.
   insert into auth.users (
     instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    confirmation_token, recovery_token, email_change_token_new, email_change,
     raw_app_meta_data, raw_user_meta_data, created_at, updated_at
   ) values (
     '00000000-0000-0000-0000-000000000000', v_id, 'authenticated', 'authenticated',
     v_email, extensions.crypt(p_code, extensions.gen_salt('bf', 10)), now(),
+    '', '', '', '',
     '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()
   );
 

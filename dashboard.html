@@ -225,7 +225,7 @@
       if (!d.isAdmin) {
         stop();
         DB.signOut();
-        return auth('Этот аккаунт не в списке en_admins. Добавьте его строкой из backend/supabase_min.sql.');
+        return auth('Этот номер не админ. Дашборд открывает только таблица en_admins, en_allowed прав не даёт. Supabase → SQL Editor: select public.en_make_admin(\'ваш номер\');');
       }
       lastData = d;
       if (busy()) return;   /* не затирать наполовину заполненную форму */
