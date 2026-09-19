@@ -188,13 +188,18 @@
         .catch(function (err) { DB.online = false; console.warn('[db] шаг не сохранён:', err.message); return false; });
     },
 
-    /* Всё, что есть на сервере: профиль и прогресс. */
+    /* Всё, что есть на сервере: профиль и прогресс — строго свои.
+       Фильтр по id обязателен, а не декор: у аккаунта из en_admins RLS
+       отдаёт ВСЕ строки, и запрос без условия приносил ему чужой профиль
+       (последнего заведённого ученика) и чужой прогресс, а следующий
+       syncProfile записывал чужое имя и пол уже в его собственную строку. */
     pull: function () {
       if (!DB.ready) return Promise.resolve(null);
+      var me = session.user_id;
       return token().then(function (tk) {
         return Promise.all([
-          req('/rest/v1/en_students?select=*&limit=1', { token: tk }),
-          req('/rest/v1/en_progress?select=*', { token: tk })
+          req('/rest/v1/en_students?select=*&id=eq.' + me, { token: tk }),
+          req('/rest/v1/en_progress?select=*&student_id=eq.' + me, { token: tk })
         ]);
       }).then(function (r) {
         DB.online = true;
