@@ -130,6 +130,7 @@ var LANG = {
     soon:'Материалы скоро', videoLesson:'Видеоурок', ruleReview:'Разбор правила',
     lesson:'Урок', task:'Задание', dict:'Словарь',
     videoAndRule:'Видео и разбор', videoOnly:'Видео', noVideo:'Видео пока нет',
+    theory:'Теория', practice:'Практика',
     noTasks:'Заданий пока нет', noWords:'Слов пока нет',
     nTasks:function (n) { return n + ' заданий'; },
     nWords:function (n) { return n + ' слов'; },
@@ -182,6 +183,7 @@ var LANG = {
     soon:'Материалдар жақында', videoLesson:'Бейнесабақ', ruleReview:'Ереже талдауы',
     lesson:'Сабақ', task:'Тапсырма', dict:'Сөздік',
     videoAndRule:'Бейне және талдау', videoOnly:'Бейне', noVideo:'Бейне әзірге жоқ',
+    theory:'Теория', practice:'Жаттығу',
     noTasks:'Тапсырма әзірге жоқ', noWords:'Сөздер әзірге жоқ',
     nTasks:function (n) { return n + ' тапсырма'; },
     nWords:function (n) { return n + ' сөз'; },
@@ -255,7 +257,16 @@ function lesson(id) {
   });
   return out;
 }
-function video(id) { return (window.VIDEOS || {})[id] || ''; }
+/* Ролики урока. На русском у урока их два — теория и практика, поэтому
+   всегда отдаём список. Русского ролика нет — играет казахский, урок
+   из-за этого не исчезает. */
+function videos(id) {
+  var v = (S.lang === 'ru') ? (window.VIDEOS_RU || {})[id] : null;
+  if (!v) v = (window.VIDEOS || {})[id];
+  if (!v) return [];
+  return (typeof v === 'string') ? [v] : v.filter(Boolean);
+}
+function video(id) { return videos(id)[0] || ''; }
 
 /* Шага у урока три и других не будет: урок, задание, словарь. Но урок
    бывает пустым: ролик ещё не привязан, заданий пока нет. Шаг без
@@ -676,15 +687,17 @@ function steps(s) {
 /* ── шаг 1: правило ─────────────────────────────────────────────────── */
 function scrRead(id) {
   var s = lesson(id); if (!s) return go('#/lessons');
-  var yt = video(id);
+  var yt = videos(id);
 
   paint(
     head(s.title || (t('lesson') + ' ' + s.n), '#/lessons') +
-    (yt
-      ? '<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/' + yt +
-        '?rel=0&modestbranding=1&playsinline=1" title="' + esc(s.title || (t('lesson') + ' ' + s.n)) + '" allowfullscreen ' +
-        'allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>'
-      : '') +
+    yt.map(function (v, k) {
+      var cap = yt.length > 1 ? (k === 0 ? t('theory') : t('practice')) : '';
+      return (cap ? '<div class="vcap">' + cap + '</div>' : '') +
+        '<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/' + v +
+        '?rel=0&modestbranding=1&playsinline=1" title="' + esc((s.title || (t('lesson') + ' ' + s.n)) + (cap ? ' · ' + cap : '')) + '" allowfullscreen ' +
+        'allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>';
+    }).join('') +
     (tx(s, 'rule') ? '<div class="rule">' + esc(tx(s, 'rule')) + '</div>' : '') +
     (s.examples.length
       ? '<div class="card" style="padding:4px 16px;margin-bottom:8px">' +

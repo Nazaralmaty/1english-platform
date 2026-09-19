@@ -13,6 +13,10 @@ for (const f of ['app/course.js', 'app/words_bridge.js']) {
   vm.runInContext(fs.readFileSync(f, 'utf8'), ctx, { filename: f });
 }
 const { COURSE, VIDEOS, WORDS } = ctx.window;
+const VIDEOS_RU = ctx.window.VIDEOS_RU || {};
+
+/* id ролика YouTube: хвост ссылки, 11 символов. */
+const ytOk = (v) => /^[A-Za-z0-9_-]{11}$/.test(v);
 
 let bad = 0;
 const fail = (m) => { console.error('✗ ' + m); bad++; };
@@ -36,7 +40,7 @@ function canForm(tokens, answer) {
 const ids = new Set();
 /* Группы для игровых арен: по ним сортировка строит корзины. */
 const GROUPS = new Set(['act', 'thing', 'sign', 'time', 'word']);
-let lessons = 0, filled = 0, withVideo = 0, kkWords = 0;
+let lessons = 0, filled = 0, withVideo = 0, withVideoRu = 0, kkWords = 0;
 for (const lv of COURSE.levels) {
   if (lv.lessons.length !== 14) fail(`уровень ${lv.id}: уроков ${lv.lessons.length}, а надо 14`);
   for (const s of lv.lessons) {
@@ -46,8 +50,17 @@ for (const lv of COURSE.levels) {
     if (!(s.id in VIDEOS)) fail(`${s.id}: нет слота под видео в window.VIDEOS`);
     if (VIDEOS[s.id]) {
       withVideo++;
-      if (!/^[A-Za-z0-9_-]{11}$/.test(VIDEOS[s.id]))
+      if (!ytOk(VIDEOS[s.id]))
         fail(`${s.id}: «${VIDEOS[s.id]}» не похоже на id ролика YouTube (11 символов)`);
+    }
+    /* Русский урок собран из двух роликов: теория и практика. */
+    if (VIDEOS_RU[s.id]) {
+      const ru = [].concat(VIDEOS_RU[s.id]);
+      withVideoRu++;
+      if (!ru.length) fail(`${s.id}: в VIDEOS_RU пустой список роликов`);
+      if (ru.length > 2) fail(`${s.id}: в VIDEOS_RU ${ru.length} ролика, а экран показывает теорию и практику`);
+      for (const v of ru) if (!ytOk(v)) fail(`${s.id}: «${v}» не похоже на id ролика YouTube (11 символов)`);
+      if (new Set(ru).size !== ru.length) fail(`${s.id}: теория и практика ссылаются на один ролик`);
     }
     /* Пустой урок — нормальное состояние. Проверяем только заполненные. */
     if (!s.words.length && !s.tasks.length && !s.rule) continue;
@@ -73,6 +86,7 @@ for (const lv of COURSE.levels) {
 }
 /* Ключи VIDEOS без урока — опечатка в id, которую иначе не заметить. */
 for (const id of Object.keys(VIDEOS)) if (!ids.has(id)) fail(`в VIDEOS есть ${id}, а урока с таким id нет`);
+for (const id of Object.keys(VIDEOS_RU)) if (!ids.has(id)) fail(`в VIDEOS_RU есть ${id}, а урока с таким id нет`);
 
 /* ── игровой банк ─────────────────────────────────────────────────── */
 const groups = {};
@@ -92,7 +106,7 @@ if (WORDS.length >= 12) {
 
 console.log(bad
   ? `\n${bad} ошибок в данных`
-  : `OK: уровней ${COURSE.levels.length}, уроков ${lessons} (с материалом ${filled}, с видео ${withVideo}), ` +
+  : `OK: уровней ${COURSE.levels.length}, уроков ${lessons} (с материалом ${filled}, с видео ${withVideo}, с русским видео ${withVideoRu}), ` +
     `слов в банке ${WORDS.length}, групп ${Object.keys(groups).length}, ` +
     `с казахским переводом ${kkWords}`);
 process.exit(bad ? 1 : 0);
