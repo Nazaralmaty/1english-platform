@@ -315,12 +315,21 @@
           req('/rest/v1/en_errors?select=*&order=created_at.desc&limit=20', { token: tk })
             .catch(function () { return []; }),
           req('/rest/v1/en_games?select=*&order=created_at.desc&limit=500', { token: tk })
+            .catch(function () { return []; }),
+          /* учителя и их карточки. Патча кабинета учителя может ещё не
+             быть — тогда панель честно показывает «учителей нет», а не
+             роняет весь дашборд. */
+          req('/rest/v1/en_teachers?select=*&order=created_at', { token: tk })
+            .catch(function () { return []; }),
+          req('/rest/v1/en_teacher_students?select=*,lessons:en_teacher_lessons(id,done,done_at)' +
+              '&order=archived,name', { token: tk })
             .catch(function () { return []; })
         ]);
       }).then(function (r) {
         return {
           students: r[0] || [], progress: r[1] || [],
-          isAdmin: (r[2] || []).length > 0, errors: r[3] || [], games: r[4] || []
+          isAdmin: (r[2] || []).length > 0, errors: r[3] || [], games: r[4] || [],
+          teachers: r[5] || [], cards: r[6] || []
         };
       });
     },
@@ -332,6 +341,26 @@
       return token().then(function (tk) {
         return req('/rest/v1/rpc/en_delete_me', { method: 'POST', token: tk, body: {} });
       }).then(function () { keep(null); DB.ready = false; DB.userId = null; return true; });
+    },
+
+    /* Общая дверь к PostgREST для отдельных экранов (кабинет учителя).
+       Токен и обновление токена берутся отсюда, а не переписываются
+       заново: экранов будет больше, а способ войти — один. Защита не
+       здесь, а в правилах RLS: этот же запрос из чужого браузера вернёт
+       чужому только его собственные строки. */
+    rest: function (path, opt) {
+      opt = opt || {};
+      return token().then(function (tk) {
+        return req('/rest/v1/' + path, {
+          method: opt.method || 'GET', body: opt.body,
+          headers: opt.headers, token: tk
+        });
+      });
+    },
+    rpc: function (name, body) {
+      return token().then(function (tk) {
+        return req('/rest/v1/rpc/' + name, { method: 'POST', token: tk, body: body || {} });
+      });
     },
 
     normPhone: normPhone
