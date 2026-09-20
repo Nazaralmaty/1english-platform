@@ -316,7 +316,12 @@
        переставала обновляться совсем. */
     var filled = false;
     Array.prototype.forEach.call(root.querySelectorAll('.d-panel input,.d-panel textarea'), function (i) {
-      if (i.type === 'checkbox') { if (i.checked) filled = true; return; }
+      /* Сравниваем с умолчанием, а не с пустотой. Иначе анкета, где уже
+         нарисованы «4 месяца», «12 уроков», 18:00 и отмеченные Пн–Пт у
+         учителя, считалась заполненной всегда: страница переставала
+         обновляться, и заведённый учитель не появлялся в списке — ровно
+         тот случай, когда «нажал, и ничего не произошло». */
+      if (i.type === 'checkbox') { if (i.checked !== i.defaultChecked) filled = true; return; }
       var def = (i.getAttribute('value') || '').trim();
       if (i.value.trim() && i.value.trim() !== def) filled = true;
     });

@@ -326,8 +326,20 @@
       }
       return cards();
     }).catch(function (e) {
-      if (/войти|token|JWT/i.test(e.message || '')) auth('');
-      else root.innerHTML = '<div class="t-empty">' + esc(e.message) + '</div>';
+      if (/войти|token|JWT/i.test(e.message || '')) return auth('');
+      /* Частый случай — схема ещё не применена. Сырой ответ PostgREST
+         («relation public.en_teachers does not exist») читается как
+         «всё сломалось», хотя нужен один запуск файла патча. */
+      var noSchema = /does not exist|schema cache|relation/i.test(e.message || '');
+      root.innerHTML = '<div class="t-empty">' +
+        (noSchema
+          ? 'В базе ещё нет таблиц кабинета.<br><br>Supabase → SQL Editor → вставить целиком ' +
+            '<b>backend/patch_2026-09-20_teacher.sql</b> → Run.<br>' +
+            'Запускать можно повторно, ничего не сломается.'
+          : esc(e.message)) +
+        '<br><br><button class="t-add" id="out">Выйти</button></div>';
+      var b = root.querySelector('#out');
+      if (b) b.onclick = function () { DB.signOut(); auth(''); };
     });
   }
   function cards() {
