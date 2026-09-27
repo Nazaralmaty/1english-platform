@@ -657,7 +657,7 @@
         method: 'PATCH', headers: { Prefer: 'return=minimal' },
         body: {
           name: name, age: Number(val('ca')) || null, city: val('cc') || null,
-          phone: digits(val('cp')) || null, level: val('cl') || null,
+          phone: DB.normPhone(val('cp')) || digits(val('cp')) || null, level: val('cl') || null,
           format: val('cf'), time_at: val('ct') || null, days: days.join(','),
           goal: val('cg') || null, note: val('cd') || null,
           rate: val('cr') === '' ? null : Number(val('cr')),

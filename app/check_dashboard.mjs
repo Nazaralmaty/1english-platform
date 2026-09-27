@@ -64,7 +64,13 @@ ctx.DB.listAll = () => Promise.resolve({
     { id: 'a', phone: '77011234567', name: 'Айсұлтан', level: 'beginner', updated_at: now },
     { id: 'b', phone: '77029876543', name: '', level: 'elementary', updated_at: '2026-09-01T10:00:00Z' },
     { id: 'v', phone: '77015550000', name: 'Сменил уровень', level: 'elementary', updated_at: now },
-    { id: 'g', phone: '77013334444" onmouseover="beda()', name: 'Кавычка', level: 'beginner', updated_at: now }
+    { id: 'g', phone: '77013334444" onmouseover="beda()', name: 'Кавычка', level: 'beginner', updated_at: now },
+    /* заведена пять дней назад, учителя нет — должна гореть «ждёт 5 дн» */
+    { id: 'w', phone: '77051112233', name: 'Ждёт', level: null, updated_at: now,
+      created_at: new Date(Date.now() - 120 * 36e5).toISOString() },
+    /* карточка у учителя записана через 8 — всё равно его карточка */
+    { id: 'e', phone: '77057778899', name: 'Восьмёрка', level: null, updated_at: now,
+      created_at: '2026-09-01T10:00:00Z' }
   ],
   progress: [
     { student_id: 'a', lesson: 'b1', step: 'read', updated_at: now },
@@ -98,7 +104,9 @@ ctx.DB.listAll = () => base().then(d => Object.assign(d, {
     { id: 'c1', teacher_id: 't1', name: 'Аяжан', phone: '77011234567', format: 'individual',
       days: 'mon,wed,fri', time_at: '18:00', archived: false, rate: null, lessons: lessons(9) },
     { id: 'c2', teacher_id: 't1', name: 'Данияр', phone: '77029876543', format: 'group',
-      days: 'thu', time_at: '20:00', archived: false, rate: 2000, lessons: lessons(4) }
+      days: 'thu', time_at: '20:00', archived: false, rate: 2000, lessons: lessons(4) },
+    { id: 'c3', teacher_id: 't1', name: 'Восьмёрка', phone: '8 705 777 88 99', format: 'individual',
+      days: 'sat', time_at: '11:00', archived: true, rate: null, lessons: [] }
   ]
 }));
 ctx.DB.init = () => true;
@@ -120,7 +128,7 @@ has('Без имени', 'ученик без имени');
 has('+7 (702) 987 65 43', 'форматирование номера');
 has('Beginner', 'уровень');
 has('Elementary', 'уровень');
-has('>4<', 'учеников всего');
+has('>6<', 'учеников всего');
 has('>47<', 'шагов пройдено');
 
 /* Проценты считаем тем же способом, что и дашборд, а не цифрой в тексте:
@@ -155,6 +163,18 @@ has('data-view="all"', 'кнопка вкладки «Сводная»');
 /* Кавычка в номере не должна выламываться из атрибута. */
 if (/data-reset="[^"]*"\s+on/i.test(rendered)) fails.push('номер вылез из атрибута data-reset');
 if (/onmouseover/i.test(rendered)) fails.push('в разметку попал чужой обработчик');
+
+/* Второй заход: учитель в строке, «Изменить», счёт тех, кто ждёт учителя.
+   Без учителя: «Сменил уровень» (его номер совпал с учительским, но он не
+   учитель), «Кавычка», «Ждёт». «Восьмёрка» в архиве — не ждёт. */
+has('<th>Учитель</th>', 'колонка «Учитель»');
+has('data-edit="a"', 'кнопка «Изменить»');
+has('Айгерім</span>', 'учитель в строке ученика');
+has('группа', 'формат группы в строке');
+has('<b>3</b><span>без учителя', 'счёт учеников без учителя');
+has('1 ждёт дольше 48 ч', 'сколько ждут дольше 48 часов');
+has('ждёт 5 дн', 'сколько дней ждёт');
+if (!/Восьмёрка[\s\S]*?архив/.test(rendered)) fails.push('карточка с номером через 8 не нашлась');
 
 /* ── остальные вкладки ──────────────────────────────────────────────
    Вкладка живёт в замыкании, поэтому каждую проверяем своим запуском с

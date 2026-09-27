@@ -74,6 +74,8 @@ function mergeServer(data) {
     ['name', 'gender', 'level', 'lang', 'theme'].forEach(function (k) {
       if (p[k]) S[k] = p[k];
     });
+    /* номер мог смениться в дашборде — берём серверный */
+    if (p.phone) S.phone = p.phone;
     applyTheme();
   }
   (data.progress || []).forEach(function (r) {
@@ -87,6 +89,9 @@ function mergeServer(data) {
   save();
 }
 
+/* Номер уходит, потому что без него строку не создать (phone not null),
+   но в базе его всё равно перепишет триггер: номер там всегда тот, каким
+   ученик входит. Поэтому устаревшая локальная копия ничего не портит. */
 function syncProfile() {
   if (!global_DB()) return;
   DB.saveProfile({
