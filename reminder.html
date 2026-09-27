@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F5F4F0">
+<meta name="robots" content="noindex">
+<title>1English · напоминание (тест)</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="app/style.css">
+<style>
+  /* ТЕСТОВАЯ СТРАНИЦА. Напоминание «сегодня урок»: как плашка выглядит у
+     ученика и по какому правилу появляется. В приложение ничего не
+     встроено — ученики её не видят и никто ничего не получает. Отменить =
+     удалить этот файл и функцию en_my_schedule в базе. */
+  body{background:var(--bg)}
+  .rm{max-width:980px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px 60px}
+  .rm-test{background:var(--accent-soft);color:var(--accent);border-radius:14px;padding:10px 14px;
+           font-size:13px;line-height:1.45;margin-bottom:18px}
+  .rm h1{font-size:24px;letter-spacing:-.03em;margin-bottom:6px}
+  .rm .lead{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:18px;max-width:640px}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}
+  .pan{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:20px}
+  .pan h2{font-size:17px;letter-spacing:-.02em;margin-bottom:4px}
+  .pan .hint{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+  .f{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-bottom:10px}
+  .f .one{grid-column:1/-1}
+  .f label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}
+  .f input{width:100%;background:var(--bg);border:0;border-radius:12px;padding:11px 13px;font:inherit;
+           font-size:14.5px;color:var(--ink)}
+  .days{display:flex;flex-wrap:wrap;gap:6px}
+  .days label{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border-radius:999px;
+              padding:8px 12px;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;margin:0}
+  .days input{width:auto;accent-color:var(--navy)}
+  .seg{display:inline-flex;background:var(--bg);border-radius:999px;padding:3px;margin-bottom:12px}
+  .seg button{border:0;background:transparent;border-radius:999px;padding:7px 13px;font:inherit;
+              font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--navy);color:var(--on-navy)}
+  .act{border:0;border-radius:12px;padding:11px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;
+       background:var(--navy);color:var(--on-navy)}
+  .act.q{background:var(--bg);color:var(--navy)}
+  .out{font-size:13.5px;margin-top:10px;line-height:1.5;color:var(--muted);min-height:20px}
+
+  /* Экран ученика в рамке телефона: сверху плашка, под ней список уроков. */
+  .phone{max-width:340px;margin:0 auto;background:var(--bg);border-radius:34px;padding:18px 14px 22px;
+         box-shadow:var(--sh-2);border:6px solid var(--card)}
+  .ph-top{font-size:22px;font-weight:800;letter-spacing:-.03em;margin:4px 4px 12px}
+  .bn{display:flex;gap:12px;align-items:flex-start;background:var(--navy);color:var(--on-navy);
+      border-radius:18px;padding:14px 14px;margin-bottom:12px;animation:in .3s var(--ease)}
+  .bn.soon{background:var(--accent)}
+  .bn i{font-style:normal;font-size:22px;line-height:1}
+  .bn b{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .bn span{display:block;font-size:13px;opacity:.85;margin-top:2px;line-height:1.4}
+  .bn-none{font-size:12.5px;color:var(--muted);text-align:center;padding:10px 6px 14px;line-height:1.45}
+  @keyframes in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .ls{background:var(--card);border-radius:16px;padding:14px;margin-top:8px;font-size:14px;font-weight:700;
+      display:flex;justify-content:space-between;color:var(--ink)}
+  .ls span{color:var(--muted);font-weight:400;font-size:12.5px}
+  .rules{font-size:13.5px;line-height:1.6;color:var(--ink);padding-left:18px}
+  .rules li + li{margin-top:4px}
+</style>
+</head>
+<body>
+<div class="rm" id="root"></div>
+
+<script src="app/db.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var DAYS = [['mon','Пн'],['tue','Вт'],['wed','Ср'],['thu','Чт'],['fri','Пт'],['sat','Сб'],['sun','Вс']];
+  var JS_DAY = ['sun','mon','tue','wed','thu','fri','sat'];   /* Date#getDay() → ключ дня */
+  var LESSON_MIN = 60;                                          /* сколько идёт урок */
+
+  var T = {
+    kk: { today: function (t, who) { return 'Бүгін сағат ' + t + '-де сабақ бар'; },
+          soon:  function (m) { return 'Сабаққа ' + m + ' минут қалды'; },
+          now:   'Сабақ қазір жүріп жатыр',
+          who:   function (n) { return 'Мұғалім: ' + n; },
+          topic: function (s) { return 'Тақырып: ' + s; },
+          none:  'Бүгін сабақ жоқ — плашка шықпайды',
+          gone:  'Бүгінгі сабақ аяқталды — плашка жоқ' },
+    ru: { today: function (t) { return 'Сегодня урок в ' + t; },
+          soon:  function (m) { return 'Урок через ' + m + ' мин'; },
+          now:   'Урок идёт сейчас',
+          who:   function (n) { return 'Учитель: ' + n; },
+          topic: function (s) { return 'Тема: ' + s; },
+          none:  'Сегодня урока нет — плашка не появляется',
+          gone:  'Сегодняшний урок уже прошёл — плашки нет' }
+  };
+
+  var S = {
+    lang: 'kk',
+    days: ['mon', 'wed', 'fri'], time: '18:00', teacher: 'Айгерім', topic: 'Present Simple',
+    now: '', live: null, liveMsg: ''
+  };
+  /* по умолчанию «сегодня» — чтобы плашка была видна сразу */
+  var todayKey = JS_DAY[new Date().getDay()];
+  if (S.days.indexOf(todayKey) < 0) S.days.push(todayKey);
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function hhmm(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function localDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function mins(t) { var m = /^(\d{1,2}):(\d{2})/.exec(t || ''); return m ? Number(m[1]) * 60 + Number(m[2]) : null; }
+
+  /* ПРАВИЛО. Урок сегодня, если сегодняшний день недели есть в графике
+     карточки или у урока в сетке стоит сегодняшняя дата. Дальше по времени:
+       больше часа до начала → «сегодня урок в 18:00»,
+       час и меньше          → «урок через 40 мин» (красная),
+       идёт (60 мин)         → «урок идёт сейчас»,
+       закончился            → плашки нет.
+     cards — ответ en_my_schedule(): [{teacher, days, time, planned:[{date, topic}]}]. */
+  function reminder(cards, now, lang) {
+    var L = T[lang], key = JS_DAY[now.getDay()], date = localDate(now);
+    var nowMin = now.getHours() * 60 + now.getMinutes();
+    var best = null, gone = false;
+    (cards || []).forEach(function (c) {
+      var planned = (c.planned || []).filter(function (p) { return p.date === date; })[0];
+      var onDay = String(c.days || '').split(',').indexOf(key) >= 0;
+      var start = mins(c.time);
+      if (!(onDay || planned) || start == null) return;
+      var left = start - nowMin;
+      if (left < -LESSON_MIN) { gone = true; return; }
+      if (best && best.left <= left) return;   /* из двух уроков — ближайший */
+      best = { left: left, c: c, topic: planned && planned.topic };
+    });
+    if (!best) return gone ? { gone: true } : null;
+    var head = best.left > 60 ? L.today(best.c.time) : best.left > 0 ? L.soon(best.left) : L.now;
+    var sub = [L.who(best.c.teacher)];
+    if (best.topic) sub.push(L.topic(best.topic));
+    return { soon: best.left <= 60, head: head, sub: sub.join(' · ') };
+  }
+
+  function nowDate() {
+    var d = new Date();
+    var m = mins(S.now);
+    if (m != null) { d.setHours(Math.floor(m / 60), m % 60, 0, 0); }
+    return d;
+  }
+
+  function phone(cards) {
+    var r = reminder(cards, nowDate(), S.lang);
+    return '<div class="phone"><div class="ph-top">' + (S.lang === 'kk' ? 'Сабақтар' : 'Уроки') + '</div>' +
+      (r && !r.gone ? '<div class="bn' + (r.soon ? ' soon' : '') + '"><i>🔔</i><div><b>' + esc(r.head) + '</b>' +
+             '<span>' + esc(r.sub) + '</span></div></div>'
+         : '<div class="bn-none">' + esc(r ? T[S.lang].gone : T[S.lang].none) + '</div>') +
+      '<div class="ls">Урок 5 · Plural, Singular <span>62%</span></div>' +
+      '<div class="ls">Урок 6 · Some, Any <span>0%</span></div>' +
+      '<div class="ls">Урок 7 · Subject Pronouns <span>0%</span></div>' +
+    '</div>';
+  }
+
+  function demoCards() {
+    return [{ teacher: S.teacher || 'учитель', days: S.days.join(','), time: S.time,
+              planned: S.topic ? [{ date: localDate(new Date()), topic: S.topic }] : [] }];
+  }
+
+  function render() {
+    var logged = DB.init();
+    document.getElementById('root').innerHTML =
+      '<div class="rm-test">Тестовая страница. В приложение ничего не встроено: ученики плашку не видят и ничего не получают.</div>' +
+      '<h1>Напоминание «сегодня урок»</h1>' +
+      '<p class="lead">Когда ученик открывает платформу, сверху на экране уроков появляется плашка, если сегодня у него урок. ' +
+        'Дни и время берутся из карточки у учителя, которую заполняют в дашборде. Меняйте график и время слева — плашка справа пересчитывается.</p>' +
+
+      '<div class="cols">' +
+        '<div class="pan">' +
+          '<h2>График ученика</h2>' +
+          '<div class="hint">Как в карточке у учителя. «Сейчас» можно подвинуть, чтобы увидеть все состояния плашки.</div>' +
+          '<div class="f">' +
+            '<div class="one"><label>Дни недели</label><div class="days">' +
+              DAYS.map(function (d) {
+                return '<label><input type="checkbox" data-day="' + d[0] + '"' +
+                       (S.days.indexOf(d[0]) >= 0 ? ' checked' : '') + '>' + d[1] + '</label>';
+              }).join('') + '</div></div>' +
+            '<div><label>Время урока</label><input id="tm" type="time" value="' + esc(S.time) + '"></div>' +
+            '<div><label>Сейчас</label><input id="nw" type="time" value="' + esc(S.now || hhmm(new Date())) + '"></div>' +
+            '<div><label>Учитель</label><input id="tc" type="text" value="' + esc(S.teacher) + '"></div>' +
+            '<div><label>Тема на сегодня</label><input id="tp" type="text" value="' + esc(S.topic) + '" placeholder="необязательно"></div>' +
+          '</div>' +
+          '<div class="seg"><button data-lang="kk"' + (S.lang === 'kk' ? ' class="on"' : '') + '>ҚАЗ</button>' +
+            '<button data-lang="ru"' + (S.lang === 'ru' ? ' class="on"' : '') + '>РУС</button></div>' +
+          '<ul class="rules">' +
+            '<li>Больше часа до урока — синяя плашка со временем.</li>' +
+            '<li>Час и меньше — красная, «урок через N мин».</li>' +
+            '<li>Урок идёт — «урок идёт сейчас». Кончился — плашки нет.</li>' +
+          '</ul>' +
+        '</div>' +
+        '<div>' + phone(S.live || demoCards()) +
+          (S.live ? '<div class="out" style="text-align:center">Это настоящее расписание вошедшего ученика.</div>' : '') +
+        '</div>' +
+      '</div>' +
+
+      '<div class="cols" style="margin-top:16px">' +
+        '<div class="pan">' +
+          '<h2>Проверить на настоящем расписании</h2>' +
+          '<div class="hint">Берёт карточку того, кто вошёл в платформу на этом устройстве. Ничего не меняет и никому ничего не отправляет.</div>' +
+          (logged
+            ? '<button class="act" id="live">Показать моё расписание</button>' +
+              (S.live ? ' <button class="act q" id="demo">Назад к примеру</button>' : '')
+            : '<div class="out">На этом устройстве никто не вошёл. Войдите в платформу номером ученика и вернитесь сюда.</div>') +
+          '<div class="out" id="liveMsg">' + esc(S.liveMsg) + '</div>' +
+        '</div>' +
+        '<div class="pan">' +
+          '<h2>Уведомление на телефоне</h2>' +
+          '<div class="hint">Системное уведомление приходит только на это устройство и только после вашего разрешения. ' +
+            'На Android работает в Chrome, на iPhone — если платформа добавлена на экран «Домой». ' +
+            'Чтобы оно приходило при закрытой платформе, нужен push-сервер. Его пока нет, и в тесте он не нужен.</div>' +
+          '<button class="act q" id="notif">Показать уведомление здесь</button>' +
+          '<div class="out" id="nMsg"></div>' +
+        '</div>' +
+      '</div>';
+    wire();
+  }
+
+  function wire() {
+    var root = document.getElementById('root');
+    function on(sel, ev, fn) { var el = root.querySelector(sel); if (el) el[ev] = fn; }
+    Array.prototype.forEach.call(root.querySelectorAll('[data-day]'), function (i) {
+      i.onchange = function () {
+        S.days = Array.prototype.filter.call(root.querySelectorAll('[data-day]'), function (x) { return x.checked; })
+                  .map(function (x) { return x.getAttribute('data-day'); });
+        S.live = null; render();
+      };
+    });
+    on('#tm', 'onchange', function () { S.time = this.value; S.live = null; render(); });
+    on('#nw', 'onchange', function () { S.now = this.value; render(); });
+    on('#tc', 'onchange', function () { S.teacher = this.value.trim(); S.live = null; render(); });
+    on('#tp', 'onchange', function () { S.topic = this.value.trim(); S.live = null; render(); });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-lang]'), function (b) {
+      b.onclick = function () { S.lang = b.getAttribute('data-lang'); render(); };
+    });
+    on('#demo', 'onclick', function () { S.live = null; S.liveMsg = ''; render(); });
+    on('#live', 'onclick', function () {
+      var btn = this; btn.disabled = true; btn.textContent = 'Секунду…';
+      DB.rpc('en_my_schedule', {}).then(function (cards) {
+        S.live = Array.isArray(cards) ? cards : [];
+        S.liveMsg = S.live.length
+          ? 'Карточек у учителей: ' + S.live.length + '.'
+          : 'У этого ученика нет карточки у учителя — напоминать не о чем. Поставьте его к учителю в дашборде.';
+        if (!S.live.length) S.live = null;
+        render();
+      }).catch(function (e) {
+        S.liveMsg = e.message; render();
+      });
+    });
+    on('#notif', 'onclick', function () {
+      var msg = root.querySelector('#nMsg');
+      var r = reminder(S.live || demoCards(), nowDate(), S.lang);
+      var title = r && !r.gone ? r.head : T[S.lang][r ? 'gone' : 'none'], body = r && !r.gone ? r.sub : '';
+      if (!('Notification' in window)) { msg.textContent = 'Этот браузер уведомления не умеет.'; return; }
+      Notification.requestPermission().then(function (p) {
+        if (p !== 'granted') { msg.textContent = 'Разрешение не дали — уведомления не будет.'; return; }
+        /* через service worker, если он есть: на Android иначе не показывается */
+        var opts = { body: body, icon: 'assets/logo.png', tag: '1eng-lesson' };
+        var sw = navigator.serviceWorker;
+        (sw && sw.getRegistration ? sw.getRegistration() : Promise.resolve(null)).then(function (reg) {
+          if (reg && reg.showNotification) return reg.showNotification(title, opts);
+          new Notification(title, opts);
+        }).then(function () { msg.textContent = 'Отправлено на это устройство.'; })
+          .catch(function (e) { msg.textContent = e.message; });
+      });
+    });
+  }
+
+  render();
+  /* плашка живёт по часам: раз в минуту пересчитываем «через N мин» */
+  setInterval(function () {
+    var a = document.activeElement;
+    if (!S.now && !(a && /^(INPUT)$/.test(a.tagName))) render();
+  }, 60000);
+})();
+</script>
+</body>
+</html>
