@@ -42,7 +42,8 @@
   .w.seen{background:rgba(10,49,97,.08);border-bottom-style:solid}
   .count{display:flex;align-items:center;gap:10px;margin-top:18px;font-size:13.5px;color:var(--muted)}
   .count .track{flex:1;height:6px;border-radius:999px;background:var(--track);overflow:hidden}
-  .count .track i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .3s var(--ease)}
+  .count .track i{display:block;height:100%;background:var(--accent);border-radius:999px;
+                  transform-origin:left;transition:transform .3s var(--ease)}
 
   /* Карта всплывает снизу, как в шаге «Словарь». */
   .veil{position:fixed;inset:0;background:rgba(10,27,46,.45);display:none;align-items:flex-end;justify-content:center;
@@ -201,7 +202,7 @@
         '<div class="topic">' + esc(l ? l.title : '') + ' · ' +
           (lang === 'kk' ? 'белгіленген сөзді бас' : 'нажми на выделенное слово') + '</div>' +
         '<div class="text">' + markup(cur) + '</div>' +
-        '<div class="count"><span class="track"><i style="width:' + (all ? Math.round(open / all * 100) : 0) + '%"></i></span>' +
+        '<div class="count"><span class="track"><i style="transform:scaleX(' + (all ? open / all : 0) + ')"></i></span>' +
           '<span>' + open + ' / ' + all + (lang === 'kk' ? ' сөз' : ' слов') + '</span></div>' +
       '</div>';
 
