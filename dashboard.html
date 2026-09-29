@@ -319,10 +319,12 @@
   function isTeacher(d, st) {
     return (d.teachers || []).some(function (t) { return t.id === st.id; });
   }
-  /* Ждёт учителя: ни одной карточки, даже архивной (архив — значит уже
-     учился), и это не учитель и не сам админ. */
+  /* Ждёт учителя: ни одной карточки с учителем, даже архивной (архив —
+     значит уже учился), и это не учитель и не сам админ. Карточка без
+     учителя — это только график: учителя ученик ещё ждёт. */
   function waiting(st, d) {
-    return !cardsOf(st, d).length && !isTeacher(d, st) && st.id !== DB.userId;
+    return !cardsOf(st, d).some(function (c) { return c.teacher_id; }) &&
+           !isTeacher(d, st) && st.id !== DB.userId;
   }
   function hoursSince(iso) { return iso ? (Date.now() - new Date(iso).getTime()) / 36e5 : 0; }
 
@@ -577,9 +579,10 @@
           '</select></div>' +
         '</div>' +
 
-        '<div class="d-sec">Карточка у учителя</div>' +
-        '<div class="d-hint">Выберите учителя — и ученик встанет к нему на доску вместе с сеткой уроков. ' +
-          '«Без учителя» — заведём только аккаунт, карточку добавите позже.</div>' +
+        '<div class="d-sec">График и анкета</div>' +
+        '<div class="d-hint">Отметьте дни и время — это график ученика, по нему в платформе висит ' +
+          'плашка «скоро урок». Учителя можно не выбирать и поставить позже в «Изменить». ' +
+          'Ни дней, ни учителя — заведётся только аккаунт.</div>' +
         cardFields(d, 'ns', true) +
 
         '<div class="d-row" style="margin-top:14px"><button id="nsAdd">Завести</button></div>' +
@@ -731,7 +734,7 @@
      Все ученики всех учителей одной таблицей: кто кого ведёт, когда, на
      сколько уроков договорились и сколько из них закрыто. */
   function viewAll(d) {
-    var cards = (d.cards || []).filter(function (c) { return !c.archived; });
+    var cards = (d.cards || []).filter(function (c) { return !c.archived && c.teacher_id; });
     var byId = {};
     (d.teachers || []).forEach(function (t) { byId[t.id] = t; });
     var month = new Date().toISOString().slice(0, 7);
@@ -853,7 +856,7 @@
           '<span>Код для ' + esc(phoneFmt(phone)) + ' · ' + esc(name) +
           '. Продиктуйте его ученику: восстановить будет нечем, только сбросить.</span></div>';
         return addCard(v, name, phone).then(function (added) {
-          if (added) state.textContent = answer + ' Карточка у учителя заведена.';
+          if (added) state.textContent = answer + (v('nsTeacher') ? ' Карточка у учителя заведена.' : ' График сохранён, учителя поставите позже.');
           clearForm();
         });
       }).catch(function (e) {
@@ -996,13 +999,11 @@
      нормализованным: по нему карточку находят дашборд и кабинет. */
   function addCard(v, name, phone, scope, p) {
     p = p || 'ns';
-    var teacher = v(p + 'Teacher');
-    if (!teacher) return Promise.resolve(false);
+    var teacher = v(p + 'Teacher') || null;
+    var days = checkedDays(scope || root);
+    /* карточка — это учитель или хотя бы график; ни того ни другого — только аккаунт */
+    if (!teacher && !days.length) return Promise.resolve(false);
 
-    var days = [];
-    Array.prototype.forEach.call((scope || root).querySelectorAll('[data-day]'), function (i) {
-      if (i.checked) days.push(i.getAttribute('data-day'));
-    });
     var months = Math.min(36, Math.max(1, Number(v(p + 'Months')) || 1));
     var per    = Math.min(31, Math.max(1, Number(v(p + 'Per')) || 1));
     var age    = Number(v(p + 'Age')) || null;
@@ -1131,8 +1132,10 @@
   function teacherCell(r, d) {
     var live = r.cards.filter(function (c) { return !c.archived; });
     if (live.length) {
-      return '<span class="tch">' + live.map(function (c) {
-        return esc(teacherName(d, c.teacher_id)) + (c.format === 'group' ? ' · группа' : '');
+      return '<span class="tch' + (r.wait ? ' wait' : '') + '">' + live.map(function (c) {
+        return c.teacher_id
+          ? esc(teacherName(d, c.teacher_id)) + (c.format === 'group' ? ' · группа' : '')
+          : 'без учителя · ' + esc(dayNames(c.days) || 'дни не заданы') + (c.time_at ? ', ' + esc(c.time_at) : '');
       }).join('<br>') + '</span>';
     }
     if (r.cards.length) return '<span class="tch wait">архив</span>';
@@ -1163,11 +1166,11 @@
     function cardBox(c, k) {
       var done = doneOf(c), all = (c.lessons || []).length;
       return '<div class="cardbox" id="cb' + k + '">' +
-        '<div class="cb-head"><b>' + esc(teacherName(d, c.teacher_id)) + '</b>' +
+        '<div class="cb-head"><b>' + (c.teacher_id ? esc(teacherName(d, c.teacher_id)) : 'Без учителя') + '</b>' +
           '<span>проведено ' + done + ' из ' + all + ' · месяцев ' + (c.months || 1) +
           ' по ' + (c.per_month || 12) + ' уроков</span></div>' +
-        cardFields(d, 'c' + k, false, c) +
-        (done ? '<div class="d-hint" style="margin:10px 0 0">Сменить учителя: проведённые уроки ' +
+        cardFields(d, 'c' + k, true, c) +
+        (done && c.teacher_id ? '<div class="d-hint" style="margin:10px 0 0">Сменить учителя: проведённые уроки ' +
                 'останутся за прежним (по ним уже считается зарплата), непроведённые переедут к новому.</div>' : '') +
         '<div class="dlg-foot">' +
           '<button data-arch="' + k + '">В архив</button>' +
@@ -1199,20 +1202,19 @@
       '<div class="dlg-foot" style="margin-top:12px"><button class="go" id="edSave">Сохранить аккаунт</button></div>' +
       '<div class="state" id="edState"></div>' +
 
-      '<div class="d-sec">Учитель и график</div>' +
-      (!ts.length
-        ? '<div class="d-hint">Учителей пока нет. Отметьте учителя на вкладке «Завести» → «Учителя».</div>'
-        : live.map(cardBox).join('') +
-          /* Новая карточка. Если учителя нет — это главное действие окна;
-             если есть — второй учитель (группа плюс индивидуально) под
-             раскрывашкой, чтобы не путать с правкой первого. */
-          (live.length ? '<details class="more"><summary>Ещё один учитель — например, группа и индивидуально</summary>' : '') +
-            (arch.length && !live.length ? '<div class="d-hint">Прежняя карточка в архиве. Можно поставить к новому учителю.</div>' : '') +
-            '<div class="d-hint">Ученик встанет к учителю на доску вместе с сеткой уроков.</div>' +
-            '<div id="edCardBox">' + cardFields(d, 'ed', false) + '</div>' +
-            '<div class="dlg-foot"><button class="go" id="edAssign">Поставить к учителю</button></div>' +
-            '<div class="state" id="edCardState"></div>' +
-          (live.length ? '</details>' : '')) +
+      '<div class="d-sec">График и учитель</div>' +
+      live.map(cardBox).join('') +
+      /* Новая карточка. Если карточки нет — это главное действие окна;
+         если есть — вторая (группа плюс индивидуально) под раскрывашкой,
+         чтобы не путать с правкой первой. */
+      (live.length ? '<details class="more"><summary>Ещё одна карточка — например, группа и индивидуально</summary>' : '') +
+        (arch.length && !live.length ? '<div class="d-hint">Прежняя карточка в архиве. Можно завести новую.</div>' : '') +
+        '<div class="d-hint">Дни и время — график ученика, по нему в платформе висит плашка «скоро урок». ' +
+          (ts.length ? 'Учителя можно поставить сейчас или позже.' : 'Учителей пока нет — поставите позже.') + '</div>' +
+        '<div id="edCardBox">' + cardFields(d, 'ed', true) + '</div>' +
+        '<div class="dlg-foot"><button class="go" id="edAssign">Сохранить</button></div>' +
+        '<div class="state" id="edCardState"></div>' +
+      (live.length ? '</details>' : '') +
 
       (arch.length
         ? '<div class="d-sec">Архив</div>' + arch.map(function (c) {
@@ -1257,7 +1259,7 @@
         var body = cardBody(v, p, box);
         btn.disabled = true; say(p + 'State', 'Сохраняю…');
         /* Смена учителя при проведённых уроках — перенос, иначе правка на месте. */
-        var job = (body.teacher_id !== c.teacher_id && doneOf(c))
+        var job = (c.teacher_id && body.teacher_id !== c.teacher_id && doneOf(c))
           ? moveCard(c, body)
           : DB.rest('en_teacher_students?id=eq.' + encodeURIComponent(c.id), {
               method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: body });
@@ -1323,11 +1325,14 @@
     var edClash = edBox ? wireFit(d, edBox, 'ed', null) : null;
     if (assign) assign.onclick = function () {
       var btn = this;
-      if (!v('edTeacher')) { say('edCardState', 'Выберите учителя', true); return; }
-      /* К тому же учителю второй карточкой не ставим: это дубль, а не
-         второй формат — формат и график правятся в карточке выше. */
-      if (cardsOf(st, lastData).some(function (c) { return !c.archived && c.teacher_id === v('edTeacher'); })) {
-        say('edCardState', 'У этого учителя ученик уже есть — правьте его карточку выше', true); return;
+      if (!v('edTeacher') && !checkedDays(edBox).length) {
+        say('edCardState', 'Отметьте дни занятий или выберите учителя', true); return;
+      }
+      /* К тому же учителю (или второй раз без учителя) не заводим: это
+         дубль, а не второй формат — он правится в карточке выше. */
+      if (cardsOf(st, lastData).some(function (c) { return !c.archived && (c.teacher_id || '') === v('edTeacher'); })) {
+        say('edCardState', v('edTeacher') ? 'У этого учителя ученик уже есть — правьте его карточку выше'
+                                          : 'Карточка без учителя уже есть — правьте её выше', true); return;
       }
       if (!confirmed(btn, edClash(), 'edCardState')) return;
       btn.disabled = true; say('edCardState', 'Ставлю к учителю…');
@@ -1344,7 +1349,7 @@
     var age = Number(v(p + 'Age')) || null;
     if (age != null && (age < 3 || age > 99)) age = null;
     return {
-      teacher_id: v(p + 'Teacher'), format: v(p + 'Format') || 'individual',
+      teacher_id: v(p + 'Teacher') || null, format: v(p + 'Format') || 'individual',
       days: checkedDays(scope).join(','), time_at: v(p + 'Time') || null,
       age: age, city: v(p + 'City') || null, level: v(p + 'LvlText') || null,
       rate: v(p + 'Rate') === '' ? null : Math.max(0, Number(v(p + 'Rate')) || 0),
