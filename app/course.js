@@ -127,6 +127,13 @@ window.VIDEOS_RU = {
   b13:['C2O7Hn1EN-Q', '93ZfINFs28I'],   b14:['F2yAqY5R60w', 'NihM3ay4jGE'],
 };
 
+/* Мультик урока (Forest English): mp4 лежит здесь же, в media/cartoon/, и
+   играет в практике над видеоуроком. Шагов не добавляет: практика отмечается
+   той же кнопкой. Исходники мультика — в vault, cartoon-english/<id>/. */
+window.CARTOONS = {
+  b1: { src: 'media/cartoon/b1.mp4', poster: 'media/cartoon/b1.jpg' }
+};
+
 /* Ролики урока на нужном языке: { theory, practice }. Одна функция на
    платформу, дашборд и проверки — иначе каждый считал бы шаги по-своему.
    Строка вместо пары читается как одна теория. */

@@ -179,6 +179,7 @@ var LANG = {
     soon:'Материалы скоро', videoLesson:'Видеоурок', ruleReview:'Разбор правила',
     lesson:'Урок', task:'Задание', dict:'Словарь',
     videoAndRule:'Видео и разбор', videoOnly:'Видео', noVideo:'Видео пока нет',
+    cartoon:'Мультик', videoAndCartoon:'Мультик и видео',
     theory:'Теория', practice:'Практика',
     reading:'Чтение', noText:'Текста пока нет', tapWord:'Нажмите на выделенное слово',
     readCap:function (n) { return 'Текст, ' + n + ' слов урока'; },
@@ -242,6 +243,7 @@ var LANG = {
     soon:'Материалдар жақында', videoLesson:'Бейнесабақ', ruleReview:'Ереже талдауы',
     lesson:'Сабақ', task:'Тапсырма', dict:'Сөздік',
     videoAndRule:'Бейне және талдау', videoOnly:'Бейне', noVideo:'Бейне әзірге жоқ',
+    cartoon:'Мультфильм', videoAndCartoon:'Мультфильм және бейне',
     theory:'Теория', practice:'Жаттығу',
     reading:'Оқылым', noText:'Мәтін әзірге жоқ', tapWord:'Белгіленген сөзді басыңыз',
     readCap:function (n) { return 'Мәтін, сабақтың ' + n + ' сөзі'; },
@@ -330,6 +332,7 @@ function lesson(id) {
    казахским живут в course.js — тем же правилом шаги считает дашборд. */
 function videos(id) { return window.lessonVideos(id, S.lang); }
 function video(id) { var v = videos(id); return v.theory || v.practice; }
+function cartoonOf(id) { return (window.CARTOONS || {})[id]; }
 
 /* Урок — две секции и пять шагов, других не будет. Теория: видеоурок
    с правилом. Практика: свой видеоурок, чтение, задание, словарь. Но урок
@@ -753,7 +756,7 @@ function steps(s) {
          row('read', t('videoLesson'),
              v.theory ? (s.rule ? t('videoAndRule') : t('videoOnly')) : (s.rule ? t('ruleReview') : t('noVideo')), !!p.read) +
          sect(t('practice')) +
-         row('prac', t('videoLesson'), v.practice ? t('videoOnly') : t('noVideo'), !!p.prac) +
+         row('prac', t('videoLesson'), v.practice ? (cartoonOf(s.id) ? t('videoAndCartoon') : t('videoOnly')) : t('noVideo'), !!p.prac) +
          (s.text ? row('text', t('reading'), t('readCap')(s.words.length), !!p.text) : '') +
          row('task', t('task'),
              s.tasks.length ? (p.task ? t('resultOf')(p.task.right, p.task.total) : t('nTasks')(s.tasks.length)) : t('noTasks'), !!p.task) +
@@ -770,6 +773,12 @@ function player(s, yt, cap) {
         '?rel=0&modestbranding=1&playsinline=1" title="' + esc((s.title || (t('lesson') + ' ' + s.n)) + ' · ' + cap) + '" allowfullscreen ' +
         'allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>'
       : '');
+}
+
+/* Мультик урока: свой файл, а не YouTube — ролик детский и короткий. */
+function cartoonPlayer(c) {
+  return c ? '<div class="vcap">' + t('cartoon') + '</div>' +
+    '<div class="frame"><video src="' + c.src + '" poster="' + c.poster + '" controls playsinline preload="none"></video></div>' : '';
 }
 
 /* ── теория: видеоурок и правило ────────────────────────────────────── */
@@ -807,6 +816,7 @@ function scrPrac(id) {
 
   paint(
     head(s.title || (t('lesson') + ' ' + s.n), '#/lessons') +
+    cartoonPlayer(cartoonOf(id)) +
     player(s, yt, t('practice')) +
     '<div class="dock"><button class="btn" id="ok">' + t('got') + '</button></div>', true);
 

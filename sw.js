@@ -18,7 +18,7 @@
  * Активация сносит все чужие версии и сразу берёт управление: сломанная
  * версия чинится обычным push, а не просьбой «почистите браузер».
  */
-var VERSION = '1eng-2026-09-29b';
+var VERSION = '1eng-2026-09-29c';
 
 /* Что имеет смысл положить заранее: без этого набора приложение не
    нарисует ни одного экрана. */
@@ -92,6 +92,10 @@ self.addEventListener('fetch', function (e) {
   /* чужие адреса — база, видео, всё остальное — идут мимо кэша */
   if (url.origin !== self.location.origin) return;
 
-  var heavy = /\.(png|jpg|jpeg|webp|svg|woff2|mp4|wav|mp3)$/i.test(url.pathname);
+  /* видео браузер просит кусками (Range), а кэш кусков не хранит: iPhone
+     с таким ответом не играет ролик вовсе. Видео идёт мимо кэша. */
+  if (/\.mp4$/i.test(url.pathname)) return;
+
+  var heavy = /\.(png|jpg|jpeg|webp|svg|woff2|wav|mp3)$/i.test(url.pathname);
   e.respondWith(heavy ? fromCacheFirst(req) : fromNetworkFirst(req));
 });
