@@ -7,14 +7,16 @@
  * хуже, чем честно показать, что материала ещё нет.
  *
  * КУДА ЧТО ВСТАВЛЯТЬ.
- *   1. Ссылка на ролик  → window.VIDEOS, одна строка на урок.
+ *   1. Ролики урока     → window.VIDEOS, пара [теория, практика] на урок.
  *   2. Тема и материалы → window.CONTENT, один объект на урок.
  * Больше нигде править не нужно: экраны собирают курс из этих двух таблиц.
  *
- * Урок собран из трёх шагов, других шагов у урока нет:
- *   1. Урок    — видео и разбор правила;
- *   2. Задание — вопросы с тап-ответом, без клавиатуры;
- *   3. Словарь — слова карточками.
+ * Урок разделён на две секции, в них пять шагов, других шагов у урока нет:
+ *   Теория   — видеоурок с правилом и разбором            (шаг read);
+ *   Практика — видеоурок на практику                      (шаг prac),
+ *              чтение: текст с флип-картами слов урока      (text),
+ *              задание: вопросы с тап-ответом, без клавиатуры (task),
+ *              словарь: слова карточками                   (words).
  *
  * Типы заданий:
  *   choice — вопрос и 3 варианта, a — индекс верного;
@@ -61,43 +63,58 @@ window.LESSONS_PER_LEVEL = 14;
    Ролики на YouTube закрытые (unlisted): по ссылке открываются, в поиске
    их нет. Плееру нужен только id — хвост ссылки после youtu.be/ или после
    watch?v=. Из https://youtu.be/3ZkombMruHM берётся 3ZkombMruHM.
-   Пустая строка значит «ролик ещё не привязан».
+
+   У урока два ролика, и лежат они парой [теория, практика]. На YouTube
+   теория подписана «Grammar Lesson 1», практика — «Grammar Lesson 2».
+   Пустая строка значит «ролик ещё не привязан»: его шаг закрыт, второй
+   ролик урока при этом работает.
+
+   Это казахские ролики — основная группа казахоязычная.
    ══════════════════════════════════════════════════════════════════ */
 window.VIDEOS = {
   /* Beginner · Bastau */
-  b1:'rGaqiSrDJKA',  b2:'pyqn323rv2Q',  b3:'l3AowtVng70',  b4:'2JukjUYj2-8',
-  b5:'w7jJHmWGj74',  b6:'91_3H-adkN8',  b7:'cISqphU3BTU',  b8:'64-bU7A9vZA',
-  b9:'DIW5heyt3Ok',  b10:'BLG3UOkkLEI', b11:'i4mNTsBkiuI', b12:'M-OmCZteTog',
-  b13:'Ha1OnkE9Gkg', b14:'PtwWgIZuLIk',
+  b1:  ['L8WgzJV_scE', 'rGaqiSrDJKA'], b2:  ['3HmW8IpNklA', 'pyqn323rv2Q'],
+  b3:  ['URro5v8CSDc', 'l3AowtVng70'], b4:  ['_2oHr01yM6k', '2JukjUYj2-8'],
+  b5:  ['IOQQRXshMWc', 'w7jJHmWGj74'], b6:  ['2sonvmOHQTw', '91_3H-adkN8'],
+  b7:  ['mbrIxyMD7Sk', 'cISqphU3BTU'], b8:  ['sWBsaaukLaA', '64-bU7A9vZA'],
+  b9:  ['pPEe3QWKZhU', 'DIW5heyt3Ok'], b10: ['Yw_o8147K3Y', 'BLG3UOkkLEI'],
+  b11: ['bd9HWP0ez1k', 'i4mNTsBkiuI'], b12: ['_DyS_uSyxmg', 'M-OmCZteTog'],
+  b13: ['2V0JpHx9FWk', 'Ha1OnkE9Gkg'], b14: ['Msu8vzdP1O0', 'PtwWgIZuLIk'],
 
   /* Elementary · Damu */
-  e1: 'VB0EqXnRn-0',   e2: 'lyWAizWGFFM',   e3: 'OQbeZ86dD4A',   e4: 'jMmiCCQgPw0',
-  e5: 'nh6Exmr5g2A',   e6: 'OhpkcMVuVBM',   e7: 'bJkHYyhOK5E',   e8: 'ZxQvwtLOR4s',
-  e9: 'U37AocSjufk',   e10:'sG9HKHUcfl4',   e11:'FrKD2mi6CYE',   e12:'1u3ZmMdqnR8',
-  e13:'J56U3DELZg0',   e14:'noxRjUgiczA',
+  e1:  ['7z4MJCFSix4', 'VB0EqXnRn-0'], e2:  ['XPuWHkfg99s', 'lyWAizWGFFM'],
+  e3:  ['aQNj9qhgvAg', 'OQbeZ86dD4A'], e4:  ['nzQN_a2-VVo', 'jMmiCCQgPw0'],
+  e5:  ['n19e3R4Jw9s', 'nh6Exmr5g2A'], e6:  ['nG9vh6UKAgM', 'OhpkcMVuVBM'],
+  e7:  ['ZU2iWhI-2Ug', 'bJkHYyhOK5E'], e8:  ['iAaIsoa6qA0', 'ZxQvwtLOR4s'],
+  e9:  ['24l0QWry0pA', 'U37AocSjufk'], e10: ['KX5tV5YPdFo', 'sG9HKHUcfl4'],
+  e11: ['cLjdX1JomeY', 'FrKD2mi6CYE'], e12: ['oydLkS7aBXg', '1u3ZmMdqnR8'],
+  e13: ['Vrs1ZkgcF98', 'J56U3DELZg0'], e14: ['VV9eRYoauPs', 'noxRjUgiczA'],
 
   /* Pre-Intermediate · Junior */
-  p1: 'fAVWTIrpjwI',   p2: 'Hc9C13nbyws',   p3: 'bHAv8ILcvLc',   p4: '5nJxHW7CB54',
-  p5: 'HH1MWqxaHfc',   p6: 'iogBqQx8UxQ',   p7: 's4jXSmhyz-M',   p8: 'BNnTlyw-3F4',
-  p9: 'uue0eLuP8As',   p10:'xkXQtq0yHYU',   p11:'rji0gJA5CSg',   p12:'ZioSsdYCM20',
-  p13:'6lBnqmp3WgQ',   p14:'3F4jLhrtjPQ',
+  p1:  ['-mQ7Todec64', 'fAVWTIrpjwI'], p2:  ['aZT6zsf__Ao', 'Hc9C13nbyws'],
+  p3:  ['Z_xCsqhqvTA', 'bHAv8ILcvLc'], p4:  ['Tx8_jm3-ROQ', '5nJxHW7CB54'],
+  p5:  ['DjEzWiSGoQo', 'HH1MWqxaHfc'], p6:  ['YR-9XEvoRXo', 'iogBqQx8UxQ'],
+  p7:  ['v_4Dxi8IqcE', 's4jXSmhyz-M'], p8:  ['bJbuRNukN1s', 'BNnTlyw-3F4'],
+  p9:  ['wfjq6Wr_q-w', 'uue0eLuP8As'], p10: ['9g-ccy6M2BA', 'xkXQtq0yHYU'],
+  p11: ['afwpLGNC4Wo', 'rji0gJA5CSg'], p12: ['7EBbJMhOSpQ', 'ZioSsdYCM20'],
+  p13: ['m7-2Sx1woug', '6lBnqmp3WgQ'], p14: ['pghgZl9NFDE', '3F4jLhrtjPQ'],
 
-  /* Intermediate · Senior */
-  i1: 'pMv5TQ42BnE',   i2: '1yxW3WnVWYk',   i3: 'raf6-vUKkew',   i4: 'W6a_AVRPBjk',
-  i5: 'fHPzEkE0Qf8',   i6: '3pDvuCgDxEA',   i7: '20nkd_BSRoA',   i8: '6ddhFDYoPcM',
-  i9: 'C7dPPQFeN14',   i10:'CtS9EsXm_jE',   i11:'c22jopxcXyM',   i12:'7DsgzGiygao',
-  i13:'Kz7BYCq-888',   i14:'r92FIW9JEhY',
+  /* Intermediate · Senior. Пока по одному ролику, и это теория: i1 на
+     YouTube подписан «Grammar Lesson 1». Практика ещё не привязана. */
+  i1:  ['pMv5TQ42BnE', ''],            i2:  ['1yxW3WnVWYk', ''],
+  i3:  ['raf6-vUKkew', ''],            i4:  ['W6a_AVRPBjk', ''],
+  i5:  ['fHPzEkE0Qf8', ''],            i6:  ['3pDvuCgDxEA', ''],
+  i7:  ['20nkd_BSRoA', ''],            i8:  ['6ddhFDYoPcM', ''],
+  i9:  ['C7dPPQFeN14', ''],            i10: ['CtS9EsXm_jE', ''],
+  i11: ['c22jopxcXyM', ''],            i12: ['7DsgzGiygao', ''],
+  i13: ['Kz7BYCq-888', ''],            i14: ['r92FIW9JEhY', ''],
 };
 
 /* ══════════════════════════════════════════════════════════════════════
    2b. ВИДЕО НА РУССКОМ
-   Русская группа смотрит свои ролики, и урок у неё собран из двух:
-   первый — правило, второй — практика на нём же. Поэтому здесь не строка,
-   а пара id: [теория, практика]. Если ролик один, можно оставить строку —
-   экран покажет один плеер.
-
-   Урока здесь нет — на русском покажется казахский ролик из таблицы выше,
-   и урок из-за этого не пропадает.
+   Русская группа смотрит свои ролики, устроены они так же: пара
+   [теория, практика]. Русского ролика нет — на его месте играет
+   казахский из таблицы выше, и шаг из-за этого не пропадает.
    ══════════════════════════════════════════════════════════════════ */
 window.VIDEOS_RU = {
   /* Beginner · Bastau */
@@ -108,6 +125,19 @@ window.VIDEOS_RU = {
   b9: ['xtbaxHfLM00', 'lkwHwFo8RF8'],   b10:['e1XsmzWib60', '9B-VoS1sTO0'],
   b11:['U7ii7sI-RSU', 'taHIPKTGC-c'],   b12:['cTYVH3V9YEU', '1Y4DqYupsQg'],
   b13:['C2O7Hn1EN-Q', '93ZfINFs28I'],   b14:['F2yAqY5R60w', 'NihM3ay4jGE'],
+};
+
+/* Ролики урока на нужном языке: { theory, practice }. Одна функция на
+   платформу, дашборд и проверки — иначе каждый считал бы шаги по-своему.
+   Строка вместо пары читается как одна теория. */
+window.lessonVideos = function (id, lang) {
+  function pair(v) {
+    if (!v) return ['', ''];
+    return (typeof v === 'string') ? [v, ''] : [v[0] || '', v[1] || ''];
+  }
+  var kz = pair((window.VIDEOS || {})[id]);
+  var ru = lang === 'ru' ? pair((window.VIDEOS_RU || {})[id]) : ['', ''];
+  return { theory: ru[0] || kz[0], practice: ru[1] || kz[1] };
 };
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -781,6 +811,74 @@ window.CONTENT = {
 };
 
 /* ══════════════════════════════════════════════════════════════════════
+   3b. ТЕКСТЫ ДЛЯ ЧТЕНИЯ
+   Шаг «Чтение» в практике урока: короткий текст, где слова этого урока
+   кликабельны. Нажал — флип-карта с переводом и примером из словаря
+   урока, поэтому перевод здесь не повторяется.
+
+   [слово] — слово урока; [форма|слово], когда в тексте другая форма
+   (apples → apple). Ключ после черты — ровно поле en из words урока.
+   \n — новый абзац. Урока здесь нет — шага «Чтение» у него нет.
+   node app/check_reading.mjs проверяет, что каждое слово урока в тексте
+   есть и что каждая пометка находит своё слово.
+   ══════════════════════════════════════════════════════════════════ */
+window.TEXTS = {
+  b1: 'It is Sunday morning. Mom puts [bread] and [fruit] on the table. I take a [spoon] and eat my yogurt.\n' +
+      'After breakfast we go to the park by [train]. In the park there is a big [tree] with pink [flowers]. ' +
+      'The sky is [blue]. I sit under the tree and read my [book].',
+  b2: 'Look at the market table. What do you [see]? I [see] [ten] [apples|apple]. ' +
+      '[One] apple is [green], and nine apples are [red].\n' +
+      'Next to them there is a [yellow] banana. My bag is [blue]. I buy [one] kilo of apples and go home.',
+  b3: 'There are [many] things in our kitchen. There are four [chairs|chair] and a table. ' +
+      'On the table there are two [books|book] and three [apples|apple].\n' +
+      'We have some [bread], but not [much]. There is [water] in the bottle. ' +
+      'My brother puts too [much] [sugar] in his tea!',
+  b4: 'Today is my birthday. We are in a small café. I want [soup] and a [salad]. My sister wants a [sandwich].\n' +
+      'Dad drinks [coffee] and Mom drinks [tea]. I drink [water]. ' +
+      'Then the waiter brings a big [cake] and [ice cream]. What a great day!',
+  b5: 'I live in a big [city]. There are many [cars|car] and [buses|bus] on the streets. ' +
+      'Every morning I go to school by [bus]. I sit by the [window] and look outside.\n' +
+      'My two [friends|friend] sit next to me. One [child] reads a [book], another eats an [apple]. ' +
+      'Our [city] has many [children|child] and many schools.',
+  b6: 'We are going on a picnic. Do we have [any] bread? Yes, we have [some]. ' +
+      'Do we have [much] [water]? No, only [a little]. Let\'s buy [some] water.\n' +
+      'We have [a few] apples, but not [many]. How [much] [money] do we have? Only [a little], but it is enough.',
+  b7: 'This is my family. [I] am Aruzhan. My [father] is a doctor. [He] works in a hospital. ' +
+      'My [mother] is a teacher. [She] teaches English.\n' +
+      'We have a cat. [It] is white and very lazy. My grandparents live in a village. ' +
+      '[They] have a big garden. On Sundays [we] visit them.',
+  b8: 'Tomorrow is Asel\'s birthday. I call my brother. "Can you help [me]?" I ask. ' +
+      '"Of course, I can help [you]," he says.\n' +
+      'We buy a book for [her]. Dad wants to [give] her flowers. Our uncle is late, so we wait for [him]. ' +
+      'Our cousins come too, and we invite [them] to dinner. ' +
+      'Asel opens the box and says: "Thank you! I love [it]!" Then she hugs [us].',
+  b9: 'I want a new phone. The black phone is [bigger] [than] the white one. ' +
+      'The white phone is [lighter] and [cheaper].\n' +
+      'The black phone is [more expensive], but its camera is [better]. ' +
+      'The shop near my house is [closer] [than] the mall, and the line in the mall is [longer]. ' +
+      'So I buy the white phone in the small shop.',
+  b10: 'Let me tell you about my class. Daniyar is the [tallest] boy. Aigerim is the [kindest] girl: she always helps.\n' +
+       'Timur is very [talkative]. He talks all day! He is also the [funniest]. ' +
+       'Our school café has the [cheapest] lunch in town, and the soup is [delicious]. ' +
+       'The [most comfortable|comfortable] chair is in the library. It is the [best] place to read.',
+  b11: 'Welcome to my house! It is small but [comfortable]. This is the [living room]. ' +
+       'We have a big grey [sofa] here. Next to it is the [kitchen], where my mom cooks.\n' +
+       'My [bedroom] is upstairs. The [bathroom] is next to my bedroom. ' +
+       'Behind the house there is a little [garden]. It is very [quiet] there in the evening.',
+  b12: 'Every summer my family goes on [holiday]. [Where] do we go? To the mountains near Almaty. ' +
+       '[When] do we go? In July. [Who] goes with us? My cousins.\n' +
+       '[Why] the mountains? Because the [weather] is cool there. [What] do we do? We walk and swim in the lake. ' +
+       '[How long] do we stay? Ten days.',
+  b13: 'I have a big family. My [grandparents] live in Shymkent. My [uncle] Serik is my father\'s brother, ' +
+       'and my [aunt] Gulnar is my mother\'s sister. Their son Arman is my [cousin]. He is also my [best friend].\n' +
+       'At school my [classmate] Dana sits next to me. In football, Timur is my [team-mate]. ' +
+       'I also have an [online friend] from Turkey. We play games together.',
+  b14: 'Today Aliya is [absent]. She is sick. Her mom goes to the shop. [How much] [milk] does she need? One litre. ' +
+       '[How many] [apples|apple] does she need? Five. She also buys [water] and a little [sugar].\n' +
+       'In the evening Aliya asks her friend: "[How much] [homework] do we have?" "Not much," says her friend.'
+};
+
+/* ══════════════════════════════════════════════════════════════════════
    4. СБОРКА
    Экраны читают только window.COURSE и про таблицы выше не знают.
    ══════════════════════════════════════════════════════════════════ */
@@ -797,7 +895,8 @@ window.COURSE = {
         rule:     c.rule     || '', ruleKk:     c.ruleKk     || '',
         examples: c.examples || [],
         words:    c.words    || [],
-        tasks:    c.tasks    || []
+        tasks:    c.tasks    || [],
+        text:     window.TEXTS[id] || ''
       });
     }
     return {

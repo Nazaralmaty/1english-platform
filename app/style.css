@@ -170,8 +170,8 @@ h2{font-size:20px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
 .row .chev{color:var(--faint);flex:none}
 
 /* ── урок в списке: карточка, которая раскрывается на месте ─────────
-   Отдельного экрана урока нет специально: три шага — это и есть урок,
-   ради них не стоит уводить ученика на страницу и возвращать обратно. */
+   Отдельного экрана урока нет специально: две секции по шагам — это и
+   есть урок, ради них не стоит уводить ученика на страницу и обратно. */
 .item{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);overflow:hidden}
 .item + .item{margin-top:10px}
 .itop{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px;
@@ -180,7 +180,11 @@ h2{font-size:20px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
 .itop .chev{color:var(--faint);flex:none;transition:transform .28s var(--ease)}
 .item.on .itop .chev{transform:rotate(90deg)}
 .panel{max-height:0;overflow:hidden;transition:max-height .3s var(--ease)}
-.item.on .panel{max-height:340px}
+.item.on .panel{max-height:480px}
+/* подпись секции: теория, практика */
+.sgrp{padding:14px 16px 4px;border-top:1px solid var(--line);font-size:12px;font-weight:700;
+      color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.sgrp + .step{border-top:0}
 .step{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
       padding:13px 16px;border-top:1px solid var(--line);
       transition:background .16s}
@@ -317,10 +321,12 @@ h2{font-size:20px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
 .wcard .hint{font-size:13px;color:var(--muted)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* ── итог ───────────────────────────────────────────────────────────── */
-.done{text-align:center;padding:40px 0 26px}
-.done .score{font-size:64px;font-weight:800;letter-spacing:-.05em;line-height:1}
-.done .cap{color:var(--muted);margin-top:6px}
+/* ── итог ─────────────────────────────────────────────────────────────
+   Свой класс, а не .done: .done — это «шаг пройден» у .mark и .smark, и
+   отступы итога вытягивали их галочку в столбик. */
+.fin{text-align:center;padding:40px 0 26px}
+.fin .score{font-size:64px;font-weight:800;letter-spacing:-.05em;line-height:1}
+.fin .cap{color:var(--muted);margin-top:6px}
 
 /* ── мелочи ─────────────────────────────────────────────────────────── */
 .note{font-size:13.5px;color:var(--muted);line-height:1.5;text-align:center}
@@ -425,3 +431,52 @@ h2{font-size:20px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
        font-size:14px;line-height:1.45;color:var(--muted);cursor:pointer}
 .agree input{width:22px;height:22px;flex:none;accent-color:var(--navy);margin:0}
 .agree b{color:var(--navy);font-weight:700;text-decoration:underline;cursor:pointer}
+
+/* ── практика: чтение ───────────────────────────────────────────────
+   Текст урока с кликабельными словами урока. Слово — пунктир navy,
+   открытое — сплошная линия и мягкая подложка: видно, что уже смотрел. */
+.rtext{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:20px 18px;
+       font-size:19px;line-height:1.75;margin-bottom:10px}
+.rtext p + p{margin-top:12px}
+.rw{display:inline;padding:0 1px;font:inherit;color:var(--navy);font-weight:700;line-height:inherit;
+    border-bottom:2px dotted var(--navy);border-radius:3px}
+.rw.seen{background:rgba(10,49,97,.08);border-bottom-style:solid}
+.rcount{display:flex;align-items:center;gap:10px;margin-top:18px;font-size:13.5px;color:var(--muted)}
+.rcount .track{flex:1;height:6px;border-radius:999px;background:var(--track);overflow:hidden}
+.rcount .track i{display:block;height:100%;background:var(--accent);border-radius:999px;
+                 transform-origin:left;transition:transform .3s var(--ease)}
+
+/* флип-карта слова: всплывает снизу, переворачивается по нажатию */
+.fveil{padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.flip{width:100%;max-width:420px;height:290px;perspective:1200px;cursor:pointer;animation:rise .3s var(--ease) both}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+.flip.back .flip-in{transform:rotateY(180deg)}
+.flip .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+            background:var(--card);border-radius:26px;box-shadow:var(--sh-2);padding:28px 24px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
+.flip .face.b{transform:rotateY(180deg)}
+.flip .en{font-size:34px;font-weight:800;letter-spacing:-.035em;line-height:1.1}
+.flip .en.sm{font-size:20px;color:var(--muted);font-weight:700}
+.flip .form{font-size:14px;color:var(--muted)}
+.flip .tr{font-size:26px;font-weight:700;color:var(--navy)}
+.flip .wex{font-size:15px;color:var(--muted);line-height:1.45}
+.flip .hint{font-size:13px;color:var(--muted)}
+.flip .say{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;
+           background:var(--bg);color:var(--navy);display:grid;place-items:center}
+
+/* ── плашка «сегодня урок» над главной и уроками ──────────────────────
+   Navy; за час до начала — красная: это «твоё место сейчас». */
+.bn{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;
+    background:var(--navy);color:var(--on-navy);border-radius:18px;padding:14px 16px;margin:0 0 12px;
+    box-shadow:var(--sh-1);animation:enter .3s var(--ease) both}
+.bn.soon{background:var(--accent)}
+.bn svg{flex:none;margin-top:1px}
+.bn b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
+.bn span span{display:block;font-size:13.5px;opacity:.85;margin-top:2px;line-height:1.4}
+.who + #bn:not(:empty){margin-top:18px}
+
+/* полоска демо-режима: видно, что данные выдуманные */
+.demo-strip{position:sticky;top:0;z-index:50;background:var(--accent);color:#fff;text-align:center;
+            font-size:12.5px;font-weight:700;padding:6px 12px calc(6px);letter-spacing:.01em}
+/* та же флип-карта в шаге «Словарь»: стоит на экране, а не всплывает */
+.flip.wflip{margin:0 auto;animation:enter .24s var(--ease) both}

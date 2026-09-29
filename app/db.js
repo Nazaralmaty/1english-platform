@@ -171,7 +171,7 @@
         .catch(function (err) { DB.online = false; console.warn('[db] профиль не сохранён:', err.message); return null; });
     },
 
-    /* Шаг урока: read | task | words. */
+    /* Шаг урока: read (теория) | prac (практика) | text (чтение) | task | words. */
     saveStep: function (lesson, step, right, total) {
       if (!DB.ready) return Promise.resolve(null);
       return token().then(function (tk) {

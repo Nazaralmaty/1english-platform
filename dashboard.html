@@ -88,7 +88,7 @@
   .mini{display:flex;align-items:center;gap:10px;min-width:170px}
   .mini .track{flex:1;height:6px;border-radius:999px;background:var(--track);overflow:hidden}
   .mini .track i{display:block;height:100%;border-radius:999px;background:var(--accent);
-                 transition:width .4s var(--ease)}
+                 transform-origin:left;transition:transform .4s var(--ease)}
   .mini span{font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);width:38px;text-align:right}
   .ago{color:var(--muted);font-variant-numeric:tabular-nums}
   .ago.hot{color:var(--ok);font-weight:700}
@@ -153,8 +153,9 @@
   td .reset:hover{background:var(--track)}
   /* Правка ученика — модальное окно вне #root: страница перерисовывается
      раз в 10 секунд, а окно при этом остаётся как было, с введённым. */
-  dialog{margin:auto;border:0;border-radius:var(--r-card);padding:0;max-width:640px;width:calc(100% - 28px);
-         max-height:calc(100dvh - 28px);background:var(--card);color:var(--ink);box-shadow:var(--sh-1)}
+  dialog{margin:auto;border:0;border-radius:var(--r-card);padding:0;max-width:720px;width:calc(100% - 28px);
+         max-height:calc(100dvh - 28px);overflow:auto;overscroll-behavior:contain;
+         background:var(--card);color:var(--ink);box-shadow:var(--sh-1)}
   dialog::backdrop{background:rgba(10,27,46,.45)}
   .dlg{padding:22px}
   .dlg h3{font-size:19px;letter-spacing:-.02em;margin-bottom:4px}
@@ -164,6 +165,19 @@
   .dlg-foot button.go{background:var(--navy);color:var(--on-navy)}
   .dlg-foot button:disabled{opacity:.5;cursor:default}
   .has-card{background:var(--bg);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.55;margin-top:8px}
+  .has-card .ed{margin-left:8px;padding:0;border:0;background:none;font:inherit;font-size:13px;font-weight:700;
+                color:var(--navy);cursor:pointer}
+  /* карточка у учителя в окне «Изменить»: своя рамка, чтобы две карточки
+     одного ученика не сливались в одну форму */
+  .cardbox{border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:10px}
+  .cb-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .cb-head b{font-size:15.5px}
+  .cb-head span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .fit{display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.5}
+  .fit:empty{display:none}
+  .fit .clash{color:var(--accent);font-weight:700}
+  details.more{margin-top:14px}
+  details.more summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--navy);padding:6px 0}
   .has-card a{color:var(--navy);font-weight:700}
   .tch{font-size:13.5px}
   .tch.wait{color:var(--muted)}
@@ -198,6 +212,11 @@
   var RATE = 1150;
 
   var view = 'students';   /* students | new | sched | all */
+  /* Ответ формы после записи: id элемента → [класс, разметка]. Страница
+     перерисовывается раз в 10 секунд, а выданный код ученику нужно ещё
+     продиктовать — поэтому ответ живёт до следующего нажатия или до
+     смены вкладки, а не до ближайшей перерисовки. */
+  var flash = {};
   var schedTeacher = null; /* чей лист графика открыт */
   var extraTimes = [];     /* часы, которые админ добавил в сетку руками */
   var onlyWaiting = false; /* фильтр «Ученики»: только те, у кого нет учителя */
@@ -220,8 +239,10 @@
   /* Сколько шагов у урока вообще есть: пустой урок в знаменатель не идёт,
      иначе прогресс всегда упирается в потолок из будущих уроков. */
   function stepsOf(lesson) {
-    var n = 0;
-    if ((window.VIDEOS || {})[lesson.id] || lesson.rule) n++;
+    var n = 0, v = window.lessonVideos(lesson.id);
+    if (v.theory || lesson.rule) n++;
+    if (v.practice) n++;
+    if (lesson.text) n++;
     if (lesson.tasks.length) n++;
     if (lesson.words.length) n++;
     return n;
@@ -336,7 +357,10 @@
   }
 
   /* ── данные ───────────────────────────────────────────────────────── */
-  function pull() {
+  /* force — перерисовать, даже если курсор стоит в поле: так зовут после
+     записи. Safari не отдаёт фокус кнопке при клике, и поле, из которого
+     только что отправили форму, иначе держало бы экран старым. */
+  function pull(force) {
     return DB.listAll().then(function (d) {
       if (!d.isAdmin) {
         stop();
@@ -344,7 +368,7 @@
         return auth('Этот номер не админ. Дашборд открывает только таблица en_admins, en_allowed прав не даёт. Supabase → SQL Editor: select public.en_make_admin(\'ваш номер\');');
       }
       lastData = d;
-      if (busy()) return;   /* не затирать наполовину заполненную форму */
+      if (!force && busy()) return;   /* не затирать наполовину заполненную форму */
       render(d);
     }).catch(function (e) {
       var live = root.querySelector('.live');
@@ -487,7 +511,7 @@
                 '<td>' + teacherCell(r, d) + '</td>' +
                 '<td><span class="lvl' + (r.st.level ? '' : ' none') + '">' +
                     esc(r.st.level ? levelTitle(r.st.level) : 'не выбран') + '</span></td>' +
-                '<td><span class="mini"><span class="track"><i style="width:' + r.pct + '%"></i></span>' +
+                '<td><span class="mini"><span class="track"><i style="transform:scaleX(' + (r.pct / 100) + ')"></i></span>' +
                     '<span>' + r.pct + '%</span></span></td>' +
                 '<td class="num">' + r.done + '</td>' +
                 '<td class="num">' + r.steps + '</td>' +
@@ -607,7 +631,7 @@
     root.querySelector('#out').onclick = function () { stop(); DB.signOut(); auth(''); };
 
     Array.prototype.forEach.call(root.querySelectorAll('[data-view]'), function (b) {
-      b.onclick = function () { view = b.getAttribute('data-view'); render(lastData); };
+      b.onclick = function () { view = b.getAttribute('data-view'); flash = {}; render(lastData); };
     });
 
     Array.prototype.forEach.call(root.querySelectorAll('[data-reset]'), function (b) {
@@ -622,6 +646,10 @@
     wireNewStudent();
     wireTeachers();
     wireSched();
+    Object.keys(flash).forEach(function (id) {
+      var el = root.querySelector('#' + id);
+      if (el) { el.className = flash[id][0]; el.innerHTML = flash[id][1]; }
+    });
   }
 
   /* ── графики ────────────────────────────────────────────────────────
@@ -791,9 +819,17 @@
 
     cd.oninput = function () { cd.value = cd.value.replace(/\D/g, ''); };
     function v(id) { var el = root.querySelector('#' + id); return el ? el.value.trim() : ''; }
+    var clashNow = wireFit(lastData, root, 'ns', null);
 
     btn.onclick = function () {
       var phone = v('nsPhone'), code = v('nsCode'), name = v('nsName');
+      /* накладка в графике: первое нажатие показывает её, второе заводит */
+      var clash = clashNow().join('|');
+      if (clash && btn.getAttribute('data-sure') !== clash) {
+        btn.setAttribute('data-sure', clash); btn.textContent = 'Завести с накладкой';
+        state.className = 'state bad'; state.textContent = 'В графике учителя накладка — она подсвечена выше. Нажмите ещё раз, если так и задумано.';
+        return;
+      }
       if (String(phone).replace(/\D/g, '').length < 10) {
         state.className = 'state bad'; state.textContent = 'Проверьте номер'; return;
       }
@@ -804,6 +840,7 @@
         state.className = 'state bad'; state.textContent = 'Имя обязательно: по нему ученика ищут все экраны'; return;
       }
 
+      flash = {};
       btn.disabled = true; state.className = 'state'; state.textContent = 'Завожу…';
       DB.addStudent(phone, code, name, v('nsLevel')).then(function (answer) {
         /* функция в базе отвечает словами: и про успех, и про «уже заведён» */
@@ -821,7 +858,11 @@
         });
       }).catch(function (e) {
         state.className = 'state bad'; state.textContent = e.message;
-      }).then(function () { btn.disabled = false; pull(); });
+      }).then(function () {
+        btn.disabled = false;
+        flash = { nsState: [state.className, state.innerHTML], nsCard: ['', card.innerHTML] };
+        pull(true);
+      });
     };
 
     function clearForm() {
@@ -833,40 +874,118 @@
     }
   }
 
-  /* Поля карточки у учителя. Одни и те же в двух местах: в анкете нового
-     ученика (prefix ns) и в окне «Изменить», когда учителя назначают позже
-     (prefix ed). withNone — пункт «Без учителя» в списке. */
-  function cardFields(d, p, withNone) {
+  /* Поля карточки у учителя. Одни и те же в трёх местах: в анкете нового
+     ученика (prefix ns), в окне «Изменить», когда учителя назначают позже
+     (prefix ed), и там же для уже заведённой карточки (prefix c0, c1…).
+     withNone — пункт «Без учителя» в списке. c — карточка, которую
+     правят: поля заполнены её значениями, а сетки (месяцы, темы) нет —
+     она уже лежит в базе и растёт кнопкой «+ месяц». */
+  function cardFields(d, p, withNone, c) {
+    c = c || {};
+    var edit = !!c.id, set = String(c.days || '').split(',');
+    function val(x) { return x == null ? '' : esc(x); }
     return (
       '<div class="d-form">' +
         '<div><label>Учитель</label><select id="' + p + 'Teacher">' +
           (withNone ? '<option value="">Без учителя</option>' : '') +
           (d.teachers || []).map(function (t) {
-            return '<option value="' + esc(t.id) + '">' + esc(t.name || phoneFmt(t.phone)) + '</option>';
+            return '<option value="' + esc(t.id) + '"' + (c.teacher_id === t.id ? ' selected' : '') + '>' +
+                   esc(t.name || phoneFmt(t.phone)) + '</option>';
           }).join('') +
         '</select></div>' +
-        '<div><label>Возраст</label><input id="' + p + 'Age" type="number" min="3" max="99" placeholder="14"></div>' +
-        '<div><label>Город</label><input id="' + p + 'City" type="text" placeholder="Алматы"></div>' +
-        '<div><label>Нынешний уровень</label><input id="' + p + 'LvlText" type="text" placeholder="Beginner"></div>' +
         '<div><label>Формат</label><select id="' + p + 'Format">' +
           '<option value="individual">Индивидуально</option>' +
-          '<option value="group">Группа</option>' +
+          '<option value="group"' + (c.format === 'group' ? ' selected' : '') + '>Группа</option>' +
         '</select></div>' +
-        '<div><label>Время</label><input id="' + p + 'Time" type="time" value="18:00"></div>' +
-        '<div><label>Месяцев обучения</label><input id="' + p + 'Months" type="number" min="1" max="36" value="4"></div>' +
-        '<div><label>Уроков в месяце</label><input id="' + p + 'Per" type="number" min="1" max="31" value="12"></div>' +
-        '<div><label>Ставка учителю, ₸ за урок</label><input id="' + p + 'Rate" type="number" min="0" placeholder="как у учителя, ' + RATE + '"></div>' +
-        '<div><label>Начало занятий</label><input id="' + p + 'Start" type="date" value="' +
-          new Date().toISOString().slice(0, 10) + '"></div>' +
+        '<div><label>Время</label><input id="' + p + 'Time" type="time" value="' + val(c.time_at || '18:00') + '"></div>' +
         '<div class="one"><label>Дни недели</label><div class="days">' +
           DAYS.map(function (x) {
-            return '<label><input type="checkbox" data-day="' + x[0] + '">' + x[1] + '</label>';
+            return '<label><input type="checkbox" data-day="' + x[0] + '"' +
+                   (set.indexOf(x[0]) >= 0 ? ' checked' : '') + '>' + x[1] + '</label>';
           }).join('') + '</div></div>' +
-        '<div class="one"><label>Цель обучения</label><input id="' + p + 'Goal" type="text" placeholder="Сдать IELTS на 6.5"></div>' +
-        '<div class="one"><label>Описание ученика</label><textarea id="' + p + 'Note" placeholder="Что важно знать учителю: характер, чего боится, что уже пробовал"></textarea></div>' +
-        '<div class="one"><label>Темы уроков, по одной в строке</label><textarea id="' + p + 'Topics" placeholder="Знакомство&#10;Глагол to be&#10;Present Simple"></textarea></div>' +
-        '<div class="one"><label>Домашние задания, по одному в строке</label><textarea id="' + p + 'Hw" placeholder="Слова 1–10&#10;Упражнение 3"></textarea></div>' +
+        '<div class="one fit" id="' + p + 'Fit"></div>' +
+        '<div><label>Возраст</label><input id="' + p + 'Age" type="number" min="3" max="99" placeholder="14" value="' + val(c.age) + '"></div>' +
+        '<div><label>Город</label><input id="' + p + 'City" type="text" placeholder="Алматы" value="' + val(c.city) + '"></div>' +
+        '<div><label>Нынешний уровень</label><input id="' + p + 'LvlText" type="text" placeholder="Beginner" value="' + val(c.level) + '"></div>' +
+        '<div><label>Ставка учителю, ₸ за урок</label><input id="' + p + 'Rate" type="number" min="0" placeholder="как у учителя, ' + RATE + '" value="' + val(c.rate) + '"></div>' +
+        '<div><label>Начало занятий</label><input id="' + p + 'Start" type="date" value="' +
+          val(c.started_on || new Date().toISOString().slice(0, 10)) + '"></div>' +
+        (edit ? '' :
+          '<div><label>Месяцев обучения</label><input id="' + p + 'Months" type="number" min="1" max="36" value="4"></div>' +
+          '<div><label>Уроков в месяце</label><input id="' + p + 'Per" type="number" min="1" max="31" value="12"></div>') +
+        '<div class="one"><label>Цель обучения</label><input id="' + p + 'Goal" type="text" placeholder="Сдать IELTS на 6.5" value="' + val(c.goal) + '"></div>' +
+        '<div class="one"><label>Описание ученика</label><textarea id="' + p + 'Note" placeholder="Что важно знать учителю: характер, чего боится, что уже пробовал">' + val(c.note) + '</textarea></div>' +
+        (edit ? '' :
+          '<div class="one"><label>Темы уроков, по одной в строке</label><textarea id="' + p + 'Topics" placeholder="Знакомство&#10;Глагол to be&#10;Present Simple"></textarea></div>' +
+          '<div class="one"><label>Домашние задания, по одному в строке</label><textarea id="' + p + 'Hw" placeholder="Слова 1–10&#10;Упражнение 3"></textarea></div>') +
       '</div>');
+  }
+
+  /* Дни, отмеченные в одной форме. scope — её рамка: в окне «Изменить»
+     форм несколько, и галочки одной не должны попадать в другую. */
+  function checkedDays(scope) {
+    var days = [];
+    Array.prototype.forEach.call(scope.querySelectorAll('[data-day]'), function (i) {
+      if (i.checked) days.push(i.getAttribute('data-day'));
+    });
+    return days;
+  }
+
+  /* Встаёт ли ученик в график учителя. Накладка — это час, который учитель
+     не ведёт, или час, где у него уже сидит другой ученик (группа с
+     группой в одном часе — не накладка, это одна группа). skip — id
+     карточки, которую правят: сама с собой она не пересекается. */
+  function fit(d, teacherId, days, time, format, skip) {
+    var t = (d.teachers || []).filter(function (x) { return x.id === teacherId; })[0];
+    if (!t) return { clash: [], free: [] };
+    var work = SCHED.slots(t);
+    var others = (d.cards || []).filter(function (c) {
+      return c.teacher_id === teacherId && !c.archived && c.id !== skip;
+    });
+    var busy = SCHED.taken(others);
+    var dn = {}; DAYS.forEach(function (x) { dn[x[0]] = x[1]; });
+
+    var clash = [];
+    if (time) days.forEach(function (day) {
+      var key = day + '@' + time;
+      if (work.length && work.indexOf(key) < 0) clash.push(dn[day] + ' ' + time + ' — учитель в это время не работает');
+      (busy[key] || []).forEach(function (o) {
+        if (format === 'group' && o.format === 'group') return;
+        clash.push(dn[day] + ' ' + time + ' — занято: ' + o.name);
+      });
+    });
+
+    /* свободные окна по дням: «Пн 16:00 17:00» */
+    var free = DAYS.map(function (x) {
+      var hours = work.filter(function (s) { return s.split('@')[0] === x[0] && !busy[s]; })
+                      .map(function (s) { return s.split('@')[1]; })
+                      .sort(function (a, b) { return (a.length - b.length) || a.localeCompare(b); });
+      return hours.length ? x[1] + ' ' + hours.join(' ') : '';
+    }).filter(Boolean);
+    return { clash: clash, free: free, noSlots: !work.length };
+  }
+
+  /* Подсказка под полями графика: где у учителя свободно и что не так с
+     выбранным временем. Пересчитывается на каждое изменение формы и
+     возвращает список накладок — по нему кнопка сохранения переспрашивает. */
+  function wireFit(d, scope, p, skip) {
+    var out = scope.querySelector('#' + p + 'Fit');
+    if (!out) return function () { return []; };
+    function get(x) { var el = scope.querySelector('#' + p + x); return el ? el.value : ''; }
+    function draw() {
+      var f = fit(d, get('Teacher'), checkedDays(scope), get('Time'), get('Format'), skip);
+      out.innerHTML = !get('Teacher') ? '' :
+        (f.noSlots ? '<span class="mini2">Рабочие часы учителя не заданы — вкладка «Графики».</span>'
+                   : '<span class="mini2">Свободно у учителя: ' +
+                     (f.free.length ? esc(f.free.join(' · ')) : 'окон нет') + '</span>') +
+        (f.clash.length ? '<span class="clash">' + f.clash.map(esc).join('<br>') + '</span>' : '');
+      return f.clash;
+    }
+    Array.prototype.forEach.call(scope.querySelectorAll('select,input'), function (el) {
+      el.addEventListener('change', draw);
+    });
+    draw();
+    return draw;
   }
 
   /* Карточка ученика у учителя и сразу вся сетка уроков: месяцев ×
@@ -960,7 +1079,8 @@
           ['tcPhone','tcName','tcBio','tcRate'].forEach(function (id) {
             var el = root.querySelector('#' + id); if (el) el.value = '';
           });
-          pull();
+          flash = { tcState: [state.className, state.innerHTML] };
+          pull(true);
         }
       }).catch(function (e) {
         state.className = 'state bad'; state.textContent = e.message;
@@ -1024,8 +1144,9 @@
   }
 
   /* ── изменить ученика ───────────────────────────────────────────────
-     Второй заход после «Завести»: поправить имя, номер, уровень и, когда
-     учитель найден, поставить ученика к нему на доску. Окно живёт вне
+     Второй заход после «Завести» и все следующие: имя, номер, уровень,
+     учитель, график, формат, ставка, анкета, архив и сетка уроков — всё
+     здесь, в кабинет учителя за этим ходить не нужно. Окно живёт вне
      #root, поэтому обновление раз в 10 секунд его не трогает. */
   function editStudent(id) {
     var d = lastData;
@@ -1033,7 +1154,29 @@
     if (!st) return;
     var cs = cardsOf(st, d);
     var live = cs.filter(function (c) { return !c.archived; });
+    var arch = cs.filter(function (c) { return c.archived; });
     var ts = d.teachers || [];
+
+    function doneOf(c) { return (c.lessons || []).filter(function (l) { return l.done; }).length; }
+
+    /* Уже заведённая карточка: вся анкета открыта для правки. */
+    function cardBox(c, k) {
+      var done = doneOf(c), all = (c.lessons || []).length;
+      return '<div class="cardbox" id="cb' + k + '">' +
+        '<div class="cb-head"><b>' + esc(teacherName(d, c.teacher_id)) + '</b>' +
+          '<span>проведено ' + done + ' из ' + all + ' · месяцев ' + (c.months || 1) +
+          ' по ' + (c.per_month || 12) + ' уроков</span></div>' +
+        cardFields(d, 'c' + k, false, c) +
+        (done ? '<div class="d-hint" style="margin:10px 0 0">Сменить учителя: проведённые уроки ' +
+                'останутся за прежним (по ним уже считается зарплата), непроведённые переедут к новому.</div>' : '') +
+        '<div class="dlg-foot">' +
+          '<button data-arch="' + k + '">В архив</button>' +
+          '<button data-month="' + k + '">+ месяц уроков</button>' +
+          '<button class="go" data-save="' + k + '">Сохранить карточку</button>' +
+        '</div>' +
+        '<div class="state" id="c' + k + 'State"></div>' +
+      '</div>';
+    }
 
     dlgBody.innerHTML =
       '<h3>' + esc(st.name || 'Без имени') + '</h3>' +
@@ -1057,20 +1200,28 @@
       '<div class="state" id="edState"></div>' +
 
       '<div class="d-sec">Учитель и график</div>' +
-      (live.length
-        ? live.map(function (c) {
-            return '<div class="has-card"><b>' + esc(teacherName(d, c.teacher_id)) + '</b> · ' +
-              (c.format === 'group' ? 'группа' : 'индивидуально') + '<br>' +
-              esc(dayNames(c.days) || 'дни не заданы') + (c.time_at ? ', ' + esc(c.time_at) : '') +
-              '<br><a href="teacher.html" target="_blank" rel="noopener">Править карточку и сетку уроков — в кабинете учителя</a></div>';
-          }).join('')
-        : !ts.length
-          ? '<div class="d-hint">Учителей пока нет. Отметьте учителя на вкладке «Завести» → «Учителя».</div>'
-          : (cs.length ? '<div class="d-hint">Прежняя карточка в архиве. Можно поставить к новому учителю.</div>' : '') +
+      (!ts.length
+        ? '<div class="d-hint">Учителей пока нет. Отметьте учителя на вкладке «Завести» → «Учителя».</div>'
+        : live.map(cardBox).join('') +
+          /* Новая карточка. Если учителя нет — это главное действие окна;
+             если есть — второй учитель (группа плюс индивидуально) под
+             раскрывашкой, чтобы не путать с правкой первого. */
+          (live.length ? '<details class="more"><summary>Ещё один учитель — например, группа и индивидуально</summary>' : '') +
+            (arch.length && !live.length ? '<div class="d-hint">Прежняя карточка в архиве. Можно поставить к новому учителю.</div>' : '') +
             '<div class="d-hint">Ученик встанет к учителю на доску вместе с сеткой уроков.</div>' +
             '<div id="edCardBox">' + cardFields(d, 'ed', false) + '</div>' +
             '<div class="dlg-foot"><button class="go" id="edAssign">Поставить к учителю</button></div>' +
-            '<div class="state" id="edCardState"></div>') +
+            '<div class="state" id="edCardState"></div>' +
+          (live.length ? '</details>' : '')) +
+
+      (arch.length
+        ? '<div class="d-sec">Архив</div>' + arch.map(function (c) {
+            return '<div class="has-card"><b>' + esc(teacherName(d, c.teacher_id)) + '</b> · ' +
+              (c.format === 'group' ? 'группа' : 'индивидуально') + ' · проведено ' + doneOf(c) +
+              ' из ' + (c.lessons || []).length +
+              ' <button class="ed" data-back="' + esc(c.id) + '">Вернуть в работу</button></div>';
+          }).join('')
+        : '') +
 
       '<div class="dlg-foot" style="border-top:1px solid var(--line);padding-top:14px">' +
         '<button id="edClose">Закрыть</button></div>';
@@ -1080,8 +1231,73 @@
       var el = dlgBody.querySelector('#' + where);
       if (el) { el.className = 'state ' + (bad ? 'bad' : 'ok'); el.textContent = text; }
     }
+    /* После любой записи — свежие данные и окно заново, уже по ним. */
+    function reopen() { return pull().then(function () { editStudent(st.id); }); }
 
     dlgBody.querySelector('#edClose').onclick = function () { dlg.close(); };
+
+    /* Накладки в графике переспрашивают: первое нажатие показывает, что не
+       так, второе сохраняет как есть — админ может знать больше сетки. */
+    function confirmed(btn, clash, where) {
+      /* подтверждают именно эту накладку: поменял время — спросим снова */
+      if (!clash.length || btn.getAttribute('data-sure') === clash.join('|')) return true;
+      btn.setAttribute('data-sure', clash.join('|'));
+      btn.textContent = 'Сохранить с накладкой';
+      say(where, 'В графике накладка — она подсвечена выше. Нажмите ещё раз, если так и задумано.', true);
+      return false;
+    }
+
+    live.forEach(function (c, k) {
+      var box = dlgBody.querySelector('#cb' + k), p = 'c' + k;
+      var clashNow = wireFit(d, box, p, c.id);
+
+      box.querySelector('[data-save]').onclick = function () {
+        var btn = this;
+        if (!confirmed(btn, clashNow(), p + 'State')) return;
+        var body = cardBody(v, p, box);
+        btn.disabled = true; say(p + 'State', 'Сохраняю…');
+        /* Смена учителя при проведённых уроках — перенос, иначе правка на месте. */
+        var job = (body.teacher_id !== c.teacher_id && doneOf(c))
+          ? moveCard(c, body)
+          : DB.rest('en_teacher_students?id=eq.' + encodeURIComponent(c.id), {
+              method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: body });
+        job.then(reopen).catch(function (e) { btn.disabled = false; say(p + 'State', e.message, true); });
+      };
+
+      box.querySelector('[data-arch]').onclick = function () {
+        var btn = this;
+        if (!btn.getAttribute('data-sure')) {
+          btn.setAttribute('data-sure', '1'); btn.textContent = 'Точно в архив?';
+          say(p + 'State', 'Карточка уйдёт с доски учителя, окна в графике освободятся. Уроки и зарплата по ним сохранятся.', true);
+          return;
+        }
+        btn.disabled = true;
+        DB.rest('en_teacher_students?id=eq.' + encodeURIComponent(c.id), {
+          method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: { archived: true }
+        }).then(reopen).catch(function (e) { btn.disabled = false; say(p + 'State', e.message, true); });
+      };
+
+      /* Ещё один месяц той же длины, как «+ месяц» в кабинете учителя. */
+      box.querySelector('[data-month]').onclick = function () {
+        var btn = this, next = (c.months || 1) + 1, per = c.per_month || 12, plan = [];
+        for (var i = 1; i <= per; i++) plan.push({ card_id: c.id, month: next, idx: i });
+        btn.disabled = true; say(p + 'State', 'Добавляю месяц…');
+        DB.rest('en_teacher_lessons', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: plan })
+          .then(function () {
+            return DB.rest('en_teacher_students?id=eq.' + encodeURIComponent(c.id), {
+              method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: { months: next } });
+          }).then(reopen).catch(function (e) { btn.disabled = false; say(p + 'State', e.message, true); });
+      };
+    });
+
+    Array.prototype.forEach.call(dlgBody.querySelectorAll('[data-back]'), function (b) {
+      b.onclick = function () {
+        b.disabled = true;
+        DB.rest('en_teacher_students?id=eq.' + encodeURIComponent(b.getAttribute('data-back')), {
+          method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: { archived: false }
+        }).then(reopen).catch(function (e) { b.disabled = false; alert(e.message); });
+      };
+    });
 
     dlgBody.querySelector('#edSave').onclick = function () {
       var btn = this, name = v('edName'), phone = v('edPhone');
@@ -1103,24 +1319,83 @@
     };
 
     var assign = dlgBody.querySelector('#edAssign');
+    var edBox = dlgBody.querySelector('#edCardBox');
+    var edClash = edBox ? wireFit(d, edBox, 'ed', null) : null;
     if (assign) assign.onclick = function () {
       var btn = this;
       if (!v('edTeacher')) { say('edCardState', 'Выберите учителя', true); return; }
-      /* Защита от двойного нажатия и от карточки, которую только что завели
-         с другого устройства: перед записью смотрим свежие данные. */
-      btn.disabled = true; say('edCardState', 'Ставлю к учителю…');
-      if (cardsOf(st, lastData).filter(function (c) { return !c.archived; }).length) {
-        say('edCardState', 'У ученика уже есть учитель — обновите окно', true); return;
+      /* К тому же учителю второй карточкой не ставим: это дубль, а не
+         второй формат — формат и график правятся в карточке выше. */
+      if (cardsOf(st, lastData).some(function (c) { return !c.archived && c.teacher_id === v('edTeacher'); })) {
+        say('edCardState', 'У этого учителя ученик уже есть — правьте его карточку выше', true); return;
       }
-      addCard(v, st.name || 'Без имени', st.phone, dlgBody.querySelector('#edCardBox'), 'ed')
-        .then(function () {
-          say('edCardState', 'Готово: ' + (st.name || '') + ' у учителя ' + teacherName(lastData, v('edTeacher')) + '.');
-          return pull().then(function () { editStudent(st.id); });
-        })
+      if (!confirmed(btn, edClash(), 'edCardState')) return;
+      btn.disabled = true; say('edCardState', 'Ставлю к учителю…');
+      addCard(v, st.name || 'Без имени', st.phone, edBox, 'ed')
+        .then(reopen)
         .catch(function (e) { btn.disabled = false; say('edCardState', e.message, true); });
     };
 
     if (!dlg.open) dlg.showModal();
+  }
+
+  /* Поля карточки из формы — ровно то, что пишется PATCH-ем. */
+  function cardBody(v, p, scope) {
+    var age = Number(v(p + 'Age')) || null;
+    if (age != null && (age < 3 || age > 99)) age = null;
+    return {
+      teacher_id: v(p + 'Teacher'), format: v(p + 'Format') || 'individual',
+      days: checkedDays(scope).join(','), time_at: v(p + 'Time') || null,
+      age: age, city: v(p + 'City') || null, level: v(p + 'LvlText') || null,
+      rate: v(p + 'Rate') === '' ? null : Math.max(0, Number(v(p + 'Rate')) || 0),
+      started_on: v(p + 'Start') || null,
+      goal: v(p + 'Goal') || null, note: v(p + 'Note') || null
+    };
+  }
+
+  /* Смена учителя, когда уроки уже шли. Проведённые уроки держат зарплату
+     прежнего учителя, поэтому карточку не перевешиваем, а делим: прежняя
+     уходит в архив со своими проведёнными, новая получает непроведённые
+     (с темами, домашкой и датами). Колонку card_id у урока из браузера
+     не поменять — уроки переезжают вставкой и удалением.
+
+     Порядок — чтобы сбой на любом шаге не терял план: сначала новая
+     карточка и её уроки (не легли — новая карточка удаляется), и только
+     потом удаление старых непроведённых и архив. */
+  function moveCard(c, body) {
+    var fresh;
+    return DB.rest('en_teacher_lessons?card_id=eq.' + encodeURIComponent(c.id) +
+                   '&done=is.false&select=id,month,idx,topic,homework,plan_date')
+      .then(function (rest) {
+        fresh = rest || [];
+        return DB.rest('en_teacher_students', {
+          method: 'POST', headers: { Prefer: 'return=representation' },
+          body: Object.assign({}, body, { name: c.name, phone: c.phone,
+                                          months: c.months || 1, per_month: c.per_month || 12 })
+        });
+      }).then(function (rows) {
+        var id = rows[0].id;
+        if (!fresh.length) return;
+        return DB.rest('en_teacher_lessons', {
+          method: 'POST', headers: { Prefer: 'return=minimal' },
+          body: fresh.map(function (l) {
+            return { card_id: id, month: l.month, idx: l.idx, topic: l.topic,
+                     homework: l.homework, plan_date: l.plan_date };
+          })
+        }).catch(function (e) {
+          return DB.rest('en_teacher_students?id=eq.' + encodeURIComponent(id), {
+            method: 'DELETE', headers: { Prefer: 'return=minimal' }
+          }).catch(function () {}).then(function () { throw e; });
+        });
+      }).then(function () {
+        if (!fresh.length) return;
+        return DB.rest('en_teacher_lessons?id=in.(' + fresh.map(function (l) {
+          return encodeURIComponent(l.id); }).join(',') + ')', {
+          method: 'DELETE', headers: { Prefer: 'return=minimal' } });
+      }).then(function () {
+        return DB.rest('en_teacher_students?id=eq.' + encodeURIComponent(c.id), {
+          method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: { archived: true } });
+      });
   }
 
   /* ── сброс кода ───────────────────────────────────────────────────── */
@@ -1154,7 +1429,7 @@
     function les(done, tag) {
       var out = [];
       for (var i = 0; i < 12; i++)
-        out.push({ id: tag + i, done: i < done,
+        out.push({ id: tag + i, month: 1, idx: i + 1, done: i < done,
                    done_at: i < done ? new Date(Date.now() - i * 864e5).toISOString() : null });
       return out;
     }
@@ -1215,16 +1490,61 @@
       add:  function () { return Promise.resolve(); },
       remove: function () { return Promise.resolve(); }
     };
-    /* Заведённая карточка и правка ученика ложатся в память вкладки —
-       так видно, как ученик уходит из «без учителя» после назначения. */
+    /* Всё, что дашборд пишет в карточки, уроки и графики, ложится в
+       память вкладки тем же путём, каким ушло бы в PostgREST: видно, как
+       ученик уходит из «без учителя», как карточка переезжает к другому
+       учителю и как растёт сетка. Понимает ровно те запросы, что шлёт
+       дашборд: POST, PATCH и DELETE по id=eq. / id=in., GET уроков. */
+    var seq = 0;
+    function lessonsAll() {
+      var out = [];
+      data.cards.forEach(function (c) { (c.lessons || []).forEach(function (l) { l.card_id = c.id; out.push(l); }); });
+      return out;
+    }
+    function match(q) {
+      var m = /[?&]id=eq\.([^&]+)/.exec(q), n = /[?&]id=in\.\(([^)]*)\)/.exec(q);
+      if (m) { var one = decodeURIComponent(m[1]); return function (x) { return x.id === one; }; }
+      if (n) { var many = n[1].split(',').map(decodeURIComponent); return function (x) { return many.indexOf(x.id) >= 0; }; }
+      return function () { return false; };
+    }
     DB.rest = function (path, opt) {
       opt = opt || {};
-      if (/^en_teacher_students$/.test(path) && opt.method === 'POST') {
-        var c = Object.assign({ id: 'c' + Date.now(), archived: false, lessons: [] }, opt.body);
-        data.cards.push(c);
-        return Promise.resolve([c]);
+      var table = path.split('?')[0], q = path.slice(table.length), how = opt.method || 'GET';
+      var list = table === 'en_teacher_students' ? data.cards
+               : table === 'en_teachers' ? data.teachers : null;
+      if (table === 'en_teacher_lessons') {
+        if (how === 'POST') {
+          var rows = [].concat(opt.body);
+          var dup = rows.some(function (l) {
+            return lessonsAll().some(function (x) { return x.card_id === l.card_id && x.month === l.month && x.idx === l.idx; });
+          });
+          if (dup) return Promise.reject(new Error('duplicate key value violates unique constraint'));
+          rows.forEach(function (l) {
+            var c = data.cards.filter(function (x) { return x.id === l.card_id; })[0];
+            if (c) (c.lessons = c.lessons || []).push(Object.assign({ id: 'l' + (++seq), done: false, done_at: null }, l));
+          });
+          return Promise.resolve([]);
+        }
+        if (how === 'DELETE') {
+          var gone = match(q);
+          data.cards.forEach(function (c) { c.lessons = (c.lessons || []).filter(function (l) { return !gone(l); }); });
+          return Promise.resolve([]);
+        }
+        var card = (/card_id=eq\.([^&]+)/.exec(q) || [])[1];
+        return Promise.resolve(lessonsAll().filter(function (l) {
+          return (!card || l.card_id === decodeURIComponent(card)) && (q.indexOf('done=is.false') < 0 || !l.done);
+        }));
       }
-      return Promise.resolve([{ id: 'new' }]);
+      if (!list) return Promise.resolve([]);
+      if (how === 'POST') {
+        var row = Object.assign({ id: 'new' + (++seq), archived: false, lessons: [] }, opt.body);
+        list.push(row);
+        return Promise.resolve([row]);
+      }
+      var hit = match(q);
+      if (how === 'PATCH') list.forEach(function (x) { if (hit(x)) Object.assign(x, opt.body); });
+      if (how === 'DELETE') for (var i = list.length - 1; i >= 0; i--) if (hit(list[i])) list.splice(i, 1);
+      return Promise.resolve([]);
     };
     DB.rpc = function (name, body) {
       if (name === 'en_edit_student') {

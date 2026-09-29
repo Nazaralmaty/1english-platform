@@ -15,7 +15,11 @@
 /* ══════════════════════════════════════════════════════════════════════
    СОСТОЯНИЕ
    ══════════════════════════════════════════════════════════════════ */
-var KEY = '1eng.v2';
+/* index.html?demo=1 — вся платформа на выдуманных данных: вход не нужен,
+   в базу не уходит ни одна строка, состояние лежит под своим ключом и не
+   трогает прогресс настоящего ученика на этом же телефоне. */
+var DEMO = /[?&]demo=1/.test(location.search);
+var KEY = DEMO ? '1eng.demo' : '1eng.v2';
 
 function blank() {
   return {
@@ -27,7 +31,7 @@ function blank() {
     name: '',
     gender: '',           /* m | f */
     consent: '',          /* дата согласия на обработку данных */
-    p: {},                /* lessonId: {read:true, task:{right,total}, words:true} */
+    p: {},                /* lessonId: {read:true, prac:true, text:true, task:{right,total}, words:true} */
     g: {}                 /* game: {plays,best,right,wrong,last} — пишет games/bridge.js */
   };
 }
@@ -58,6 +62,46 @@ if (S.phone) S.phone = phoneDigits(S.phone) || S.phone;
 
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 function prog(id) { return S.p[id] || (S.p[id] = {}); }
+
+if (DEMO) demoMode();
+
+/* Демо: DB подменяется заглушкой с тем же набором методов. Ближайший
+   урок ученика — через сутки с небольшим, чтобы плашка «скоро урок» с
+   отсчётом была видна сразу. */
+function demoMode() {
+  if (!S.phone) {
+    S.phone = '77011234567'; S.name = 'Аяжан'; S.gender = 'f'; S.level = 'beginner';
+    S.consent = new Date().toISOString(); save();
+  }
+  var at = new Date(Date.now() + (29 * 60 + 12) * 60000);
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function ok(v) { return Promise.resolve(v); }
+  window.DB = {
+    ready: true, online: true, userId: 'demo', normPhone: phoneDigits,
+    init: function () { return true; },
+    enter: function () { return ok({ created: false }); },
+    signOut: function () {},
+    saveProfile: function () { return ok(null); },
+    saveStep: function () { return ok(true); },
+    saveGame: function () { return ok(true); },
+    logError: function () { return ok(true); },
+    amIAllowed: function () { return ok(true); },
+    deleteMe: function () { return ok(true); },
+    pull: function () { return ok({ profile: null, progress: [] }); },
+    rpc: function (name) {
+      if (name === 'en_my_schedule') {
+        var key = ['sun','mon','tue','wed','thu','fri','sat'][at.getDay()];
+        return ok([{ format: 'individual', days: key,
+                     time: pad(at.getHours()) + ':' + pad(at.getMinutes()), planned: [] }]);
+      }
+      return ok(null);
+    }
+  };
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.insertAdjacentHTML('afterbegin',
+      '<div class="demo-strip">Демо: данные выдуманные, в базу ничего не уходит</div>');
+  });
+}
 
 
 
@@ -136,6 +180,10 @@ var LANG = {
     lesson:'Урок', task:'Задание', dict:'Словарь',
     videoAndRule:'Видео и разбор', videoOnly:'Видео', noVideo:'Видео пока нет',
     theory:'Теория', practice:'Практика',
+    reading:'Чтение', noText:'Текста пока нет', tapWord:'Нажмите на выделенное слово',
+    readCap:function (n) { return 'Текст, ' + n + ' слов урока'; },
+    wordsOpen:function (a, b) { return a + ' из ' + b + ' слов'; },
+    inText:'в тексте: ', flipHint:'Нажмите, чтобы перевернуть', readDone:'Прочитал',
     noTasks:'Заданий пока нет', noWords:'Слов пока нет',
     nTasks:function (n) { return n + ' заданий'; },
     nWords:function (n) { return n + ' слов'; },
@@ -169,7 +217,13 @@ var LANG = {
     noAccess:'Неверный код, либо аккаунт ещё не заведён. Напишите преподавателю.',
     wipe:'Удалить мои данные', wipeCap:'Профиль, прогресс и сам аккаунт',
     wipeText:'Из базы пропадут: номер телефона, имя, пол и весь пройденный курс. Вернуть это будет нельзя — вход по этому номеру начнётся с чистого листа.',
-    wipeGo:'Удалить', cancel:'Отмена', wiped:'Данные удалены'
+    wipeGo:'Удалить', cancel:'Отмена', wiped:'Данные удалены',
+    lessonAt:function (when, time) { return 'Скоро урок: ' + when + ', ' + time; },
+    leftTime:function (x) { return 'Осталось ' + x; },
+    lessonNow:'Урок идёт сейчас', startedAt:function (x) { return 'Начался в ' + x; },
+    today:'сегодня', tomorrow:'завтра',
+    weekday:['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'],
+    uDay:'дн', uHour:'ч', uMin:'мин'
   },
   kk: {
     next:'Әрі қарай', enter:'Кіру', phone:'Телефон нөмірі',
@@ -189,6 +243,10 @@ var LANG = {
     lesson:'Сабақ', task:'Тапсырма', dict:'Сөздік',
     videoAndRule:'Бейне және талдау', videoOnly:'Бейне', noVideo:'Бейне әзірге жоқ',
     theory:'Теория', practice:'Жаттығу',
+    reading:'Оқылым', noText:'Мәтін әзірге жоқ', tapWord:'Белгіленген сөзді басыңыз',
+    readCap:function (n) { return 'Мәтін, сабақтың ' + n + ' сөзі'; },
+    wordsOpen:function (a, b) { return a + ' / ' + b + ' сөз'; },
+    inText:'мәтінде: ', flipHint:'Аудару үшін басыңыз', readDone:'Оқыдым',
     noTasks:'Тапсырма әзірге жоқ', noWords:'Сөздер әзірге жоқ',
     nTasks:function (n) { return n + ' тапсырма'; },
     nWords:function (n) { return n + ' сөз'; },
@@ -222,7 +280,13 @@ var LANG = {
     noAccess:'Код қате, немесе аккаунт әлі ашылмаған. Ұстазға жазыңыз.',
     wipe:'Деректерімді өшіру', wipeCap:'Профиль, прогресс және аккаунт',
     wipeText:'Базадан телефон нөмірі, аты, жынысы және өтілген курс жойылады. Қайтару мүмкін болмайды — осы нөмірмен кіру таза беттен басталады.',
-    wipeGo:'Өшіру', cancel:'Болдырмау', wiped:'Деректер өшірілді'
+    wipeGo:'Өшіру', cancel:'Болдырмау', wiped:'Деректер өшірілді',
+    lessonAt:function (when, time) { return 'Жақында сабақ: ' + when + ', сағат ' + time; },
+    leftTime:function (x) { return x + ' қалды'; },
+    lessonNow:'Сабақ қазір жүріп жатыр', startedAt:function (x) { return 'Басталды: ' + x; },
+    today:'бүгін', tomorrow:'ертең',
+    weekday:['жексенбі','дүйсенбі','сейсенбі','сәрсенбі','бейсенбі','жұма','сенбі'],
+    uDay:'күн', uHour:'сағ', uMin:'мин'
   }
 };
 function t(k) {
@@ -262,25 +326,22 @@ function lesson(id) {
   });
   return out;
 }
-/* Ролики урока. На русском у урока их два — теория и практика, поэтому
-   всегда отдаём список. Русского ролика нет — играет казахский, урок
-   из-за этого не исчезает. */
-function videos(id) {
-  var v = (S.lang === 'ru') ? (window.VIDEOS_RU || {})[id] : null;
-  if (!v) v = (window.VIDEOS || {})[id];
-  if (!v) return [];
-  return (typeof v === 'string') ? [v] : v.filter(Boolean);
-}
-function video(id) { return videos(id)[0] || ''; }
+/* Ролики урока: { theory, practice }. Пара и подмена русского ролика
+   казахским живут в course.js — тем же правилом шаги считает дашборд. */
+function videos(id) { return window.lessonVideos(id, S.lang); }
+function video(id) { var v = videos(id); return v.theory || v.practice; }
 
-/* Шага у урока три и других не будет: урок, задание, словарь. Но урок
+/* Урок — две секции и пять шагов, других не будет. Теория: видеоурок
+   с правилом. Практика: свой видеоурок, чтение, задание, словарь. Но урок
    бывает пустым: ролик ещё не привязан, заданий пока нет. Шаг без
    материала не существует, а не «не пройден» — иначе прогресс врёт. */
 function stepsOf(s) {
-  var out = [];
-  if (video(s.id) || s.rule) out.push('read');
-  if (s.tasks.length)        out.push('task');
-  if (s.words.length)        out.push('words');
+  var v = videos(s.id), out = [];
+  if (v.theory || s.rule) out.push('read');
+  if (v.practice)         out.push('prac');
+  if (s.text)             out.push('text');
+  if (s.tasks.length)     out.push('task');
+  if (s.words.length)     out.push('words');
   return out;
 }
 function stepsDone(s) {
@@ -353,6 +414,7 @@ var IC = {
   task:  '<rect x="3.8" y="3.8" width="16.4" height="16.4" rx="4"/><path d="M8.3 12.1l2.6 2.6 4.9-5.3"/>',
   cards: '<rect x="6.4" y="3.4" width="14" height="14" rx="3.4"/><path d="M16.4 20.6H7.2a3.8 3.8 0 0 1-3.8-3.8V7.6"/>',
   play:  '<path d="M8 5.6v12.8L19 12z"/>',
+  bell:  '<path d="M6.2 16.6V11a5.8 5.8 0 0 1 11.6 0v5.6l1.6 1.8H4.6z"/><path d="M10 20.6a2.2 2.2 0 0 0 4 0"/>',
   sound: '<path d="M4 9.5h3.4L12 5.6v12.8L7.4 14.5H4z"/><path d="M15.6 9.4a3.6 3.6 0 0 1 0 5.2"/><path d="M18.1 6.9a7 7 0 0 1 0 10.2"/>',
   close:   '<path d="M6 6l12 12M18 6 6 18"/>',
   profile: '<circle cx="12" cy="8.2" r="3.9"/><path d="M4.6 20.2a7.4 7.4 0 0 1 14.8 0"/>',
@@ -510,6 +572,7 @@ function scrLogin() {
         syncProfile();
         return DB.pull().then(mergeServer);
       }).then(function () {
+        loadSchedule();
         go('#/home');
       }).catch(function (e) {
         addTry(phone);
@@ -573,6 +636,7 @@ function scrHome() {
       '<h2>1English</h2>' +
       '<p>' + t('brandLine1') + '<br>' + t('brandLine2') + '</p>' +
     '</div>' +
+    '<div id="bn"></div>' +
 
     (mine
       ? '<h2 class="sect">' + t('myCourse') + '</h2>' + courseCard(mine, true) +
@@ -620,6 +684,7 @@ function scrLessons() {
   var lv = level(), st = levelStats(lv);
 
   paint(
+    '<div id="bn"></div>' +
     '<button class="cover" data-nav="#/home">' +
       '<img src="app/covers/' + lv.id + '.jpg" alt="" loading="lazy">' +
       '<img class="brand" src="assets/logo-white.png" alt="1English">' +
@@ -668,11 +733,14 @@ function scrLessons() {
   });
 }
 
-/* Три шага урока: единственное содержимое раскрытой карточки. */
-var STEP_IC = { read: 'play', task: 'task', words: 'cards' };
+/* Раскрытая карточка урока: две секции, теория и практика. В теории —
+   видеоурок с правилом. В практике — свой видеоурок, чтение, задание и
+   словарь: правило отрабатывается там, где его применяют. */
+var STEP_IC = { read: 'play', prac: 'play', text: 'book', task: 'task', words: 'cards' };
 
 function steps(s) {
-  var p = S.p[s.id] || {}, av = stepsOf(s);
+  var p = S.p[s.id] || {}, av = stepsOf(s), v = videos(s.id);
+  function sect(name) { return '<div class="sgrp">' + name + '</div>'; }
   function row(to, name, note, done) {
     var open = av.indexOf(to) >= 0;
     return '<button class="step' + (open ? '' : ' off') + '"' +
@@ -681,28 +749,36 @@ function steps(s) {
       '<span class="grow"><b>' + name + '</b><span class="cap">' + note + '</span></span>' +
       (open ? '<span class="chev">' + icon('right', 18) + '</span>' : '') + '</button>';
   }
-  return row('read', t('lesson'),
-             video(s.id) ? (s.rule ? t('videoAndRule') : t('videoOnly')) : (s.rule ? t('ruleReview') : t('noVideo')), !!p.read) +
+  return sect(t('theory')) +
+         row('read', t('videoLesson'),
+             v.theory ? (s.rule ? t('videoAndRule') : t('videoOnly')) : (s.rule ? t('ruleReview') : t('noVideo')), !!p.read) +
+         sect(t('practice')) +
+         row('prac', t('videoLesson'), v.practice ? t('videoOnly') : t('noVideo'), !!p.prac) +
+         (s.text ? row('text', t('reading'), t('readCap')(s.words.length), !!p.text) : '') +
          row('task', t('task'),
              s.tasks.length ? (p.task ? t('resultOf')(p.task.right, p.task.total) : t('nTasks')(s.tasks.length)) : t('noTasks'), !!p.task) +
          row('words', t('dict'),
              s.words.length ? t('nWords')(s.words.length) : t('noWords'), !!p.words);
 }
 
-/* ── шаг 1: правило ─────────────────────────────────────────────────── */
+/* Плеер одного ролика. Подпись над ним говорит, какая это секция:
+   заголовок экрана у теории и практики один — название урока. */
+function player(s, yt, cap) {
+  return '<div class="vcap">' + cap + '</div>' +
+    (yt
+      ? '<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/' + yt +
+        '?rel=0&modestbranding=1&playsinline=1" title="' + esc((s.title || (t('lesson') + ' ' + s.n)) + ' · ' + cap) + '" allowfullscreen ' +
+        'allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>'
+      : '');
+}
+
+/* ── теория: видеоурок и правило ────────────────────────────────────── */
 function scrRead(id) {
   var s = lesson(id); if (!s) return go('#/lessons');
-  var yt = videos(id);
 
   paint(
     head(s.title || (t('lesson') + ' ' + s.n), '#/lessons') +
-    yt.map(function (v, k) {
-      var cap = yt.length > 1 ? (k === 0 ? t('theory') : t('practice')) : '';
-      return (cap ? '<div class="vcap">' + cap + '</div>' : '') +
-        '<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/' + v +
-        '?rel=0&modestbranding=1&playsinline=1" title="' + esc((s.title || (t('lesson') + ' ' + s.n)) + (cap ? ' · ' + cap : '')) + '" allowfullscreen ' +
-        'allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>';
-    }).join('') +
+    player(s, videos(id).theory, t('theory')) +
     (tx(s, 'rule') ? '<div class="rule">' + esc(tx(s, 'rule')) + '</div>' : '') +
     (s.examples.length
       ? '<div class="card" style="padding:4px 16px;margin-bottom:8px">' +
@@ -723,7 +799,108 @@ function scrRead(id) {
   };
 }
 
-/* ── шаг 2: задание ─────────────────────────────────────────────────── */
+/* ── практика: видеоурок ────────────────────────────────────────────── */
+function scrPrac(id) {
+  var s = lesson(id); if (!s) return go('#/lessons');
+  var yt = videos(id).practice;
+  if (!yt) return go('#/lessons');
+
+  paint(
+    head(s.title || (t('lesson') + ' ' + s.n), '#/lessons') +
+    player(s, yt, t('practice')) +
+    '<div class="dock"><button class="btn" id="ok">' + t('got') + '</button></div>', true);
+
+  $('#ok').onclick = function () {
+    prog(id).prac = true; save(); syncStep(id, 'prac'); go('#/lessons');
+  };
+}
+
+/* ── практика: чтение ───────────────────────────────────────────────
+   Текст урока, в котором слова этого урока — кнопки. Нажал — флип-карта:
+   лицо — слово (и форма, в которой оно стоит в тексте), оборот — перевод
+   и пример из словаря урока. Новые слова учатся там, где их читают. */
+function textWord(s, key) {
+  return s.words.filter(function (w) { return w.en === key || w.en === key.toLowerCase(); })[0];
+}
+function scrText(id) {
+  var s = lesson(id); if (!s || !s.text) return go('#/lessons');
+  var seen = {};
+
+  /* [слово] и [форма|слово] → кнопка. Остальной текст экранируется. */
+  function markup() {
+    return s.text.split('\n').map(function (para) {
+      var out = '', last = 0, re = /\[([^\]|]+)(?:\|([^\]]+))?\]/g, m;
+      while ((m = re.exec(para))) {
+        out += esc(para.slice(last, m.index));
+        var w = textWord(s, m[2] || m[1]);
+        out += w ? '<button class="rw' + (seen[w.en] ? ' seen' : '') + '" data-w="' + esc(w.en) +
+                   '" data-form="' + esc(m[1]) + '">' + esc(m[1]) + '</button>'
+                 : esc(m[1]);
+        last = re.lastIndex;
+      }
+      return '<p>' + out + esc(para.slice(last)) + '</p>';
+    }).join('');
+  }
+  function count() {
+    var n = s.words.filter(function (w) { return seen[w.en]; }).length;
+    return '<div class="rcount"><span class="track"><i style="transform:scaleX(' +
+      (s.words.length ? n / s.words.length : 0) + ')"></i></span><span class="num">' +
+      t('wordsOpen')(n, s.words.length) + '</span></div>';
+  }
+  function draw() {
+    var y = window.scrollY;
+    paint(
+      head(s.title || (t('lesson') + ' ' + s.n), '#/lessons') +
+      '<div class="vcap">' + t('reading') + ' · ' + t('tapWord') + '</div>' +
+      '<div class="rtext">' + markup() + count() + '</div>' +
+      '<div class="dock"><button class="btn" id="ok">' + t('readDone') + '</button></div>', true);
+    window.scrollTo(0, y);
+    $$('[data-w]').forEach(function (b) {
+      b.onclick = function () {
+        var w = textWord(s, b.getAttribute('data-w'));
+        flipCard(w, b.getAttribute('data-form'), function () {
+          if (!seen[w.en]) { seen[w.en] = true; draw(); }
+        });
+      };
+    });
+    $('#ok').onclick = function () {
+      prog(id).text = true; save(); syncStep(id, 'text'); go('#/lessons');
+    };
+  }
+  draw();
+}
+
+/* Флип-карта поверх экрана. Первое нажатие переворачивает, второе
+   закрывает; мимо карты — закрыть. onFlip — «слово открыто». */
+function flipCard(w, form, onFlip) {
+  var other = form && form.toLowerCase() !== w.en.toLowerCase();
+  var say = '<button class="say" data-say="1" aria-label="Listen">' + icon('sound', 20) + '</button>';
+  var veil = document.createElement('div');
+  veil.className = 'veil fveil';
+  veil.innerHTML = '<div class="flip" role="button" tabindex="0"><div class="flip-in">' +
+      '<div class="face">' + say + '<div class="en">' + esc(w.en) + '</div>' +
+        (other ? '<div class="form">' + t('inText') + esc(form) + '</div>' : '') +
+        '<div class="hint">' + t('flipHint') + '</div></div>' +
+      '<div class="face b">' + say + '<div class="tr">' + esc(trn(w)) + '</div>' +
+        '<div class="en sm">' + esc(w.en) + '</div>' +
+        (w.ex ? '<div class="wex">' + esc(w.ex) + '</div>' : '') + '</div>' +
+    '</div></div>';
+  document.body.appendChild(veil);
+  var flip = veil.querySelector('.flip');
+  speak(w.en);
+  function close() { veil.remove(); document.removeEventListener('keydown', key); }
+  function key(e) { if (e.key === 'Escape') close(); }
+  document.addEventListener('keydown', key);
+  veil.onclick = function (e) {
+    if (e.target === veil) return close();
+    if (e.target.closest('[data-say]')) return speak(flip.classList.contains('back') && w.ex ? w.ex : w.en);
+    if (flip.classList.contains('back')) return close();
+    flip.classList.add('back');
+    if (onFlip) onFlip();
+  };
+}
+
+/* ── практика: задание ──────────────────────────────────────────────── */
 function scrTask(id) {
   var s = lesson(id); if (!s) return go('#/lessons');
   var deck = s.tasks, i = 0, right = 0, answered = false;
@@ -832,7 +1009,7 @@ function scrTask(id) {
     save(); syncStep(id, 'task', right, deck.length);
     paint(
       head(t('task'), '#/lessons') +
-      '<div class="done">' +
+      '<div class="fin">' +
         '<div class="score num">' + right + ' / ' + deck.length + '</div>' +
         '<div class="cap">' + (right === deck.length ? t('noMistakes') : t('canRetry')) + '</div>' +
       '</div>' +
@@ -847,46 +1024,57 @@ function scrTask(id) {
   draw();
 }
 
-/* ── шаг 3: словарь ─────────────────────────────────────────────────── */
+/* ── практика: словарь ──────────────────────────────────────────────── */
 function scrWords(id) {
   var s = lesson(id); if (!s) return go('#/lessons');
-  var queue = s.words.slice(), known = 0, open = false;
+  var queue = s.words.slice(), known = 0;
 
+  /* Флип-карта, как в чтении: лицо — слово, оборот — перевод и пример.
+     Переворот идёт классом на месте, без перерисовки экрана, иначе
+     анимации не видно. */
   function draw() {
     if (!queue.length) return end();
-    var w = queue[0];
+    var w = queue[0], say = '<button class="say" data-say="1" aria-label="Listen">' + icon('sound', 20) + '</button>';
     paint(
       head(t('dict'), '#/lessons') +
       '<div class="steps" style="margin:0 0 18px">' +
         s.words.map(function (_, k) { return '<i class="' + (k < known ? 'on' : '') + '"></i>'; }).join('') +
       '</div>' +
-      '<div class="wcard" id="card">' +
-        '<div class="en">' + esc(w.en) + '</div>' +
-        (open
-          ? '<div class="ru">' + esc(trn(w)) + '</div><div class="wex">' + esc(w.ex) + '</div>'
-          : '<div class="hint">' + t('tapTranslate') + '</div>') +
-      '</div>' +
-      '<div class="dock">' +
-        (open
-          ? '<div class="pair"><button class="btn quiet" id="no">' + t('oneMore') + '</button>' +
-            '<button class="btn" id="yes">' + t('know') + '</button></div>'
-          : '<button class="btn" id="flip">' + t('translation') + '</button>') +
-      '</div>', true);
+      '<div class="flip wflip" id="card" role="button" tabindex="0"><div class="flip-in">' +
+        '<div class="face">' + say + '<div class="en">' + esc(w.en) + '</div>' +
+          '<div class="hint">' + t('tapTranslate') + '</div></div>' +
+        '<div class="face b">' + say + '<div class="tr">' + esc(trn(w)) + '</div>' +
+          '<div class="en sm">' + esc(w.en) + '</div>' +
+          (w.ex ? '<div class="wex">' + esc(w.ex) + '</div>' : '') + '</div>' +
+      '</div></div>' +
+      '<div class="dock" id="dock"></div>', true);
 
-    $('#card').onclick = function () {
-      if (!open) { open = true; draw(); speak(w.en); }
-      else speak(w.ex);
+    var card = $('#card');
+    function isOpen() { return card.classList.contains('back'); }
+    function dock() {
+      $('#dock').innerHTML = isOpen()
+        ? '<div class="pair"><button class="btn quiet" id="no">' + t('oneMore') + '</button>' +
+          '<button class="btn" id="yes">' + t('know') + '</button></div>'
+        : '<button class="btn" id="flip">' + t('translation') + '</button>';
+      if ($('#flip')) $('#flip').onclick = turn;
+      if ($('#yes')) $('#yes').onclick = function () { known++; queue.shift(); draw(); };
+      if ($('#no')) $('#no').onclick = function () { queue.push(queue.shift()); draw(); };
+    }
+    function turn() { if (!isOpen()) { card.classList.add('back'); speak(w.en); dock(); } }
+    card.onclick = function (e) {
+      if (e.target.closest('[data-say]')) return speak(isOpen() && w.ex ? w.ex : w.en);
+      if (isOpen()) return speak(w.ex || w.en);
+      turn();
     };
-    if ($('#flip')) $('#flip').onclick = function () { open = true; draw(); speak(w.en); };
-    if ($('#yes')) $('#yes').onclick = function () { known++; queue.shift(); open = false; draw(); };
-    if ($('#no')) $('#no').onclick = function () { queue.push(queue.shift()); open = false; draw(); };
+    card.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); turn(); } };
+    dock();
   }
 
   function end() {
     prog(id).words = true; save(); syncStep(id, 'words');
     paint(
       head(t('dict'), '#/lessons') +
-      '<div class="done">' +
+      '<div class="fin">' +
         '<div class="score num">' + s.words.length + '</div>' +
         '<div class="cap">' + t('wordsDone') + '</div>' +
       '</div>' +
@@ -1061,6 +1249,63 @@ function scrProfile() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   ПЛАШКА «СКОРО УРОК»
+   Висит всегда, пока у ученика есть график: когда ближайший урок и
+   сколько до него осталось — дни, часы, минуты. За час до начала и пока
+   урок идёт — красная. Учителя и темы урока в ней нет: учителей
+   подключаем позже.
+
+   График лежит в карточке ученика, которую заполняет админ в дашборде.
+   Ученику карточку читать нельзя (там ставка и заметки про него), поэтому
+   база отдаёт выжимку функцией en_my_schedule(): дни, время и даты
+   уроков на неделю вперёд. Ближайший урок считает SCHED.next
+   (app/schedule.js), проверка — node app/check_reminder.mjs.
+   ══════════════════════════════════════════════════════════════════ */
+var MY_SCHED = null;          /* ответ en_my_schedule; null — ещё не спрашивали */
+
+function loadSchedule() {
+  if (!global_DB() || !DB.rpc) return;
+  DB.rpc('en_my_schedule', {}).then(function (c) {
+    MY_SCHED = Array.isArray(c) ? c : [];
+    fillBanner();
+  }).catch(function () { MY_SCHED = []; });
+}
+
+/* «2 дн 5 ч 12 мин»: нулевые старшие единицы не пишем */
+function countdown(ms) {
+  var m = Math.max(1, Math.ceil(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60);
+  var out = [];
+  if (d) out.push(d + ' ' + t('uDay'));
+  if (d || h) out.push(h + ' ' + t('uHour'));
+  out.push(m % 60 + ' ' + t('uMin'));
+  return out.join(' ');
+}
+
+function reminder(cards, now) {
+  var n = window.SCHED && SCHED.next(cards, now, 60);
+  if (!n) return null;
+  function pad(x) { return (x < 10 ? '0' : '') + x; }
+  var time = pad(n.start.getHours()) + ':' + pad(n.start.getMinutes());
+  if (n.left <= 0) return { soon: true, head: t('lessonNow'), sub: t('startedAt')(time) };
+  var days = Math.round((new Date(n.start).setHours(0, 0, 0, 0) - new Date(now).setHours(0, 0, 0, 0)) / 864e5);
+  var when = days === 0 ? t('today') : days === 1 ? t('tomorrow') : t('weekday')[n.start.getDay()];
+  return { soon: n.left <= 3600000, head: t('lessonAt')(when, time), sub: t('leftTime')(countdown(n.left)) };
+}
+
+/* Плашка над главной и уроками. */
+function fillBanner() {
+  var box = document.getElementById('bn');
+  if (!box) return;
+  var r = reminder(MY_SCHED, new Date());
+  box.innerHTML = r ? '<div class="bn' + (r.soon ? ' soon' : '') + '">' + icon('bell', 22) +
+                      '<span><b>' + esc(r.head) + '</b><span>' + esc(r.sub) + '</span></span></div>' : '';
+}
+/* Отсчёт живёт по часам: пересчёт раз в полминуты и сразу, как только
+   ученик вернулся в свёрнутую платформу. */
+setInterval(fillBanner, 30000);
+document.addEventListener('visibilitychange', function () { if (!document.hidden) fillBanner(); });
+
+/* ══════════════════════════════════════════════════════════════════════
    РОУТЕР
    ══════════════════════════════════════════════════════════════════ */
 function tabs() {
@@ -1109,7 +1354,7 @@ function route() {
   if (r === 'login')  { drawTabs(null); return scrLogin(); }
   if (r === 'home' || r === 'level') {
     drawTabs(S.level ? '#/home' : null);   /* без курса вкладки некуда вести */
-    return scrHome();
+    scrHome(); return fillBanner();
   }
   if (r === 'games')  { drawTabs('#/games'); return scrGames(); }
   if (r === 'settings') { drawTabs('#/settings'); return scrProfile(); }
@@ -1118,13 +1363,15 @@ function route() {
     var id = parts[1], step = parts[2];
     openId = id;
     if (step === 'read')  { drawTabs(null); return scrRead(id); }
+    if (step === 'prac')  { drawTabs(null); return scrPrac(id); }
+    if (step === 'text')  { drawTabs(null); return scrText(id); }
     if (step === 'task')  { drawTabs(null); return scrTask(id); }
     if (step === 'words') { drawTabs(null); return scrWords(id); }
     return go('#/lessons');   /* отдельного экрана урока нет: шаги живут в списке */
   }
 
   drawTabs('#/lessons');
-  return scrLessons();
+  scrLessons(); return fillBanner();
 }
 
 /* Падение у ученика иначе никто не увидит: он просто закроет вкладку. */
@@ -1142,6 +1389,7 @@ window.addEventListener('hashchange', route);
    а свежие данные подтягиваем следом и перерисовываем экран. */
 if (window.DB && DB.init() && S.phone) {
   DB.pull().then(function (d) { if (d) { mergeServer(d); route(); } });
+  loadSchedule();
 }
 route();
 

@@ -57,13 +57,14 @@ alter table public.en_students add column if not exists consent_v  text;
 
 
 -- ── 2. Прогресс по шагам ───────────────────────────────────────────────────
--- Одна строка на «урок + шаг». Шага три: read (урок), task (задание),
--- words (словарь). У задания дополнительно счёт: сколько верных из скольких.
+-- Одна строка на «урок + шаг». Шагов пять: read (теория), prac (практика), text (чтение),
+-- task (задание), words (словарь). У задания дополнительно счёт: сколько
+-- верных из скольких.
 
 create table if not exists public.en_progress (
   student_id  uuid not null references public.en_students on delete cascade,
   lesson      text not null check (length(lesson) between 2 and 8),
-  step        text not null check (step in ('read','task','words')),
+  step        text not null check (step in ('read','prac','text','task','words')),
   right_count int check (right_count >= 0),
   total_count int check (total_count >= 0),
   updated_at  timestamptz not null default now(),

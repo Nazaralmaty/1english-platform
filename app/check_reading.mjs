@@ -1,4 +1,4 @@
-/* Проверка reading.html: каждое [слово] в тексте есть в словаре урока, и
+/* Проверка текстов для чтения (window.TEXTS в course.js): каждое [слово] в тексте есть в словаре урока, и
    каждое слово урока хоть раз встречается в тексте. Иначе на экране будет
    некликабельная пометка или слово, которое нигде не открыть. */
 import fs from 'node:fs';
@@ -8,9 +8,7 @@ const ctx = { window: {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync('app/course.js', 'utf8'), ctx);
 const C = ctx.window.CONTENT;
-const html = fs.readFileSync('reading.html', 'utf8');
-const src = html.match(/var TEXTS = (\{[\s\S]*?\n  \});/)[1];
-const TEXTS = vm.runInNewContext('(' + src + ')');
+const TEXTS = ctx.window.TEXTS;
 
 const fails = [];
 Object.keys(TEXTS).forEach(id => {

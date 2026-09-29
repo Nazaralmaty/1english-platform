@@ -119,6 +119,36 @@
     return out;
   }
 
+  /* Ближайший урок ученика — для плашки «скоро урок» в платформе.
+     cards — ответ en_my_schedule(): [{days:'mon,wed', time:'18:00',
+     planned:[{date:'2026-10-01'}]}]. Урок бывает по дням недели из
+     графика и в дни, на которые учитель поставил дату в сетке. Смотрим
+     неделю вперёд; урок, который идёт (len минут от начала), ещё ближайший.
+     Возвращает { start: Date, left: мс до начала (меньше нуля — идёт) }
+     или null, если графика нет. */
+  var WEEK = ['sun','mon','tue','wed','thu','fri','sat'];   /* Date#getDay() → ключ */
+  function next(cards, now, len) {
+    len = (len || 60) * 60000;
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    var best = null;
+    (cards || []).forEach(function (c) {
+      var m = /^(\d{1,2}):(\d{2})/.exec(c.time || '');
+      if (!m) return;
+      var days = String(c.days || '').split(',').map(function (x) { return x.trim(); });
+      var dates = (c.planned || []).map(function (p) { return p.date; });
+      for (var d = 0; d <= 7; d++) {
+        var st = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, +m[1], +m[2]);
+        var date = st.getFullYear() + '-' + pad(st.getMonth() + 1) + '-' + pad(st.getDate());
+        if (days.indexOf(WEEK[st.getDay()]) < 0 && dates.indexOf(date) < 0) continue;
+        if (st.getTime() + len <= now.getTime()) continue;       /* уже закончился */
+        if (!best || st < best.start) best = { start: st };
+        break;
+      }
+    });
+    if (best) best.left = best.start.getTime() - now.getTime();
+    return best;
+  }
+
   /* Стили сетки — рядом с разметкой, чтобы оба экрана рисовали одинаково.
      Вставляются один раз при загрузке файла. */
   var CSS =
@@ -157,5 +187,5 @@
   }
 
   global.SCHED = { DAYS: DAYS, slots: slots, taken: taken, times: times,
-                   toggle: toggle, grid: grid, esc: esc };
+                   toggle: toggle, grid: grid, esc: esc, next: next, WEEK: WEEK };
 })(window);

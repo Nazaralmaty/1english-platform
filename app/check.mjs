@@ -40,7 +40,31 @@ function canForm(tokens, answer) {
 const ids = new Set();
 /* Группы для игровых арен: по ним сортировка строит корзины. */
 const GROUPS = new Set(['act', 'thing', 'sign', 'time', 'word']);
-let lessons = 0, filled = 0, withVideo = 0, withVideoRu = 0, kkWords = 0;
+let lessons = 0, filled = 0, withTheory = 0, withPractice = 0, withVideoRu = 0, kkWords = 0;
+/* Где уже стоит каждый ролик: один id в двух местах — это ссылка,
+   вставленная не в ту клетку, а на экране такую ошибку не видно. */
+const seen = new Map();
+
+/* Пара [теория, практика]. Строка — старый вид одного ролика, читается как
+   теория. Пустая строка — ролик ещё не привязан. */
+function checkPair(table, name, id) {
+  const v = table[id];
+  if (v == null) return ['', ''];
+  const pair = (typeof v === 'string') ? [v, ''] : v;
+  if (!Array.isArray(pair) || pair.length !== 2) {
+    fail(`${id}: в ${name} должна быть пара [теория, практика], а лежит ${JSON.stringify(v)}`);
+    return ['', ''];
+  }
+  pair.forEach((yt, k) => {
+    if (!yt) return;
+    const where = `${name}.${id} ${k ? 'практика' : 'теория'}`;
+    if (!ytOk(yt)) fail(`${where}: «${yt}» не похоже на id ролика YouTube (11 символов)`);
+    if (seen.has(yt)) fail(`ролик ${yt} стоит дважды: ${seen.get(yt)} и ${where}`);
+    seen.set(yt, where);
+  });
+  return pair;
+}
+
 for (const lv of COURSE.levels) {
   if (lv.lessons.length !== 14) fail(`уровень ${lv.id}: уроков ${lv.lessons.length}, а надо 14`);
   for (const s of lv.lessons) {
@@ -48,20 +72,19 @@ for (const lv of COURSE.levels) {
     if (ids.has(s.id)) fail(`id урока повторяется: ${s.id}`);
     ids.add(s.id);
     if (!(s.id in VIDEOS)) fail(`${s.id}: нет слота под видео в window.VIDEOS`);
-    if (VIDEOS[s.id]) {
-      withVideo++;
-      if (!ytOk(VIDEOS[s.id]))
-        fail(`${s.id}: «${VIDEOS[s.id]}» не похоже на id ролика YouTube (11 символов)`);
-    }
-    /* Русский урок собран из двух роликов: теория и практика. */
-    if (VIDEOS_RU[s.id]) {
-      const ru = [].concat(VIDEOS_RU[s.id]);
+    const [th, pr] = checkPair(VIDEOS, 'VIDEOS', s.id);
+    if (th) withTheory++;
+    if (pr) withPractice++;
+    if (s.id in VIDEOS_RU) {
       withVideoRu++;
-      if (!ru.length) fail(`${s.id}: в VIDEOS_RU пустой список роликов`);
-      if (ru.length > 2) fail(`${s.id}: в VIDEOS_RU ${ru.length} ролика, а экран показывает теорию и практику`);
-      for (const v of ru) if (!ytOk(v)) fail(`${s.id}: «${v}» не похоже на id ролика YouTube (11 символов)`);
-      if (new Set(ru).size !== ru.length) fail(`${s.id}: теория и практика ссылаются на один ролик`);
+      checkPair(VIDEOS_RU, 'VIDEOS_RU', s.id);
     }
+    /* Экран берёт ролики через lessonVideos: проверяем, что он отдаёт то же,
+       что лежит в таблице, и на русском не теряет казахскую подмену. */
+    const kz = ctx.window.lessonVideos(s.id, 'kk');
+    if (kz.theory !== th || kz.practice !== pr) fail(`${s.id}: lessonVideos отдаёт не то, что в VIDEOS`);
+    const ru = ctx.window.lessonVideos(s.id, 'ru');
+    if ((th && !ru.theory) || (pr && !ru.practice)) fail(`${s.id}: на русском пропал ролик, который есть на казахском`);
     /* Пустой урок — нормальное состояние. Проверяем только заполненные. */
     if (!s.words.length && !s.tasks.length && !s.rule) continue;
     filled++;
@@ -106,7 +129,8 @@ if (WORDS.length >= 12) {
 
 console.log(bad
   ? `\n${bad} ошибок в данных`
-  : `OK: уровней ${COURSE.levels.length}, уроков ${lessons} (с материалом ${filled}, с видео ${withVideo}, с русским видео ${withVideoRu}), ` +
+  : `OK: уровней ${COURSE.levels.length}, уроков ${lessons} (с материалом ${filled}, ` +
+    `с теорией ${withTheory}, с практикой ${withPractice}, с русскими роликами ${withVideoRu}), ` +
     `слов в банке ${WORDS.length}, групп ${Object.keys(groups).length}, ` +
     `с казахским переводом ${kkWords}`);
 process.exit(bad ? 1 : 0);

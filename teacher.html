@@ -749,7 +749,7 @@
                ' · последний заход ' + dateRu(d.last) + '</div>' +
                (lessons.length
                  ? '<div class="prog">' + lessons.map(function (l) {
-                     var name = { read: 'урок', task: 'задание', words: 'словарь' }[l.step] || l.step;
+                     var name = { read: 'теория', prac: 'практика', text: 'чтение', task: 'задание', words: 'словарь' }[l.step] || l.step;
                      var score = (l.total ? ' · ' + l.right + '/' + l.total : '');
                      return '<div><b>' + esc(lessonTitle(l.lesson)) + '</b>' +
                             '<span>' + esc(name) + esc(score) + ' · ' + dateRu(l.at) + '</span></div>';

@@ -55,7 +55,7 @@ const now = new Date().toISOString();
    попытка вылезти из атрибута в разметку дашборда. */
 const movedOn = [];
 for (let i = 1; i <= 14; i++)
-  for (const step of ['read', 'task', 'words'])
+  for (const step of ['read', 'prac', 'text', 'task', 'words'])
     movedOn.push({ student_id: 'v', lesson: 'b' + i, step, updated_at: now });
 
 ctx.DB.listAll = () => Promise.resolve({
@@ -76,6 +76,7 @@ ctx.DB.listAll = () => Promise.resolve({
     { student_id: 'a', lesson: 'b1', step: 'read', updated_at: now },
     { student_id: 'a', lesson: 'b2', step: 'read', updated_at: now },
     { student_id: 'b', lesson: 'e13', step: 'read', updated_at: '2026-09-01T10:00:00Z' },
+    { student_id: 'b', lesson: 'e13', step: 'prac', updated_at: '2026-09-01T10:00:00Z' },
     { student_id: 'b', lesson: 'e13', step: 'task', right_count: 5, total_count: 6, updated_at: '2026-09-01T10:00:00Z' },
     { student_id: 'b', lesson: 'e13', step: 'words', updated_at: '2026-09-01T10:00:00Z' }
   ].concat(movedOn),
@@ -129,15 +130,18 @@ has('+7 (702) 987 65 43', 'форматирование номера');
 has('Beginner', 'уровень');
 has('Elementary', 'уровень');
 has('>6<', 'учеников всего');
-has('>47<', 'шагов пройдено');
+has('>76<', 'шагов пройдено');   /* 14 уроков × 5 шагов у «в» и ещё 6 строк */
 
 /* Проценты считаем тем же способом, что и дашборд, а не цифрой в тексте:
    иначе проверка будет падать каждый раз, когда в курс добавят материал. */
 const capacity = (lvl) => ctx.COURSE.levels
   .find(l => l.id === lvl).lessons
-  .reduce((n, s) => n + ((ctx.VIDEOS[s.id] || s.rule) ? 1 : 0) + (s.tasks.length ? 1 : 0) + (s.words.length ? 1 : 0), 0);
+  .reduce((n, s) => {
+    const v = ctx.window.lessonVideos(s.id);
+    return n + ((v.theory || s.rule) ? 1 : 0) + (v.practice ? 1 : 0) + (s.text ? 1 : 0) + (s.tasks.length ? 1 : 0) + (s.words.length ? 1 : 0);
+  }, 0);
 has(Math.round(2 / capacity('beginner') * 100) + '%', 'процент по Beginner');
-has(Math.round(3 / capacity('elementary') * 100) + '%', 'процент по Elementary');
+has(Math.round(4 / capacity('elementary') * 100) + '%', 'процент по Elementary');
 /* у «б» закрыт ровно один урок — e13, единственный с полным материалом */
 const closed = /Без имени[\s\S]*?<td class="num">(\d+)<\/td>/.exec(rendered);
 if (!closed) fails.push('строки «Без имени» нет в таблице');
