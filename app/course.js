@@ -1305,21 +1305,568 @@ window.CONTENT = {
   },
 
 
-  /* Pre-Intermediate · Junior */
-  p1:  { title:'Past Simple' },
-  p2:  { title:'Past Continuous' },
-  p3:  { title:'Used To' },
-  p4:  { title:'Future Simple' },
-  p5:  { title:'Going To' },
-  p6:  { title:'Present Continuous' },
-  p7:  { title:'Have To' },
-  p8:  { title:'Should' },
-  p9:  { title:'Get Used To' },
-  p10: { title:'Quantifiers' },
-  p11: { title:'However' },
-  p12: { title:'Present Perfect' },
-  p13: { title:'Expressing Purpose' },
-  p14: { title:'First Conditional' },
+  /* Pre-Intermediate · Junior. Материал снят с двух роликов урока: теория
+     дала правило и примеры со слайдов, практика — слова и задания. */
+  p1: {
+    title:'Past Simple', subtitle:'Рассказать, что было вчера', subtitleKk:'Кеше не болғанын айту',
+    rule:'Говоришь о том, что случилось и закончилось в прошлом, — бери вторую форму глагола: к правильным глаголам добавь -ed (watch → watched), неправильные выучи по таблице (go → went, see → saw). Время обычно названо: yesterday, last week, three days ago. В отрицании и вопросе нужен did, а глагол возвращается в начальную форму: I didn’t go home early. Did you go home early?',
+    ruleKk:'Өткенде басталып, өткенде бітіп қойған іс туралы айтқанда етістіктің екінші формасын аламыз: ережелі етістікке -ed жалғанады (watch → watched), ережесіз етістіктерді кестеден жаттаймыз (go → went, see → saw). Уақыты әдетте айтылады: yesterday, last week, three days ago. Теріс сөйлем мен сұрақта did келеді де, етістік бастапқы формасына оралады: I didn’t go home early. Did you go home early?',
+    examples:[
+      {en:'I visited my grandmother last weekend.', ru:'В прошлые выходные я ездил к бабушке.', kk:'Өткен демалыста әжеме бардым.'},
+      {en:'We went to the park an hour ago.', ru:'Час назад мы ходили в парк.', kk:'Біз бір сағат бұрын саябаққа бардық.'},
+      {en:'I didn’t watch the news.', ru:'Я не смотрел новости.', kk:'Мен жаңалықтарды көрген жоқпын.'},
+      {en:'Did they finish their work?', ru:'Они закончили работу?', kk:'Олар жұмыстарын аяқтады ма?'},
+    ],
+    words:[
+      {en:'wake up', ru:'проснуться', kk:'ояну', ex:'I woke up at 7 AM.', g:'act'},
+      {en:'drink', ru:'пить, выпить', kk:'ішу', ex:'I quickly drank a coffee.', g:'act'},
+      {en:'drive', ru:'ехать (за рулём)', kk:'көлік жүргізу, көлікпен бару', ex:'I drove to the office.', g:'act'},
+      {en:'give', ru:'дать', kk:'беру', ex:'My boss gave me a new project.', g:'act'},
+      {en:'visit', ru:'навестить, съездить', kk:'барып келу, қонаққа бару', ex:'I visited my grandparents.', g:'act'},
+      {en:'buy', ru:'купить', kk:'сатып алу', ex:'I bought a new phone last month.', g:'act'},
+      {en:'yesterday', ru:'вчера', kk:'кеше', ex:'I went to the cinema yesterday.', g:'time'},
+      {en:'ago', ru:'назад (тому)', kk:'бұрын', ex:'We went to the park an hour ago.', g:'time'},
+    ],
+    tasks:[
+      {t:'choice', q:'Yesterday I ___ to the office.', opts:['drives', 'drove', 'drived'], a:1,
+       why:'Yesterday — уже прошлое, значит нужна вторая форма. Drive — неправильный глагол, его прошедшее — drove, а drived не бывает.',
+       whyKk:'Yesterday — өткен уақыт, сондықтан екінші форма керек. Drive — ережесіз етістік, өткен шағы drove, ал drived деген сөз жоқ.'},
+      {t:'choice', q:'She didn’t ___ her homework.', opts:['finish', 'finished', 'finishes'], a:0,
+       why:'После didn’t глагол стоит в начальной форме. Прошлое уже показало did, второй раз -ed не нужен.',
+       whyKk:'didn’t-тен кейін етістік бастапқы формада тұрады. Өткен шақты did көрсетіп тұр, -ed екінші рет керек емес.'},
+      {t:'choice', q:'Did you ___ the new movie?', opts:['saw', 'seen', 'see'], a:2,
+       why:'В вопросе с did глагол возвращается в начальную форму: Did you see. Did you saw — частая ошибка.',
+       whyKk:'did бар сұрақта етістік бастапқы формаға оралады: Did you see. Did you saw — жиі кездесетін қате.'},
+      {t:'choice', q:'I ___ a new phone last month.', opts:['bought', 'buyed', 'buys'], a:0,
+       why:'Last month — прошлое. Buy — неправильный глагол: buy → bought, а buyed — ошибка.',
+       whyKk:'Last month — өткен уақыт. Buy — ережесіз етістік: buy → bought, ал buyed — қате.'},
+      {t:'order', ru:'Начальник дал мне новый проект.', kk:'Бастығым маған жаңа жоба берді.',
+       words:['My', 'boss', 'gave', 'me', 'a', 'new', 'project'], a:'My boss gave me a new project'},
+      {t:'order', ru:'Тебе понравился концерт?', kk:'Концерт саған ұнады ма?',
+       words:['Did', 'you', 'enjoy', 'the', 'concert'], a:'Did you enjoy the concert'},
+    ]
+  },
+
+  p2: {
+    title:'Past Continuous', subtitle:'Что происходило в тот момент', subtitleKk:'Сол сәтте не болып жатты',
+    rule:'Хочешь сказать, что действие шло в какой-то момент в прошлом, — бери was или were + глагол с -ing: At 6 PM yesterday, I was cooking dinner. Was ставим с I, he, she, it, were — с you, we, they. Если долгое действие прервало короткое, короткое идёт в Past Simple: I was sleeping when the phone rang.',
+    ruleKk:'Өткендегі белгілі бір сәтте жалғасып жатқан әрекетті айтқанда was не were + -ing жалғанған етістік аламыз: At 6 PM yesterday, I was cooking dinner. Was I, he, she, it-пен, ал were you, we, they-мен келеді. Созылып жатқан әрекетті қысқа әрекет бөліп кетсе, қысқасы Past Simple-да тұрады: I was sleeping when the phone rang.',
+    examples:[
+      {en:'At 6 PM yesterday, I was cooking dinner.', ru:'Вчера в шесть вечера я готовил ужин.', kk:'Кеше кешкі сағат 6-да мен кешкі ас пісіріп жатқанмын.'},
+      {en:'My sister was listening to music while I was studying.', ru:'Пока я занимался, сестра слушала музыку.', kk:'Мен сабақ оқып жатқанда, әпкем музыка тыңдап жатты.'},
+      {en:'The lights went out while we were watching the movie.', ru:'Пока мы смотрели фильм, погас свет.', kk:'Біз фильм көріп жатқанда, жарық сөніп қалды.'},
+      {en:'Were they having fun at the party?', ru:'Им было весело на вечеринке?', kk:'Олар кеште көңіл көтеріп жатты ма?'},
+    ],
+    words:[
+      {en:'watch', ru:'смотреть', kk:'көру, тамашалау', ex:'Yesterday at 7 PM my brother was watching a football match on TV.', g:'act'},
+      {en:'cook', ru:'готовить (еду)', kk:'тамақ пісіру, әзірлеу', ex:'I was cooking dinner for the whole family.', g:'act'},
+      {en:'sleep', ru:'спать', kk:'ұйықтау', ex:'I was sleeping when the phone rang.', g:'act'},
+      {en:'ring', ru:'звонить (о телефоне)', kk:'шылдырлау, қоңырау соғылу', ex:'The phone rang at midnight.', g:'act'},
+      {en:'walk', ru:'гулять, идти пешком', kk:'серуендеу, жаяу жүру', ex:'They were walking in the park when they saw a dog.', g:'act'},
+      {en:'relax', ru:'отдыхать', kk:'демалу', ex:'I wasn’t working, I was relaxing at home.', g:'act'},
+      {en:'while', ru:'пока, в то время как', kk:'…ып жатқанда', ex:'My sister was listening to music while I was studying.', g:'word'},
+      {en:'suddenly', ru:'вдруг, внезапно', kk:'кенеттен', ex:'They suddenly saw a dog.', g:'word'},
+    ],
+    tasks:[
+      {t:'choice', q:'Yesterday at 7 PM my brother ___ a football match on TV.', opts:['is watching', 'was watching', 'were watching'], a:1,
+       why:'Речь о процессе в момент прошлого — was + -ing. Brother — это he, поэтому was, а не were.',
+       whyKk:'Өткендегі бір сәтте жүріп жатқан процесс — was + -ing. Brother — ол (he), сондықтан were емес, was.'},
+      {t:'choice', q:'I was sleeping when the phone ___.', opts:['rang', 'ring', 'ringed'], a:0,
+       why:'Звонок — короткое действие, он прервал сон, значит Past Simple. Ring — неправильный глагол: ring → rang.',
+       whyKk:'Телефонның шылдырлауы — қысқа әрекет, ол ұйқыны бөліп кетті, сондықтан Past Simple. Ring — ережесіз етістік: ring → rang.'},
+      {t:'choice', q:'They ___ walking in the park when they saw a dog.', opts:['was', 'are', 'were'], a:2,
+       why:'С they ставим were. Was идёт с I, he, she, it, а are — настоящее время, хотя история уже в прошлом.',
+       whyKk:'They-мен were қойылады. Was I, he, she, it-пен келеді, ал are — осы шақ, бірақ оқиға өткенде болды.'},
+      {t:'choice', q:'What ___ she doing when you came?', opts:['was', 'were', 'did'], a:0,
+       why:'Спрашиваем о процессе в прошлом: was + she + -ing. Did перед глаголом с -ing не ставят.',
+       whyKk:'Өткендегі процесс туралы сұраймыз: was + she + -ing. -ing жалғанған етістіктің алдына did қойылмайды.'},
+      {t:'order', ru:'Она не слушала радио.', kk:'Ол радио тыңдап жатқан жоқ еді.',
+       words:['She', 'wasn’t', 'listening', 'to', 'the', 'radio'], a:'She wasn’t listening to the radio'},
+      {t:'order', ru:'Ты спал, когда я позвонил?', kk:'Мен қоңырау шалғанда ұйықтап жатыр ма едің?',
+       words:['Were', 'you', 'sleeping', 'when', 'I', 'called'], a:'Were you sleeping when I called'},
+    ]
+  },
+
+  p3: {
+    title:'Used To', subtitle:'Как было раньше, а теперь нет', subtitleKk:'Бұрын солай болатын, қазір олай емес',
+    rule:'Used to + глагол в начальной форме говорит о привычке или положении дел, которых больше нет: I used to eat fast food every day — раньше ел, сейчас не ем. В отрицании и вопросе нужен did, и used теряет -d: I didn’t use to like seafood. Did you use to wear glasses? Про одно событие used to не говорят: I visited Paris last year.',
+    ruleKk:'Used to + бастапқы формадағы етістік бұрын болған, қазір жоқ әдетті не жағдайды айтады: I used to eat fast food every day — бұрын күнде жейтінмін, қазір жемеймін. Теріс сөйлем мен сұрақта did келеді де, used сөзі -d әрпін жоғалтады: I didn’t use to like seafood. Did you use to wear glasses? Бір рет болған іске used to қолданылмайды: I visited Paris last year.',
+    examples:[
+      {en:'She used to have long hair.', ru:'Раньше у неё были длинные волосы.', kk:'Оның бұрын шашы ұзын болатын.'},
+      {en:'There used to be a big library in my town.', ru:'Раньше в моём городе была большая библиотека.', kk:'Менің қаламда бұрын үлкен кітапхана болатын.'},
+      {en:'My brother didn’t use to like vegetables, but now he eats them.', ru:'Раньше брат не любил овощи, а теперь ест.', kk:'Ағам бұрын көкөністерді ұнатпайтын, ал қазір жейді.'},
+      {en:'What did you use to do on the weekends?', ru:'Чем ты раньше занимался по выходным?', kk:'Сен бұрын демалыс күндері не істейтін едің?'},
+    ],
+    words:[
+      {en:'child', ru:'ребёнок', kk:'бала', ex:'When I was a child, I used to wake up very early.', g:'thing'},
+      {en:'ride', ru:'ездить (на велосипеде)', kk:'(велосипед) тебу, мініп бару', ex:'I used to ride my bike to school every day.', g:'act'},
+      {en:'live', ru:'жить', kk:'тұру', ex:'My best friend used to live next door.', g:'act'},
+      {en:'move', ru:'переехать', kk:'көшу', ex:'She moved last year.', g:'act'},
+      {en:'supermarket', ru:'супермаркет', kk:'супермаркет', ex:'There used to be a big supermarket here, but now it’s a bank.', g:'thing'},
+      {en:'seafood', ru:'морепродукты', kk:'теңіз өнімдері', ex:'I didn’t use to like seafood, but now I love it.', g:'thing'},
+      {en:'glasses', ru:'очки', kk:'көзілдірік', ex:'Did you use to wear glasses?', g:'thing'},
+      {en:'seaside', ru:'морское побережье', kk:'теңіз жағасы', ex:'We used to go to the seaside.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'When I was a child, I used to ___ up very early.', opts:['woke', 'wake', 'waking'], a:1,
+       why:'После used to глагол всегда в начальной форме: used to wake up, used to play, used to ride.',
+       whyKk:'used to-дан кейін етістік әрқашан бастапқы формада тұрады: used to wake up, used to play, used to ride.'},
+      {t:'choice', q:'My brother didn’t ___ to like vegetables.', opts:['use', 'used', 'uses'], a:0,
+       why:'Прошлое уже показал did, поэтому в отрицании пишем use без -d: didn’t use to.',
+       whyKk:'Өткен шақты did көрсетіп тұр, сондықтан теріс сөйлемде -d-сыз жазамыз: didn’t use to.'},
+      {t:'choice', q:'Where ___ your family use to go for holidays?', opts:['was', 'do', 'did'], a:2,
+       why:'Вопрос с used to строится через did, как в Past Simple: Where did your family use to go?',
+       whyKk:'used to-мен сұрақ Past Simple-дағыдай did арқылы құрылады: Where did your family use to go?'},
+      {t:'choice', q:'I ___ Paris last year.', opts:['used to visit', 'visited', 'use to visit'], a:1,
+       why:'Last year — одна поездка, а не привычка. Про один раз говорят в Past Simple: I visited Paris last year.',
+       whyKk:'Last year — бір реттік сапар, әдет емес. Бір рет болған іс Past Simple-мен айтылады: I visited Paris last year.'},
+      {t:'order', ru:'Раньше здесь был большой супермаркет.', kk:'Бұрын мұнда үлкен супермаркет болатын.',
+       words:['There', 'used', 'to', 'be', 'a', 'big', 'supermarket', 'here'], a:'There used to be a big supermarket here'},
+      {t:'order', ru:'Ты раньше носил очки?', kk:'Сен бұрын көзілдірік киетін бе едің?',
+       words:['Did', 'you', 'use', 'to', 'wear', 'glasses'], a:'Did you use to wear glasses'},
+    ]
+  },
+
+  p4: {
+    title:'Future Simple', subtitle:'Решить, пообещать, предсказать', subtitleKk:'Шешім, уәде, болжам',
+    rule:'Решаешь прямо в разговоре, обещаешь или говоришь, что, по-твоему, будет, — бери will + глагол в начальной форме: Oh, I will close the window. I think our team will win. Will одно для всех, отрицание — won’t (will not). После when и if will не ставят: I will call you when I arrive.',
+    ruleKk:'Сөйлесіп тұрып шешім қабылдағанда, уәде бергенде не болжам айтқанда will + бастапқы формадағы етістік аламыз: Oh, I will close the window. I think our team will win. Will барлық жақпен бірдей қолданылады, болымсызы — won’t (will not). When мен if-тен кейін will қойылмайды: I will call you when I arrive.',
+    examples:[
+      {en:'I will help you with your bags.', ru:'Я помогу тебе с сумками.', kk:'Сөмкелеріңді көтеруге көмектесемін.'},
+      {en:'I think our team will win the championship.', ru:'Думаю, наша команда выиграет чемпионат.', kk:'Менің ойымша, біздің команда чемпионатты жеңеді.'},
+      {en:'He won’t finish the work on time.', ru:'Он не закончит работу вовремя.', kk:'Ол жұмысты уақытында бітірмейді.'},
+      {en:'Will it snow tomorrow?', ru:'Завтра пойдёт снег?', kk:'Ертең қар жауа ма?'},
+    ],
+    words:[
+      {en:'answer', ru:'ответить', kk:'жауап беру', ex:'Don’t worry, I will answer it.', g:'act'},
+      {en:'bring', ru:'принести', kk:'әкелу', ex:'I will bring you a glass of water.', g:'act'},
+      {en:'thirsty', ru:'хочется пить', kk:'шөлдеген, сусаған', ex:'I’m really thirsty.', g:'sign'},
+      {en:'weather', ru:'погода', kk:'ауа райы', ex:'I think the weather will be sunny tomorrow.', g:'thing'},
+      {en:'probably', ru:'наверное, скорее всего', kk:'бәлкім, мүмкін', ex:'He will probably pass the exam.', g:'word'},
+      {en:'pass', ru:'сдать (экзамен)', kk:'(емтиханнан) өту', ex:'I hope I will pass the exam.', g:'act'},
+      {en:'promise', ru:'обещать', kk:'уәде беру', ex:'I will help you with your homework, I promise.', g:'act'},
+      {en:'forget', ru:'забыть', kk:'ұмыту', ex:'I won’t forget your birthday again.', g:'act'},
+    ],
+    tasks:[
+      {t:'choice', q:'"I’m really thirsty." — "Wait, I ___ bring you a glass of water."', opts:['will', 'am', 'was'], a:0,
+       why:'Решение принято прямо сейчас, в ответ на слова друга, — значит will + глагол.',
+       whyKk:'Шешім дәл қазір, досының сөзіне жауап ретінде қабылданды — сондықтан will + етістік.'},
+      {t:'choice', q:'I will call you when I ___.', opts:['will arrive', 'arrive', 'arrived'], a:1,
+       why:'После when will не ставят, даже если речь о будущем. Нужен Present Simple: when I arrive.',
+       whyKk:'when-нен кейін will қойылмайды, әрекет болашақта болса да. Present Simple керек: when I arrive.'},
+      {t:'choice', q:'I ___ forget your birthday again, I promise.', opts:['don’t', 'didn’t', 'won’t'], a:2,
+       why:'Это обещание на будущее, да ещё с отрицанием, — won’t, то есть will not.',
+       whyKk:'Бұл — болашаққа берілген уәде, оның үстіне болымсыз, сондықтан won’t, яғни will not.'},
+      {t:'choice', q:'I think the weather ___ sunny tomorrow.', opts:['is being', 'will be', 'was'], a:1,
+       why:'I think и tomorrow — это прогноз на завтра, значит will be. После will глагол без окончаний.',
+       whyKk:'I think пен tomorrow — ертеңге жасалған болжам, сондықтан will be. will-ден кейін етістік бастапқы формада тұрады.'},
+      {t:'order', ru:'Закроешь окно?', kk:'Терезені жабасың ба?',
+       words:['Will', 'you', 'close', 'the', 'window'], a:'Will you close the window'},
+      {t:'order', ru:'Не думаю, что они придут вовремя.', kk:'Менің ойымша, олар уақытында келмейді.',
+       words:['I', 'don’t', 'think', 'they', 'will', 'come', 'on', 'time'], a:'I don’t think they will come on time'},
+    ]
+  },
+
+  p5: {
+    title:'Going To', subtitle:'Планы и то, что вот-вот случится', subtitleKk:'Жоспар және болайын деп тұрған нәрсе',
+    rule:'Решил заранее и уже готовишься — говори am, is или are + going to + глагол: I am going to buy a new laptop next month. Так же говорят, когда видят признак, что сейчас что-то случится: Look at those black clouds. It is going to rain. Not ставят после am, is, are: They aren’t going to help us.',
+    ruleKk:'Бір нәрсені алдын ала шешіп, оған дайындалып жүрсең, am, is немесе are + going to + етістік қолданасың: I am going to buy a new laptop next month. Дәл қазір көзге көрініп тұрған белгіге сүйеніп болжам айтқанда да осылай айтамыз: Look at those black clouds. It is going to rain. Болымсыз сөйлемде not сөзі am, is, are-дан кейін тұрады: They aren’t going to help us.',
+    examples:[
+      {en:'I am going to buy a new laptop next month.', ru:'В следующем месяце я собираюсь купить новый ноутбук.', kk:'Мен келесі айда жаңа ноутбук сатып алмақшымын.'},
+      {en:'Look at those black clouds. It is going to rain.', ru:'Посмотри на те чёрные тучи. Сейчас пойдёт дождь.', kk:'Ана қара бұлттарға қара. Жаңбыр жауғалы тұр.'},
+      {en:'I am not going to quit my job.', ru:'Я не собираюсь уходить с работы.', kk:'Мен жұмысымнан кетпекші емеспін.'},
+      {en:'Is he going to study abroad?', ru:'Он собирается учиться за границей?', kk:'Ол шетелде оқымақшы ма?'},
+    ],
+    words:[
+      {en:'buy', ru:'купить', kk:'сатып алу', ex:'Are you going to buy a new laptop?', g:'act'},
+      {en:'move', ru:'переехать', kk:'көшу', ex:'They are going to move to a bigger house in spring.', g:'act'},
+      {en:'cloud', ru:'туча, облако', kk:'бұлт', ex:'Look at those black clouds.', g:'thing'},
+      {en:'fall', ru:'упасть', kk:'құлау', ex:'Watch out. The baby is going to fall.', g:'act'},
+      {en:'accident', ru:'авария', kk:'апат, авария', ex:'He is driving too fast. He is going to have an accident.', g:'thing'},
+      {en:'abroad', ru:'за границей, за границу', kk:'шетелде, шетелге', ex:'Is he going to study abroad?', g:'word'},
+      {en:'discount', ru:'скидка', kk:'жеңілдік', ex:'Why aren’t you going to wait for a discount?', g:'thing'},
+      {en:'next month', ru:'в следующем месяце', kk:'келесі айда', ex:'I am going to buy a new laptop next month.', g:'time'},
+    ],
+    tasks:[
+      {t:'choice', q:'___ he going to study abroad?', opts:['Is', 'Does', 'Are'], a:0,
+       why:'В вопросе is встаёт перед he. Does с going to не ставят, а are нужен для you, we, they.',
+       whyKk:'Сұрақта is сөйлемнің басына, he-ден бұрын шығады. Going to-мен does қолданылмайды, ал are you, we, they-мен келеді.'},
+      {t:'choice', q:'They ___ going to help us. They are too busy.', opts:['isn’t', 'don’t', 'aren’t'], a:2,
+       why:'С they нужен are, в отрицании — aren’t. Don’t с going to не используют.',
+       whyKk:'they-мен are тұрады, болымсыз түрі — aren’t. Going to-мен don’t қолданылмайды.'},
+      {t:'choice', q:'Look at those black clouds. It is going ___.', opts:['rain', 'to rain', 'raining'], a:1,
+       why:'После going всегда идёт to, а за ним глагол в начальной форме: going to rain. Тучи уже видно, значит, дождь вот-вот начнётся.',
+       whyKk:'going сөзінен кейін әрдайым to, одан соң етістіктің бастапқы формасы тұрады: going to rain. Қара бұлт көрініп тұр, демек жаңбыр жауғалы тұр.'},
+      {t:'choice', q:'Are you going to buy a new laptop? — Yes, I ___.', opts:['do', 'am', 'going'], a:1,
+       why:'Вопрос начался с are, а в коротком ответе с I ставим am: Yes, I am. Do отвечает только на вопрос с do.',
+       whyKk:'Сұрақ are-мен басталды, ал I-мен келетін қысқа жауапта am тұрады: Yes, I am. Do тек do-мен қойылған сұраққа жауап береді.'},
+      {t:'order', ru:'Ты собираешься ждать скидку?', kk:'Жеңілдікті күтпекшісің бе?',
+       words:['Are', 'you', 'going', 'to', 'wait', 'for', 'a', 'discount'], a:'Are you going to wait for a discount'},
+      {t:'order', ru:'Он сейчас попадёт в аварию.', kk:'Ол апатқа ұшырағалы тұр.',
+       words:['He', 'is', 'going', 'to', 'have', 'an', 'accident'], a:'He is going to have an accident'},
+    ]
+  },
+
+  p6: {
+    title:'Future: Present Continuous', subtitle:'Встречи, о которых уже договорились', subtitleKk:'Алдын ала келісілген кездесулер',
+    rule:'Если уже договорился о встрече, купил билет или записался, говори о будущем через am, is, are + глагол с -ing: I am meeting my doctor tomorrow morning. Рядом обязательно ставь слово о времени: tomorrow, next week, on Friday, at 7 PM. Без него фраза значит «прямо сейчас»: I am working now — работаю сейчас, I am working tomorrow — работаю завтра.',
+    ruleKk:'Біреумен кездесуге келісіп қойсаң, билет алсаң немесе жазылып қойсаң, болашақты am, is, are + -ing жалғанған етістікпен айтасың: I am meeting my doctor tomorrow morning. Қасына міндетті түрде уақытты білдіретін сөз қос: tomorrow, next week, on Friday, at 7 PM. Ол сөз болмаса, сөйлем «дәл қазір» деген мағына береді: I am working now — қазір жұмыс істеп жатырмын, I am working tomorrow — ертең жұмыс істеймін.',
+    examples:[
+      {en:'I am meeting my doctor tomorrow morning.', ru:'Завтра утром у меня встреча с врачом.', kk:'Ертең таңертең дәрігеріммен кездесемін.'},
+      {en:'They are flying to Dubai next Sunday.', ru:'В следующее воскресенье они летят в Дубай.', kk:'Олар келесі жексенбіде Дубайға ұшады.'},
+      {en:'We aren’t going to the theatre tonight.', ru:'Сегодня вечером мы не идём в театр.', kk:'Біз бүгін кешке театрға бармаймыз.'},
+      {en:'Is she coming to the party next week?', ru:'Она придёт на вечеринку на следующей неделе?', kk:'Ол келесі аптадағы кешке келе ме?'},
+    ],
+    words:[
+      {en:'meet', ru:'встречаться', kk:'кездесу', ex:'I am meeting Sarah at 7 PM.', g:'act'},
+      {en:'fly', ru:'лететь', kk:'ұшу', ex:'They are flying to Dubai next Sunday.', g:'act'},
+      {en:'leave', ru:'уезжать', kk:'кету', ex:'They are leaving tomorrow morning.', g:'act'},
+      {en:'book', ru:'бронировать', kk:'брондау', ex:'The tickets are already booked.', g:'act'},
+      {en:'ticket', ru:'билет', kk:'билет', ex:'We have the tickets for Friday.', g:'thing'},
+      {en:'interview', ru:'собеседование', kk:'сұхбат', ex:'He is having an interview on Tuesday.', g:'thing'},
+      {en:'museum', ru:'музей', kk:'мұражай', ex:'Our class is visiting the museum next Tuesday.', g:'thing'},
+      {en:'tonight', ru:'сегодня вечером', kk:'бүгін кешке', ex:'What are you doing tonight?', g:'time'},
+    ],
+    tasks:[
+      {t:'choice', q:'Ali ___ an interview on Tuesday.', opts:['is having', 'are having', 'have'], a:0,
+       why:'Собеседование уже назначено, поэтому Present Continuous. Про одного человека говорим is having, а are идёт с you, we, they.',
+       whyKk:'Сұхбат белгіленіп қойған, сондықтан Present Continuous. Бір адам туралы is having айтамыз, ал are you, we, they-мен келеді.'},
+      {t:'choice', q:'I can’t come on Friday. I ___ my doctor at 10 AM.', opts:['meets', 'am meeting', 'meeting'], a:1,
+       why:'Время у врача уже назначено — am meeting. Meets говорят про he и she, а meeting без am не работает.',
+       whyKk:'Дәрігерге бару уақыты келісіліп қойған — am meeting. Meets he, she-мен айтылады, ал am-сіз meeting жалғыз тұрмайды.'},
+      {t:'choice', q:'We ___ going to the theatre tonight. Our plans changed.', opts:['don’t', 'isn’t', 'aren’t'], a:2,
+       why:'Собирались пойти, но планы поменялись. С we ставим are, в отрицании — aren’t. Don’t рядом с -ing не ставят.',
+       whyKk:'Баруды жоспарлаған едік, бірақ жоспар өзгерді. we-мен are тұрады, болымсызы — aren’t. -ing формасымен don’t қолданылмайды.'},
+      {t:'choice', q:'Is she ___ to the party next week?', opts:['coming', 'come', 'comes'], a:0,
+       why:'Вопрос начался с is, значит, дальше глагол с -ing: Is she coming. Come и comes после is не ставят.',
+       whyKk:'Сұрақ is-пен басталды, демек етістік -ing формасында тұрады: Is she coming. is-тен кейін come не comes қойылмайды.'},
+      {t:'order', ru:'Когда они уезжают в Лондон?', kk:'Олар Лондонға қашан кетеді?',
+       words:['When', 'are', 'they', 'leaving', 'for', 'London'], a:'When are they leaving for London'},
+      {t:'order', ru:'Что ты делаешь в субботу?', kk:'Сенбі күні не істейсің?',
+       words:['What', 'are', 'you', 'doing', 'on', 'Saturday'], a:'What are you doing on Saturday'},
+    ]
+  },
+
+  p7: {
+    title:'Have To and Must', subtitle:'Надо, нельзя и не обязательно', subtitleKk:'Керек, болмайды және міндетті емес',
+    rule:'Must говорят, когда человек сам решил, что так надо: I must call my mother. It’s her birthday. Have to (с he, she, it — has to, в прошлом — had to) говорят, когда требует кто-то другой: работа, школа, закон: She has to wear a uniform at school. Mustn’t значит «нельзя», а don’t have to — «можно не делать»: You don’t have to come if you are tired.',
+    ruleKk:'Must-ты адам бір нәрсені өзі қажет деп шешкенде айтады: I must call my mother. It’s her birthday. Have to (he, she, it-пен has to, өткен шақта had to) басқа біреу талап еткенде қолданылады: жұмыс, мектеп, заң: She has to wear a uniform at school. Mustn’t «болмайды, тыйым салынған» дегенді білдіреді, ал don’t have to — «істемесең де болады»: You don’t have to come if you are tired.',
+    examples:[
+      {en:'At my job I have to wear a uniform.', ru:'На работе мне приходится носить форму.', kk:'Жұмысымда униформа киюге мәжбүрмін.'},
+      {en:'I must finish this report today.', ru:'Мне надо закончить этот отчёт сегодня.', kk:'Бұл есепті бүгін аяқтауым керек.'},
+      {en:'You mustn’t use your phone while driving.', ru:'За рулём нельзя пользоваться телефоном.', kk:'Көлік жүргізіп келе жатқанда телефон қолдануға болмайды.'},
+      {en:'Yesterday I had to work until 8 PM.', ru:'Вчера мне пришлось работать до восьми вечера.', kk:'Кеше кешкі сегізге дейін жұмыс істеуге мәжбүр болдым.'},
+    ],
+    words:[
+      {en:'wear', ru:'носить (одежду)', kk:'кию', ex:'Visitors must wear a face mask.', g:'act'},
+      {en:'uniform', ru:'форма', kk:'форма, униформа', ex:'She has to wear a uniform at school.', g:'thing'},
+      {en:'rule', ru:'правило', kk:'ереже', ex:'You are at work. What are the rules?', g:'thing'},
+      {en:'report', ru:'отчёт', kk:'есеп', ex:'I must finish this report today.', g:'thing'},
+      {en:'late', ru:'опоздавший, поздно', kk:'кеш, кешігіп', ex:'You mustn’t be late for the exam.', g:'sign'},
+      {en:'smoke', ru:'курить', kk:'шылым шегу', ex:'You mustn’t smoke here.', g:'act'},
+      {en:'sick', ru:'больной', kk:'ауырып тұрған, науқас', ex:'She doesn’t have to come to the office because she is sick.', g:'sign'},
+      {en:'order', ru:'заказать', kk:'тапсырыс беру', ex:'You don’t have to cook tonight. We can order pizza.', g:'act'},
+    ],
+    tasks:[
+      {t:'choice', q:'She ___ wear a uniform at school. It’s a school rule.', opts:['has to', 'have to', 'must to'], a:0,
+       why:'Правило придумала школа, поэтому have to, а с she он становится has to. Must to не бывает: после must глагол идёт сразу.',
+       whyKk:'Бұл ережені мектеп қойған, сондықтан have to керек, ал she-мен ол has to болады. Must to деген жоқ: must-тан кейін етістік бірден тұрады.'},
+      {t:'choice', q:'You ___ use your phone while driving. It’s dangerous.', opts:['don’t have to', 'mustn’t', 'haven’t to'], a:1,
+       why:'Это запрет: опасно, значит, нельзя — mustn’t. Don’t have to значило бы «можешь не пользоваться, как хочешь».',
+       whyKk:'Бұл — тыйым: қауіпті, сондықтан болмайды — mustn’t. Don’t have to «қолданбасаң да болады, өзің біл» деген мағына берер еді.'},
+      {t:'choice', q:'Yesterday I ___ work until 8 PM.', opts:['must', 'have to', 'had to'], a:2,
+       why:'Речь про вчера, а у must нет прошедшего времени. В прошлом говорим had to.',
+       whyKk:'Кеше болған іс туралы айтып тұрмыз, ал must-тың өткен шағы жоқ. Өткен шақта had to айтамыз.'},
+      {t:'choice', q:'You ___ cook tonight. We can order pizza.', opts:['mustn’t', 'don’t have to', 'must'], a:1,
+       why:'Готовить никто не запрещает, просто не нужно: закажем пиццу. «Можно не делать» — don’t have to.',
+       whyKk:'Тамақ істеуге ешкім тыйым салмайды, жай қажеті жоқ: пиццаға тапсырыс береміз. «Істемесең де болады» — don’t have to.'},
+      {t:'order', ru:'Нам пришлось взять такси.', kk:'Біз такси алуға мәжбүр болдық.',
+       words:['We', 'had', 'to', 'take', 'a', 'taxi'], a:'We had to take a taxi'},
+      {t:'order', ru:'Ей не обязательно приходить в офис.', kk:'Оның кеңсеге келуі міндетті емес.',
+       words:['She', 'doesn’t', 'have', 'to', 'come', 'to', 'the', 'office'], a:'She doesn’t have to come to the office'},
+    ]
+  },
+
+  p8: {
+    title:'Should and Shouldn’t', subtitle:'Советовать: стоит и не стоит', subtitleKk:'Кеңес беру: істеген жөн, істемеген жөн',
+    rule:'Should — дружеский совет, никто не заставляет: You should take a break. Глагол после should стоит в начальной форме, а «не стоит» — shouldn’t: You shouldn’t drink coffee after 5 PM. Ещё should говорят, когда чего-то ждут по расписанию или по логике: The train should arrive in five minutes.',
+    ruleKk:'Should — достық кеңес, ешкім мәжбүрлемейді: You should take a break. Should-тан кейін етістік бастапқы формада тұрады, ал «істемеген жөн» дегенді shouldn’t білдіреді: You shouldn’t drink coffee after 5 PM. Бір нәрсе кесте не логика бойынша болуы тиіс болса да, should айтылады: The train should arrive in five minutes.',
+    examples:[
+      {en:'You should study for the exam.', ru:'Тебе стоит подготовиться к экзамену.', kk:'Емтиханға дайындалғаның жөн.'},
+      {en:'You shouldn’t go to bed so late.', ru:'Не стоит ложиться так поздно.', kk:'Бұлай кеш жатпағаның жөн.'},
+      {en:'What should we do now?', ru:'Что нам теперь делать?', kk:'Енді не істегеніміз жөн?'},
+      {en:'The train should arrive in five minutes.', ru:'Поезд должен прийти через пять минут.', kk:'Пойыз бес минуттан кейін келуі тиіс.'},
+    ],
+    words:[
+      {en:'advice', ru:'совет', kk:'кеңес', ex:'Your friend feels bad. What advice can you give?', g:'thing'},
+      {en:'headache', ru:'головная боль', kk:'бас ауруы', ex:'I have a terrible headache.', g:'thing'},
+      {en:'break', ru:'перерыв', kk:'үзіліс', ex:'You should take a break and drink some water.', g:'thing'},
+      {en:'apologize', ru:'извиниться', kk:'кешірім сұрау', ex:'Should I apologize to him?', g:'act'},
+      {en:'worry', ru:'переживать', kk:'уайымдау', ex:'He shouldn’t worry about small things.', g:'act'},
+      {en:'save', ru:'копить', kk:'жинау', ex:'You should save 10% of your salary every month.', g:'act'},
+      {en:'spend', ru:'тратить', kk:'жұмсау', ex:'You shouldn’t spend money on unnecessary things.', g:'act'},
+      {en:'on time', ru:'вовремя', kk:'уақытында', ex:'Students should arrive on time.', g:'time'},
+    ],
+    tasks:[
+      {t:'choice', q:'You look tired. You should ___ to bed early.', opts:['to go', 'going', 'go'], a:2,
+       why:'После should глагол идёт сразу, в начальной форме: should go. To и -ing здесь не нужны.',
+       whyKk:'should-тан кейін етістік бірден, бастапқы формада тұрады: should go. Мұнда to да, -ing те керек емес.'},
+      {t:'choice', q:'You ___ drink coffee after 5 PM. You won’t sleep well.', opts:['should', 'shouldn’t', 'don’t should'], a:1,
+       why:'Кофе вечером мешает спать, значит, совет — не пить: shouldn’t. Don’t should не говорят.',
+       whyKk:'Кешкі кофе ұйқыға кедергі келтіреді, сондықтан ішпеген жөн: shouldn’t. Don’t should деп айтылмайды.'},
+      {t:'choice', q:'___ I apologize to him?', opts:['Should', 'Does', 'Am'], a:0,
+       why:'Просим совета, и should встаёт перед I: Should I apologize? Does с I не бывает, а после am нужен был бы глагол с -ing.',
+       whyKk:'Кеңес сұрап тұрмыз, сондықтан should I сөзінің алдына шығады: Should I apologize? Does I-мен келмейді, ал am-нен кейін -ing формасы керек болар еді.'},
+      {t:'choice', q:'Dana looks ill. She ___ go to the doctor.', opts:['shoulds', 'is should', 'should'], a:2,
+       why:'Should одинаковое для всех: I should, she should. Окончание -s и is к нему не добавляют.',
+       whyKk:'Should барлық жақта бірдей: I should, she should. Оған -s жалғанбайды, is те қосылмайды.'},
+      {t:'order', ru:'Тебе стоит составить подробный план.', kk:'Егжей-тегжейлі жоспар құрғаның жөн.',
+       words:['You', 'should', 'make', 'a', 'detailed', 'plan'], a:'You should make a detailed plan'},
+      {t:'order', ru:'Не стоит тратить деньги на ненужные вещи.', kk:'Қажетсіз заттарға ақша жұмсамағаның жөн.',
+       words:['You', 'shouldn’t', 'spend', 'money', 'on', 'unnecessary', 'things'], a:'You shouldn’t spend money on unnecessary things'},
+    ]
+  },
+
+  p9: {
+    title:'Get Used To', subtitle:'Привыкать к новому', subtitleKk:'Жаңа нәрсеге үйрену',
+    rule:'Get used to значит «привыкать»: так говорят, когда постепенно привыкаешь к новому или трудному, например к холодной погоде в Канаде. После to ставь существительное или глагол с -ing: I am getting used to driving on the left. Время меняет только get (getting, got, will get), а вопрос и отрицание строятся через do и did: Did you get used to the time difference?',
+    ruleKk:'Get used to — «үйрену, бейімделу»: жаңа немесе қиын жағдайға бірте-бірте үйреніп жатқанда осылай айтамыз, мысалы, Канададағы суық ауа райына. to-дан кейін зат есім немесе -ing формасындағы етістік тұрады: I am getting used to driving on the left. Шақты тек get көрсетеді (getting, got, will get), ал сұраулы және болымсыз сөйлем do, did арқылы жасалады: Did you get used to the time difference?',
+    examples:[
+      {en:'I am getting used to the cold weather in Canada.', ru:'Я привыкаю к холодной погоде в Канаде.', kk:'Мен Канададағы суық ауа райына үйреніп жатырмын.'},
+      {en:'We got used to the noise after a week.', ru:'Через неделю мы привыкли к шуму.', kk:'Бір аптадан кейін шуға үйреніп алдық.'},
+      {en:'Have you got used to your new job yet?', ru:'Ты уже привык к новой работе?', kk:'Жаңа жұмысыңа үйрендің бе?'},
+      {en:'My daughter didn’t get used to wearing glasses for many months.', ru:'Моя дочь много месяцев не могла привыкнуть к очкам.', kk:'Қызым көп ай бойы көзілдірік киюге үйрене алмады.'},
+    ],
+    words:[
+      {en:'get used to', ru:'привыкать', kk:'үйрену, бейімделу', ex:'I am getting used to the cold weather in Canada.', g:'act'},
+      {en:'move', ru:'переехать', kk:'көшу', ex:'When I moved here, I didn’t like the food at first.', g:'act'},
+      {en:'get up', ru:'вставать (утром)', kk:'(ұйқыдан) тұру', ex:'I can’t get used to getting up so early for work.', g:'act'},
+      {en:'adapt', ru:'приспособиться', kk:'бейімделу', ex:'It takes time to adapt.', g:'act'},
+      {en:'noise', ru:'шум', kk:'шу', ex:'I got used to the noise in the evenings quite fast.', g:'thing'},
+      {en:'schedule', ru:'расписание, график', kk:'кесте', ex:'I don’t think I will ever get used to this new schedule.', g:'thing'},
+      {en:'spicy', ru:'острый (о еде)', kk:'ащы', ex:'I quickly got used to eating spicy meals.', g:'sign'},
+      {en:'alone', ru:'один, в одиночку', kk:'жалғыз', ex:'It takes time to get used to living alone.', g:'sign'},
+    ],
+    tasks:[
+      {t:'choice', q:'I can’t get used to ___ up so early for work.', opts:['getting', 'get', 'got'], a:0,
+       why:'В get used to слово to — предлог, а не частица перед глаголом. Поэтому дальше глагол с -ing: getting up.',
+       whyKk:'get used to ішіндегі to — етістіктің бөлшегі емес, предлог. Сондықтан одан кейін етістік -ing формасында тұрады: getting up.'},
+      {t:'choice', q:'When I moved here, I didn’t like the food at first, but I quickly ___ used to eating spicy meals.', opts:['get', 'got', 'getting'], a:1,
+       why:'Всё случилось в прошлом (moved, didn’t like), и привыкание уже закончилось — got used to.',
+       whyKk:'Оқиғаның бәрі өткенде болған (moved, didn’t like), үйрену процесі аяқталған — got used to.'},
+      {t:'choice', q:'___ you get used to the time difference?', opts:['Was', 'Are', 'Did'], a:2,
+       why:'Get — обычный глагол, и вопрос о прошлом с ним строится через did. Was и are рядом с get не ставят.',
+       whyKk:'Get — толық мағыналы етістік, өткен шақтағы сұрақ онымен did арқылы жасалады. Was пен are get-пен бірге келмейді.'},
+      {t:'choice', q:'I ___ live in a flat, but now I live in a house.', opts:['got used to', 'used to', 'am getting used to'], a:1,
+       why:'Раньше жил в квартире, а теперь нет — это used to + глагол без -ing. После get used to стояло бы living, и смысл был бы «привыкаю».',
+       whyKk:'Бұрын пәтерде тұрған, қазір тұрмайды — бұл used to + -ing-сіз етістік. Get used to болса, одан кейін living тұрып, «үйреніп жатырмын» деген мағына шығар еді.'},
+      {t:'order', ru:'Я привыкаю к холодной погоде.', kk:'Мен суық ауа райына үйреніп жатырмын.',
+       words:['I', 'am', 'getting', 'used', 'to', 'the', 'cold', 'weather'], a:'I am getting used to the cold weather'},
+      {t:'order', ru:'Моя дочь так и не привыкла носить очки.', kk:'Қызым көзілдірік киюге үйрене алмады.',
+       words:['My', 'daughter', 'didn’t', 'get', 'used', 'to', 'wearing', 'glasses'], a:'My daughter didn’t get used to wearing glasses'},
+    ]
+  },
+
+  p10: {
+    title:'Quantifiers', subtitle:'Сколько чего: much, many, a few, a little', subtitleKk:'Қанша: much, many, a few, a little',
+    rule:'Many и a few ставь с тем, что можно посчитать (eggs, coins), much и a little — с тем, что не считается (sugar, water), а a lot of подходит к обоим. Some идёт в утверждениях и когда что-то предлагаешь (Would you like some tea?), any — в вопросах и отрицаниях: Is there any milk in the fridge? A few и a little значат «немного, но хватает», а few и little без a — «мало, не хватает».',
+    ruleKk:'Many мен a few санауға болатын заттармен (eggs, coins), much пен a little саналмайтын заттармен (sugar, water) келеді, ал a lot of екеуімен де қолданылады. Some болымды сөйлемде және ұсыныста тұрады (Would you like some tea?), any — сұраулы және болымсыз сөйлемде: Is there any milk in the fridge? A few мен a little «аз, бірақ жетеді» дегенді білдіреді, ал a-сыз few мен little — «аз, жетпейді».',
+    examples:[
+      {en:'Is there any milk in the fridge?', ru:'В холодильнике есть молоко?', kk:'Тоңазытқышта сүт бар ма?'},
+      {en:'We don’t have many eggs, but we have a lot of cheese.', ru:'Яиц у нас немного, зато сыра много.', kk:'Бізде жұмыртқа көп емес, бірақ ірімшік көп.'},
+      {en:'How much sugar do you need for the cake?', ru:'Сколько сахара нужно для торта?', kk:'Тортқа қанша қант керек?'},
+      {en:'There is only a little water left in the bottle.', ru:'В бутылке осталось совсем немного воды.', kk:'Бөтелкеде аз ғана су қалды.'},
+    ],
+    words:[
+      {en:'a few', ru:'несколько (немного, но хватает)', kk:'бірнеше (аз да болса жетеді)', ex:'I have a few friends in the city.', g:'word'},
+      {en:'a little', ru:'немного (но хватает)', kk:'аздап (аз да болса жетеді)', ex:'We have a little water left.', g:'word'},
+      {en:'enough', ru:'достаточно', kk:'жеткілікті', ex:'We have enough food for everyone.', g:'word'},
+      {en:'any', ru:'какой-нибудь, нисколько', kk:'қандай да бір, ешқандай', ex:'Do you have any questions?', g:'word'},
+      {en:'need', ru:'нуждаться, нужно', kk:'керек болу', ex:'Yes, we need some apples.', g:'act'},
+      {en:'fridge', ru:'холодильник', kk:'тоңазытқыш', ex:'Is there any milk in the fridge?', g:'thing'},
+      {en:'sugar', ru:'сахар', kk:'қант', ex:'How much sugar do you need for the cake?', g:'thing'},
+      {en:'coin', ru:'монета', kk:'тиын, монета', ex:'I have a few coins in my pocket.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'No, there isn’t ___ milk in the fridge.', opts:['some', 'any', 'many'], a:1,
+       why:'В отрицании ставят any. Many не подходит: молоко штуками не считают.',
+       whyKk:'Болымсыз сөйлемде any қойылады. Many келмейді: сүтті данамен санамайды.'},
+      {t:'choice', q:'How ___ eggs do we have?', opts:['many', 'much', 'little'], a:0,
+       why:'Яйца можно посчитать, поэтому How many. How much спрашивают про то, что не считается: сахар, воду.',
+       whyKk:'Жұмыртқаны санауға болады, сондықтан How many. How much саналмайтын нәрсе туралы сұрағанда қойылады: қант, су.'},
+      {t:'choice', q:'Would you like ___ tea?', opts:['many', 'few', 'some'], a:2,
+       why:'Когда что-то предлагаешь, говоришь some: Would you like some tea? Many и few ставят с тем, что считают штуками, а чай не считают.',
+       whyKk:'Бір нәрсе ұсынғанда some айтамыз: Would you like some tea? Many мен few санауға болатын заттармен келеді, ал шай саналмайды.'},
+      {t:'choice', q:'Don’t worry, I have ___ friends in the city, so I won’t be lonely.', opts:['few', 'a few', 'much'], a:1,
+       why:'Друзей немного, но хватает — это a few. Few без a значит «мало, почти нет», и тогда было бы одиноко.',
+       whyKk:'Достар аз болса да жетеді — бұл a few. a-сыз few «өте аз, жетпейді» дегенді білдіреді, онда жалғыз қалар еді.'},
+      {t:'order', ru:'У нас не так много яиц.', kk:'Бізде жұмыртқа көп емес.',
+       words:['We', 'don’t', 'have', 'many', 'eggs'], a:'We don’t have many eggs'},
+      {t:'order', ru:'Сколько сахара тебе нужно?', kk:'Саған қанша қант керек?',
+       words:['How', 'much', 'sugar', 'do', 'you', 'need'], a:'How much sugar do you need'},
+    ]
+  },
+
+  p11: {
+    title:'However, Although, Because, So', subtitle:'Связывать мысли: хотя, потому что, поэтому', subtitleKk:'Ойды байланыстыру: …са да, себебі, сондықтан',
+    rule:'Although и however нужны, когда вторая мысль идёт наперекор первой. Although склеивает две части в одно предложение: Although it was raining, we still went to the park; however начинает новое предложение, и после него ставят запятую: The math test was very difficult. However, I think I passed it. Because называет причину, so — то, что из неё вышло: I went to bed early because I was very tired; The car was broken, so we took a taxi.',
+    ruleKk:'Although мен however екінші ой біріншісіне қайшы келгенде қолданылады. Although екі бөлікті бір сөйлемге біріктіреді: Although it was raining, we still went to the park; ал however жаңа сөйлемді бастайды, одан кейін үтір қойылады: The math test was very difficult. However, I think I passed it. Because себебін айтады, so — одан шыққан нәтижені: I went to bed early because I was very tired; The car was broken, so we took a taxi.',
+    examples:[
+      {en:'She bought the dress although it was very expensive.', ru:'Она купила платье, хотя оно было очень дорогим.', kk:'Өте қымбат болса да, ол көйлекті сатып алды.'},
+      {en:'We wanted to go skiing. However, there was no snow.', ru:'Мы хотели покататься на лыжах. Но снега не было.', kk:'Біз шаңғы тепкіміз келді. Алайда қар жоқ болды.'},
+      {en:'Because the train was late, we missed the meeting.', ru:'Поезд опоздал, и мы не успели на встречу.', kk:'Пойыз кешіккендіктен, біз жиналысқа үлгермедік.'},
+      {en:'It was raining heavily, so we decided to stay indoors.', ru:'Шёл сильный дождь, поэтому мы решили остаться дома.', kk:'Нөсерлеп жаңбыр жауып тұрды, сол себепті біз үйде қалуды шештік.'},
+    ],
+    words:[
+      {en:'although', ru:'хотя', kk:'…са да, …ғанына қарамастан', ex:'Although it was raining, we still went to the park.', g:'word'},
+      {en:'however', ru:'однако, но', kk:'алайда, дегенмен', ex:'He is a good student. However, he is often late.', g:'word'},
+      {en:'because', ru:'потому что', kk:'себебі, өйткені', ex:'I stayed home because I was tired.', g:'word'},
+      {en:'so', ru:'поэтому', kk:'сондықтан', ex:'She got a new job, so she is happy.', g:'word'},
+      {en:'tired', ru:'уставший', kk:'шаршаған', ex:'I went to bed early because I was very tired.', g:'sign'},
+      {en:'expensive', ru:'дорогой', kk:'қымбат', ex:'She bought the dress although it was very expensive.', g:'sign'},
+      {en:'miss', ru:'не успеть, пропустить', kk:'үлгермеу, қалып қою', ex:'Because the train was late, we missed the meeting.', g:'act'},
+      {en:'pass', ru:'сдать (экзамен)', kk:'(емтихан) тапсыру', ex:'She passed the exam although she didn’t study much.', g:'act'},
+    ],
+    tasks:[
+      {t:'choice', q:'___ it was raining, we still went to the park.', opts:['However', 'Although', 'So'], a:1,
+       why:'Дождь и прогулка спорят друг с другом, а обе части стоят в одном предложении через запятую — нужен although. However начинает отдельное предложение.',
+       whyKk:'Жаңбыр мен серуен бір-біріне қайшы, екі бөлік бір сөйлемде үтір арқылы тұр — although керек. However бөлек сөйлемді бастайды.'},
+      {t:'choice', q:'The math test was very difficult. ___, I think I passed it.', opts:['However', 'Because', 'Although'], a:0,
+       why:'После точки началось новое предложение, а за пропуском стоит запятая — это however. После although запятую не ставят: за ним сразу идёт своя часть предложения.',
+       whyKk:'Нүктеден кейін жаңа сөйлем басталды, сөзден кейін үтір тұр — бұл however. Although-дан кейін үтір қойылмайды, одан бірден сөйлемнің бір бөлігі басталады.'},
+      {t:'choice', q:'Why did you stay home? — I stayed home ___ I was tired.', opts:['so', 'however', 'because'], a:2,
+       why:'Спрашивают «почему», значит нужна причина — because. So сделало бы усталость следствием: «остался дома, поэтому устал».',
+       whyKk:'Why деп «неге» сұрап тұр, яғни себебін айту керек — because. So шаршауды салдарға айналдырар еді: «үйде қалдым, сондықтан шаршадым».'},
+      {t:'choice', q:'The car was broken, ___ we took a taxi.', opts:['because', 'so', 'although'], a:1,
+       why:'Сначала причина (машина сломалась), потом то, что из неё вышло (взяли такси), — so. Because поменял бы причину и следствие местами.',
+       whyKk:'Алдымен себеп (көлік бұзылды), содан кейін нәтиже (такси алдық) — so. Because себеп пен салдардың орнын ауыстырып жіберер еді.'},
+      {t:'order', ru:'Хотя шёл дождь, мы пошли гулять.', kk:'Жаңбыр жауып тұрса да, біз серуендеуге бардық.',
+       words:['Although', 'it', 'was', 'raining,', 'we', 'went', 'for', 'a', 'walk'], a:'Although it was raining, we went for a walk'},
+      {t:'order', ru:'Она нашла новую работу, поэтому она счастлива.', kk:'Ол жаңа жұмысқа орналасты, сондықтан ол бақытты.',
+       words:['She', 'got', 'a', 'new', 'job,', 'so', 'she', 'is', 'happy'], a:'She got a new job, so she is happy'},
+    ]
+  },
+
+  p12: {
+    title:'Present Perfect', subtitle:'Говорить об опыте и результате', subtitleKk:'Тәжірибе мен нәтиже туралы айту',
+    rule:'Present Perfect — have или has + третья форма глагола: I have finished, she has taken. Так говорят о прошлом, которое касается сегодняшнего дня: про опыт (She has never eaten sushi), про свежий результат (He has lost his keys — и теперь не попасть домой) и про то, что тянется до сих пор, с for и since (We have lived here since 2015). Если назван точный момент, yesterday или last week, бери Past Simple: I lost my phone yesterday.',
+    ruleKk:'Present Perfect — have немесе has + етістіктің үшінші формасы: I have finished, she has taken. Бұл шақпен бүгінге қатысы бар өткен оқиғалар туралы айтамыз: өмірлік тәжірибе (She has never eaten sushi), жаңа ғана болған істің нәтижесі (He has lost his keys — енді үйге кіре алмайды) және әлі жалғасып жатқан жағдай, for мен since-пен (We have lived here since 2015). Нақты уақыт аталса, мысалы yesterday не last week, Past Simple керек: I lost my phone yesterday.',
+    examples:[
+      {en:'I have visited London three times.', ru:'Я был в Лондоне три раза.', kk:'Мен Лондонға үш рет барғанмын.'},
+      {en:'She has never eaten sushi.', ru:'Она ни разу не ела суши.', kk:'Ол ешқашан суши жеп көрмеген.'},
+      {en:'They have just arrived.', ru:'Они только что приехали.', kk:'Олар жаңа ғана келді.'},
+      {en:'We have lived here since 2015.', ru:'Мы живём здесь с 2015 года.', kk:'Біз мұнда 2015 жылдан бері тұрамыз.'},
+    ],
+    words:[
+      {en:'ever', ru:'когда-нибудь', kk:'бұрын-соңды', ex:'Have you ever travelled to Japan?', g:'word'},
+      {en:'never', ru:'никогда', kk:'ешқашан', ex:'No, I have never visited Asia.', g:'word'},
+      {en:'just', ru:'только что', kk:'жаңа ғана', ex:'Yes, they have just arrived.', g:'word'},
+      {en:'already', ru:'уже', kk:'әлдеқашан', ex:'I have already sent it.', g:'word'},
+      {en:'yet', ru:'уже (в вопросе), ещё (с not)', kk:'әлі', ex:'Have the guests arrived yet?', g:'word'},
+      {en:'since', ru:'с какого-то момента', kk:'…бері, …бастап', ex:'We have known each other since primary school.', g:'word'},
+      {en:'lose', ru:'терять', kk:'жоғалту', ex:'I can’t find my phone. I think I have lost it.', g:'act'},
+      {en:'meet', ru:'встречать, знакомиться', kk:'кездесу, танысу', ex:'Have you met my brother?', g:'act'},
+    ],
+    tasks:[
+      {t:'choice', q:'They haven’t seen the new movie ___.', opts:['yet', 'already', 'just'], a:0,
+       why:'«Ещё не» передаёт yet в конце отрицательного предложения. Already и just сюда не подходят.',
+       whyKk:'Болымсыз сөйлемде «әлі … жоқ» мағынасын yet береді, ол сөйлемнің соңында тұрады. Already мен just мұнда келмейді.'},
+      {t:'choice', q:'We have known each other ___ primary school.', opts:['for', 'since', 'during'], a:1,
+       why:'Primary school — момент, с которого началось знакомство. Перед такой точкой ставят since, а for — перед отрезком: for three years.',
+       whyKk:'Primary school — таныстық басталған кез. Мұндай бастау нүктесінің алдында since тұрады, ал for уақыт аралығының алдында келеді: for three years.'},
+      {t:'choice', q:'I can’t find my phone. I think I ___ it.', opts:['has lost', 'have lose', 'have lost'], a:2,
+       why:'С I ставят have, а после него третью форму: lost. Has — для he, she, it.',
+       whyKk:'I-мен have қойылады, одан кейін үшінші форма келеді: lost. Has — he, she, it үшін.'},
+      {t:'choice', q:'I ___ my phone yesterday.', opts:['have lost', 'lost', 'has lost'], a:1,
+       why:'Yesterday — точный момент в прошлом. С ним Present Perfect не ставят, нужен Past Simple: lost.',
+       whyKk:'Yesterday — өткендегі нақты уақыт. Онымен Present Perfect қолданылмайды, Past Simple керек: lost.'},
+      {t:'order', ru:'Ты когда-нибудь был в Париже?', kk:'Парижге барып көрдің бе?',
+       words:['Have', 'you', 'ever', 'been', 'to', 'Paris'], a:'Have you ever been to Paris'},
+      {t:'order', ru:'Я только что сделал домашнее задание.', kk:'Мен үй тапсырмасын жаңа ғана бітірдім.',
+       words:['I', 'have', 'just', 'finished', 'my', 'homework'], a:'I have just finished my homework'},
+    ]
+  },
+
+  p13: {
+    title:'Expressing Purpose with To and For', subtitle:'Объяснить, зачем ты что-то делаешь', subtitleKk:'Не үшін істейтініңді түсіндіру',
+    rule:'Зачем ты что-то делаешь, объясняет to + глагол в начальной форме: I went to the library to study. For ставят перед существительным: I went to the store for some bread. Глагол после for бывает только с -ing и обычно говорит, для чего нужна вещь: A pen is for writing; «for to study» и «to bread» — ошибки.',
+    ruleKk:'Бір істі не үшін істейтініңді to + етістіктің бастапқы формасы түсіндіреді: I went to the library to study. For зат есімнің алдында тұрады: I went to the store for some bread. For-дан кейін етістік тек -ing формасында келеді және көбіне заттың не үшін керек екенін айтады: A pen is for writing; «for to study» мен «to bread» — қате.',
+    examples:[
+      {en:'We called a taxi to get to the airport quickly.', ru:'Мы вызвали такси, чтобы быстро доехать до аэропорта.', kk:'Әуежайға тез жету үшін такси шақырдық.'},
+      {en:'I am here to help you.', ru:'Я пришёл тебе помочь.', kk:'Мен саған көмектесуге келдім.'},
+      {en:'I am here for a meeting.', ru:'Я пришёл на встречу.', kk:'Мен мұнда жиналысқа келдім.'},
+      {en:'This tool is for cutting wood.', ru:'Этот инструмент нужен, чтобы резать дерево.', kk:'Бұл құрал ағаш кесуге арналған.'},
+    ],
+    words:[
+      {en:'library', ru:'библиотека', kk:'кітапхана', ex:'I went to the library to study for the exam.', g:'thing'},
+      {en:'post office', ru:'почта', kk:'пошта бөлімшесі', ex:'I went to the post office to send a letter.', g:'thing'},
+      {en:'bread', ru:'хлеб', kk:'нан', ex:'I went to the shop for bread.', g:'thing'},
+      {en:'meeting', ru:'встреча, собрание', kk:'жиналыс, кездесу', ex:'We use this room for meetings.', g:'thing'},
+      {en:'tool', ru:'инструмент', kk:'құрал', ex:'This tool is for cutting wood.', g:'thing'},
+      {en:'save', ru:'копить (деньги)', kk:'(ақша) жинау', ex:'She is saving money for a new car.', g:'act'},
+      {en:'check', ru:'проверять', kk:'тексеру', ex:'We use this app for checking the weather.', g:'act'},
+      {en:'ask', ru:'спрашивать', kk:'сұрау', ex:'She called him to ask a question.', g:'act'},
+    ],
+    tasks:[
+      {t:'choice', q:'Why did she call him? She called him ___ ask a question.', opts:['for', 'to', 'for to'], a:1,
+       why:'Дальше идёт глагол ask: позвонила, чтобы спросить. Перед глаголом цель показывает to, а «for to» — ошибка.',
+       whyKk:'Одан кейін ask етістігі тұр: сұрақ қою үшін қоңырау шалды. Етістіктің алдында мақсатты to көрсетеді, ал «for to» — қате.'},
+      {t:'choice', q:'I went to the shop ___ bread.', opts:['for', 'to', 'for to'], a:0,
+       why:'Bread — существительное, перед ним цель показывает for. «To bread» не говорят.',
+       whyKk:'Bread — зат есім, оның алдында мақсатты for көрсетеді. «To bread» деп айтылмайды.'},
+      {t:'choice', q:'This machine is for ___ coffee.', opts:['make', 'to make', 'making'], a:2,
+       why:'После for глагол всегда с -ing: for making. Машина нужна, чтобы варить кофе.',
+       whyKk:'For-дан кейін етістік әрдайым -ing формасында келеді: for making. Бұл машина кофе жасауға арналған.'},
+      {t:'choice', q:'I went to the post office ___ a letter.', opts:['for to send', 'to send', 'sending'], a:1,
+       why:'Пошёл, чтобы отправить письмо, — цель-действие, значит to + глагол: to send. «For to send» — частая ошибка, такого сочетания нет.',
+       whyKk:'Хат жіберу үшін барды — мақсат әрекет, сондықтан to + етістік: to send. «For to send» — жиі кездесетін қате, мұндай тіркес жоқ.'},
+      {t:'order', ru:'Она копила деньги, чтобы купить новую машину.', kk:'Ол жаңа көлік сатып алу үшін ақша жинады.',
+       words:['She', 'saved', 'money', 'to', 'buy', 'a', 'new', 'car'], a:'She saved money to buy a new car'},
+      {t:'order', ru:'Этим приложением мы проверяем погоду.', kk:'Біз бұл қолданбаны ауа райын тексеру үшін пайдаланамыз.',
+       words:['We', 'use', 'this', 'app', 'for', 'checking', 'the', 'weather'], a:'We use this app for checking the weather'},
+    ]
+  },
+
+  p14: {
+    title:'First Conditional', subtitle:'Что будет, если…', subtitleKk:'Егер… болса, не болады',
+    rule:'Говоришь о том, что вполне может случиться, — бери if + Present Simple, а во второй части will + глагол: If it rains tomorrow, I will stay at home. После if will не ставят, хотя речь о будущем: If it rains, we will stay inside. Unless значит «если не»: Unless you hurry up, you will miss the train.',
+    ruleKk:'Болуы әбден мүмкін нәрсе туралы айтқанда if + Present Simple, ал екінші бөлігінде will + етістік қолданамыз: If it rains tomorrow, I will stay at home. Болашақ туралы айтсақ та, if-тен кейін will қойылмайды: If it rains, we will stay inside. Unless «егер … болмаса» дегенді білдіреді: Unless you hurry up, you will miss the train.',
+    examples:[
+      {en:'If you study hard, you will pass the exam.', ru:'Если будешь хорошо заниматься, сдашь экзамен.', kk:'Жақсы оқысаң, емтиханнан өтесің.'},
+      {en:'I will travel to London if I save enough money.', ru:'Я поеду в Лондон, если накоплю достаточно денег.', kk:'Жеткілікті ақша жинасам, Лондонға саяхатқа барамын.'},
+      {en:'If he drives too fast, he will have an accident.', ru:'Если он будет гнать, то попадёт в аварию.', kk:'Ол көлікті тым жылдам жүргізсе, апатқа ұшырайды.'},
+      {en:'He won’t pass the exam unless he starts studying.', ru:'Он не сдаст экзамен, если не начнёт заниматься.', kk:'Оқуды бастамаса, ол емтиханнан өтпейді.'},
+    ],
+    words:[
+      {en:'if', ru:'если', kk:'егер', ex:'If it rains tomorrow, I will stay at home.', g:'word'},
+      {en:'unless', ru:'если не', kk:'егер … болмаса', ex:'Unless you hurry up, you will miss the train.', g:'word'},
+      {en:'pass', ru:'сдать (экзамен)', kk:'(емтиханнан) өту', ex:'If you study hard, you will pass the exam.', g:'act'},
+      {en:'miss', ru:'опоздать (на поезд, автобус)', kk:'(пойызға, автобусқа) кешігу', ex:'If she comes late, we will miss the train.', g:'act'},
+      {en:'hurry up', ru:'поторопиться', kk:'асығу', ex:'If you don’t hurry up, you will miss the train.', g:'act'},
+      {en:'stay', ru:'остаться', kk:'қалу', ex:'If it rains, we will stay inside.', g:'act'},
+      {en:'travel', ru:'путешествовать, поехать', kk:'саяхаттау', ex:'I will travel to London if I save enough money.', g:'act'},
+      {en:'accident', ru:'авария', kk:'апат', ex:'If he drives too fast, he will have an accident.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'If it ___ tomorrow, I will stay at home.', opts:['will rain', 'rains', 'rain'], a:1,
+       why:'После if будущее передают через Present Simple, а с it нужно -s: it rains. «If it will rain» — самая частая ошибка в этой теме.',
+       whyKk:'if-тен кейін болашақ Present Simple арқылы беріледі, it-пен -s жалғанады: it rains. «If it will rain» — осы тақырыптағы ең жиі қате.'},
+      {t:'choice', q:'If she comes late, we ___ the train.', opts:['will miss', 'would miss', 'missed'], a:0,
+       why:'Часть с if стоит в Present Simple, значит во второй части will + глагол: will miss.',
+       whyKk:'if бөлігі Present Simple-да тұр, демек екінші бөлігінде will + етістік келеді: will miss.'},
+      {t:'choice', q:'The train leaves in five minutes. ___ you hurry up, you will miss it.', opts:['If', 'When', 'Unless'], a:2,
+       why:'Опоздаешь, если не поторопишься. «Если не» по-английски — unless: Unless you hurry up.',
+       whyKk:'Асықпасаң, пойызға кешігесің. «Егер … болмаса» мағынасын unless береді: Unless you hurry up.'},
+      {t:'choice', q:'What will you do if you ___ the bus?', opts:['will miss', 'miss', 'missed'], a:1,
+       why:'Даже в вопросе о будущем после if will не ставят: if you miss. Missed тоже не годится: в начале вопроса стоит will.',
+       whyKk:'Болашақ туралы сұрақта да if-тен кейін will қойылмайды: if you miss. Missed та келмейді, себебі сұрақтың басында will тұр.'},
+      {t:'order', ru:'Если устал, сделай перерыв.', kk:'Шаршасаң, үзіліс жаса.',
+       words:['If', 'you', 'are', 'tired,', 'take', 'a', 'break'], a:'If you are tired, take a break'},
+      {t:'order', ru:'Если пойдёт дождь, мы не пойдём гулять.', kk:'Жаңбыр жауса, біз далаға шықпаймыз.',
+       words:['We', 'won’t', 'go', 'out', 'if', 'it', 'rains'], a:'We won’t go out if it rains'},
+    ]
+  },
+
 
   /* Intermediate · Senior. Разбор, слова и задания сняты с самих роликов:
      слайды урока плюс речь преподавателя. Ролик здесь один, теория. */
@@ -2021,6 +2568,80 @@ window.TEXTS = {
        'The teacher smiles: "Come in and [sit down], please. Don’t [worry]."\n' +
        'In the library a boy is loud. The teacher says: "Be [quiet], please. Don’t [shout]." ' +
        'In the art room she says: "Don’t [touch] the paint, it’s wet." At home Mom says: "Wash your hands, please." At dinner Dad asks: "Pass the [salt], please."',
+
+  p1: 'Last Saturday Timur [woke up|wake up] early. He [drank|drink] a cup of tea, and his dad [drove|drive] him to the village. ' +
+      'They [visited|visit] Timur’s grandmother. She [gave|give] him a big plate of baursaks.\n' +
+      'In the evening they went to a shopping centre in Almaty, and Timur [bought|buy] new headphones. ' +
+      'He didn’t sleep in the car on the way home. Two days [ago] his teacher asked: "What did you do at the weekend?" ' +
+      'Timur told her everything, and [yesterday] he wrote a story about it.',
+
+  p2: 'Yesterday at 7 PM everyone in Dana’s family was busy. Her brother was [watching|watch] a football match on TV, ' +
+      'and Dana was [cooking|cook] dinner. Grandpa was [sleeping|sleep] on the sofa [while] the kids were playing outside.\n' +
+      '[Suddenly] the phone [rang|ring]. It was Aunt Saule: "I was [walking|walk] in the park, and I saw your old teacher. ' +
+      'What were you doing?" Dana laughed: "I wasn’t [relaxing|relax], I was cooking."',
+
+  p3: 'When Aruzhan was a [child], her family lived in a small village near Shymkent. She used to [ride] her bike to school every day. ' +
+      'Her best friend Madina used to [live] next door, but then she [moved|move] to Astana.\n' +
+      'Now Aruzhan lives in Almaty. There used to be a big [supermarket] near her flat, but now it’s a bank. ' +
+      'She didn’t use to like [seafood], but now she loves it. She used to wear [glasses], too. ' +
+      'Every summer her family used to go to the [seaside] in Aktau.',
+
+  p4: 'Timur has a maths exam tomorrow, and he is nervous. "I think I will [pass] it," he says, "but I’m not sure." ' +
+      'His sister Dana smiles: "You will [probably] get a good mark. I will help you, I [promise]."\n' +
+      'In the evening Timur says: "I’m really [thirsty]." Dana answers: "Wait, I will [bring] you some water." ' +
+      'Then the phone rings. "I will [answer] it," says Mom. Dad looks out of the window: "The [weather] will be sunny tomorrow." ' +
+      'Timur won’t [forget] this evening.',
+
+  p5: 'Timur has big plans. His family is going to [move] to a bigger flat [next month]. His sister Dana is going to study [abroad]. ' +
+      'Timur is going to [buy] a new laptop, but first he is going to wait for a [discount].\n' +
+      'Now Timur and his brother are in the park. Look at those black [clouds|cloud]. It is going to rain. ' +
+      'His brother is running on the wet path. "Stop, you are going to [fall]," Timur shouts. ' +
+      'A man is riding a bike too fast. He is going to have an [accident].',
+
+  p6: 'Aruzhan has a busy week. [Tonight] she is [meeting|meet] her friend Dana at 7 PM. On Tuesday her class is visiting the [museum]. ' +
+      'On Thursday her dad is [flying|fly] to Astana for work. He has already [booked|book] the [tickets|ticket].\n' +
+      'On Friday her big brother Timur is having a job [interview]. "When are you [leaving|leave]?" Aruzhan asks. ' +
+      '"At nine in the morning. The office is far." On Saturday the family isn’t going anywhere. They are staying at home.',
+
+  p7: 'Dana works at a bank in Almaty. All workers have to [wear] a [uniform], and the [rules|rule] are strict: you mustn’t be [late], ' +
+      'and you mustn’t [smoke] near the door. Yesterday Dana had to stay at work until 8 PM.\n' +
+      'Today she is tired, but she must finish an important [report]. She decided it herself. Her friend Timur is [sick], ' +
+      'so he doesn’t have to come to work. In the evening Dana doesn’t have to cook: her brother [orders|order] pizza.',
+
+  p8: 'Aidar has a terrible [headache] today. He asks his sister Aruzhan for [advice]. "You should take a [break] and drink some water," she says. ' +
+      '"And you shouldn’t play games at night." Aidar wants a new phone. "You should [save] money every month and [spend] less on sweets."\n' +
+      '"Should I [apologize] to Mom? I was rude yesterday." "Yes, you should. And don’t [worry] about small things." ' +
+      'Their dad should be home at six. He always comes [on time].',
+
+  p9: 'Last summer Timur [moved|move] from Shymkent to Astana for a new job. At first everything was hard. ' +
+      'He couldn’t [get used to] the cold wind, and the [noise] of the big city kept him awake at night.\n' +
+      'Now he is slowly [getting used to|get used to] [getting up|get up] at six, and the new work [schedule] doesn’t seem so strange anymore. ' +
+      'He has got used to [spicy] food and to living [alone]. "People can [adapt] to anything," he says.',
+
+  p10: 'On Saturday Dana and her brother Timur want to bake a cake for Mom. Dana opens the [fridge]: there are [a few] eggs, ' +
+       'but there isn’t [any] milk. "We [need] milk and some [sugar]," she says.\n' +
+       'Timur looks in his pocket. He has only [a little] money, just a few [coins|coin]. Is it [enough]? ' +
+       'At the shop they buy milk, but the sugar costs too much. Luckily, Grandma has a lot of sugar at home.',
+
+  p11: 'Last week Aidar had an English exam. The night before, he was very [tired], [so] he went to bed early. ' +
+       '[Although] he didn’t study much, he [passed|pass] the exam.\n' +
+       'After that he wanted to buy new headphones in a shop in Almaty. [However], they were too [expensive]. ' +
+       'He didn’t buy them [because] he was saving money for a trip. On the way home the bus was late, and he [missed|miss] his favorite TV show.',
+
+  p12: 'My friend Timur loves to travel. He has been to Turkey and China, but he has [never] visited Japan. He often asks me: "Have you [ever] been abroad?" ' +
+       'I always say no. We have been friends [since] primary school, and I love his stories.\n' +
+       'Timur’s family is waiting for guests from Shymkent. "Have they arrived [yet]?" asks his mom. "Yes, they have [just] come," says Timur. ' +
+       'He has [already] [met|meet] them at the station. Now he can’t find his phone. He has [lost|lose] it again.',
+
+  p13: 'Aruzhan has a busy Saturday. In the morning she goes to the [library] to study for her exam. ' +
+       'Then she goes to the [post office] to send a letter to her grandma in Taraz.\n' +
+       'She is [saving|save] money for a new phone, so at the shop she buys only [bread]. At home Dad shows her a new [tool] for cutting wood. ' +
+       'In the evening her class has an online [meeting]. Then Aruzhan calls Dana to [ask] a question and uses an app for [checking|check] the weather.',
+
+  p14: 'Dana has a big exam on Monday. Her mom says: "[If] you study this weekend, you will [pass] it." ' +
+       'Dana wants to see a film, but she decides to [stay] at home. "[Unless] I study, I will fail," she thinks.\n' +
+       'On Monday Dana gets up late. "[Hurry up], or you will [miss] the bus," says her brother. Dad drives her to school, but not too fast: ' +
+       '"If I drive too fast, we will have an [accident]." Dana smiles: "If I get a good mark, I will [travel] to Astana in summer."',
 
   i1: 'Last Friday was a bad day. I left work late, and [by the time] I [arrived|arrive] at the station, my train had gone. ' +
       'Then I [realized|realize] that I had left my wallet in the office.\n' +
