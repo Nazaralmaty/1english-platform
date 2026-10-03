@@ -742,20 +742,568 @@ window.CONTENT = {
     ]
   },
 
-  /* Elementary · Damu */
-  e1:  { title:'To Be' },
-  e2:  { title:'Possessive Adjectives' },
-  e3:  { title:'Possessive Pronouns' },
-  e4:  { title:'Articles' },
-  e5:  { title:'Demonstratives' },
-  e6:  { title:'There Is' },
-  e7:  { title:'Have Got' },
-  e8:  { title:'Present Continuous' },
-  e9:  { title:'Present Simple' },
-  e10: { title:'Would You' },
-  e11: { title:'Adverbs' },
-  e12: { title:'Prepositions of Place' },
-  e14: { title:'Imperatives' },
+  /* Elementary · Damu. Материал снят с двух роликов урока: теория дала
+     правило и примеры со слайдов, практика — слова и задания. */
+  e1: {
+    title:'To Be', subtitle:'Кто, где и какой', subtitleKk:'Кім, қайда және қандай',
+    rule:'По-русски говорим «я дома», «мне 12 лет» без глагола, а по-английски на это место ставим am, is или are: I am at home, I am 12 years old. am идёт только с I, is — с he, she, it, are — с we, you, they. Для «не» добавляем not: He is not my brother, а в вопросе am, is, are встают первыми: Are they friends?',
+    ruleKk:'Қазақша «мен үйдемін», «мен 12 жастамын» деп етістіксіз айтамыз, ал ағылшынша бұл орынға am, is немесе are қойылады: I am at home, I am 12 years old. am тек I-мен, is — he, she, it-пен, are — we, you, they-мен келеді. Болымсыз сөйлемде not қосамыз: He is not my brother, ал сұрақта am, is, are сөйлемнің басына шығады: Are they friends?',
+    examples:[
+      {en:'My mother is a doctor.', ru:'Моя мама — врач.', kk:'Анам — дәрігер.'},
+      {en:'I am 12 years old.', ru:'Мне 12 лет.', kk:'Мен 12 жастамын.'},
+      {en:'They are not in the room.', ru:'Их нет в комнате.', kk:'Олар бөлмеде емес.'},
+      {en:'Is she a teacher?', ru:'Она учительница?', kk:'Ол мұғалім бе?'},
+    ],
+    words:[
+      {en:'awake', ru:'проснувшийся, не спит', kk:'ояу, оянған', ex:'I am awake.', g:'sign'},
+      {en:'sleepy', ru:'сонный', kk:'ұйқысы келген', ex:'He is sleepy. He is not awake.', g:'sign'},
+      {en:'ready', ru:'готовый', kk:'дайын', ex:'We are ready to learn English.', g:'sign'},
+      {en:'hungry', ru:'голодный', kk:'қарны ашқан', ex:'This is my cat. It’s hungry.', g:'sign'},
+      {en:'classmate', ru:'одноклассник', kk:'сыныптас', ex:'They are my classmates.', g:'thing'},
+      {en:'doctor', ru:'врач', kk:'дәрігер', ex:'My mother is a doctor.', g:'thing'},
+      {en:'room', ru:'комната', kk:'бөлме', ex:'My room is clean.', g:'thing'},
+      {en:'outside', ru:'на улице, снаружи', kk:'сыртта, далада', ex:'It is warm outside.', g:'word'},
+    ],
+    tasks:[
+      {t:'choice', q:'My mom ___ a teacher.', opts:['am', 'is', 'are'], a:1,
+       why:'Мама — это одна она, she, а с she ставим is.',
+       whyKk:'Анам — бір адам, яғни she, ал she-мен is келеді.'},
+      {t:'choice', q:'We ___ at the park.', opts:['are', 'is', 'am'], a:0,
+       why:'С we всегда are. is говорят про одного человека или предмет, am — только про себя, с I.',
+       whyKk:'we-мен әрқашан are келеді. is бір адам не бір зат туралы айтылады, am тек I-мен келеді.'},
+      {t:'choice', q:'Timur is at school now. He ___ at home.', opts:['is', 'are not', 'is not'], a:2,
+       why:'Тимур в школе, значит дома его нет: is not. С he are не ставят.',
+       whyKk:'Тимур мектепте, демек үйде жоқ: is not. he-мен are қолданылмайды.'},
+      {t:'choice', q:'___ they your classmates? — Yes, they are.', opts:['Is', 'Am', 'Are'], a:2,
+       why:'В вопросе глагол встаёт первым, а с they это are. Ответ подсказывает то же: they are.',
+       whyKk:'Сұрақта етістік бірінші тұрады, they-мен are келеді. Жауаптың өзі де айтып тұр: they are.'},
+      {t:'order', ru:'Ты готов к новому дню?', kk:'Бүгінгі күнге дайынсың ба?',
+       words:['Are', 'you', 'ready', 'for', 'the', 'day'], a:'Are you ready for the day'},
+      {t:'order', ru:'Их нет в комнате.', kk:'Олар бөлмеде емес.',
+       words:['They', 'are', 'not', 'in', 'the', 'room'], a:'They are not in the room'},
+    ]
+  },
+
+  e2: {
+    title:'Possessive Adjectives', subtitle:'Мой, твой, его, её', subtitleKk:'Менің, сенің, оның',
+    rule:'Чтобы сказать, чьё это, ставим перед предметом my, your, his, her, its, our, their: my mother, our family, their house. his — про мальчика или мужчину, her — про девочку или женщину, its — про животное или вещь: The dog is wagging its tail. Это слово всегда стоит перед предметом, а не после: this is my book, а не this is book my.',
+    ruleKk:'Зат кімдікі екенін айту үшін оның алдына my, your, his, her, its, our, their қоямыз: my mother, our family, their house. his — ұл бала не ер адам туралы, her — қыз бала не әйел туралы, its — жануар не зат туралы: The dog is wagging its tail. Бұл сөз әрқашан заттың алдында тұрады, артында емес: this is my book деп айтамыз, this is book my деп айтпаймыз.',
+    examples:[
+      {en:'His father is strong.', ru:'Его папа сильный.', kk:'Оның әкесі күшті.'},
+      {en:'Her eyes are green.', ru:'У неё зелёные глаза.', kk:'Оның көзі жасыл.'},
+      {en:'Their friends are at school.', ru:'Их друзья в школе.', kk:'Олардың достары мектепте.'},
+      {en:'This is our house.', ru:'Это наш дом.', kk:'Бұл — біздің үйіміз.'},
+    ],
+    words:[
+      {en:'grandparents', ru:'бабушка и дедушка', kk:'ата-әже', ex:'Our grandparents are old.', g:'thing'},
+      {en:'best friend', ru:'лучший друг, лучшая подруга', kk:'ең жақын дос', ex:'Her best friend is kind.', g:'thing'},
+      {en:'jacket', ru:'куртка', kk:'күрте', ex:'Your jacket is green.', g:'thing'},
+      {en:'tail', ru:'хвост', kk:'құйрық', ex:'The dog is wagging its tail.', g:'thing'},
+      {en:'wag', ru:'вилять (хвостом)', kk:'(құйрығын) бұлғаңдату', ex:'The dog is wagging its tail.', g:'act'},
+      {en:'strong', ru:'сильный', kk:'күшті', ex:'His father is strong.', g:'sign'},
+      {en:'kind', ru:'добрый', kk:'мейірімді', ex:'My father is kind.', g:'sign'},
+      {en:'funny', ru:'смешной, весёлый', kk:'күлкілі, көңілді', ex:'My friend is funny.', g:'sign'},
+    ],
+    tasks:[
+      {t:'choice', q:'I have a pen. This is ___ pen.', opts:['my', 'me', 'I'], a:0,
+       why:'Ручка моя, и перед предметом ставим my. me и I перед словом pen не ставят.',
+       whyKk:'Қалам менікі, заттың алдына my қоямыз. me мен I pen сөзінің алдында тұрмайды.'},
+      {t:'choice', q:'She has a dog. ___ dog is fast.', opts:['His', 'Her', 'She'], a:1,
+       why:'Собака девочки, поэтому her. his было бы про мальчика.',
+       whyKk:'Ит қыз баланікі, сондықтан her. his ұл бала туралы айтылады.'},
+      {t:'choice', q:'Look at the dog. It is wagging ___ tail.', opts:['it', 'it’s', 'its'], a:2,
+       why:'Хвост собаки, а про животное говорим its. it’s с апострофом значит it is.',
+       whyKk:'Құйрық иттікі, жануар туралы its дейміз. Апострофы бар it’s — бұл it is.'},
+      {t:'choice', q:'Aidar and Arman are brothers. ___ house is big.', opts:['Their', 'They', 'There'], a:0,
+       why:'Дом принадлежит двум братьям — their. They значит просто «они», а there — «там».',
+       whyKk:'Үй екі ағайындыға тиесілі — their. They — жай ғана «олар», ал there — «сонда».'},
+      {t:'order', ru:'Это твой карандаш?', kk:'Бұл сенің қарындашың ба?',
+       words:['Is', 'this', 'your', 'pencil'], a:'Is this your pencil'},
+      {t:'order', ru:'Её лучшая подруга добрая.', kk:'Оның ең жақын құрбысы мейірімді.',
+       words:['Her', 'best', 'friend', 'is', 'kind'], a:'Her best friend is kind'},
+    ]
+  },
+
+  e3: {
+    title:'Possessive Pronouns', subtitle:'Сказать «моё», не называя вещь', subtitleKk:'Затты атамай «менікі» деу',
+    rule:'mine, yours, his, hers, ours, theirs значат «мой, твой, его, её, наш, их», но саму вещь после них уже не называют: This pen is mine — «Эта ручка моя». Сравни: my book, но The book is mine; mine book сказать нельзя. Почти все они кончаются на s, а his не меняется: his hat — This hat is his.',
+    ruleKk:'mine, yours, his, hers, ours, theirs «менікі, сенікі, оныкі, біздікі, олардікі» дегенді білдіреді, олардан кейін зат аталмайды: This pen is mine — «Бұл қалам менікі». Салыстыр: my book, бірақ The book is mine; mine book деп айтуға болмайды. Бұлардың көбі s әрпімен бітеді, ал his өзгермейді: his hat — This hat is his.',
+    examples:[
+      {en:'The book is mine.', ru:'Книга моя.', kk:'Кітап менікі.'},
+      {en:'The bag is hers.', ru:'Сумка её.', kk:'Сөмке оныкі.'},
+      {en:'This house is ours.', ru:'Этот дом наш.', kk:'Бұл үй біздікі.'},
+      {en:'These toys are theirs.', ru:'Эти игрушки их.', kk:'Бұл ойыншықтар олардікі.'},
+    ],
+    words:[
+      {en:'mine', ru:'мой, моя, моё (без вещи после)', kk:'менікі', ex:'The book is mine.', g:'word'},
+      {en:'yours', ru:'твой, ваш (без вещи после)', kk:'сенікі, сіздікі', ex:'The pencil is yours.', g:'word'},
+      {en:'hers', ru:'её (без вещи после)', kk:'оныкі (қыз, әйел)', ex:'The phone is hers.', g:'word'},
+      {en:'theirs', ru:'их (без вещи после)', kk:'олардікі', ex:'That bicycle is theirs.', g:'word'},
+      {en:'hat', ru:'шапка', kk:'бас киім', ex:'This hat is his.', g:'thing'},
+      {en:'phone', ru:'телефон', kk:'телефон', ex:'This is her phone.', g:'thing'},
+      {en:'toy', ru:'игрушка', kk:'ойыншық', ex:'These toys are theirs.', g:'thing'},
+      {en:'scarf', ru:'шарф', kk:'мойынорағыш', ex:'The red scarf is his.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'This jacket is ___.', opts:['my', 'mine', 'I'], a:1,
+       why:'После is вещь уже не называют, поэтому mine. my ставят только перед вещью: my jacket.',
+       whyKk:'is-тен кейін зат аталмайды, сондықтан mine. my тек заттың алдында тұрады: my jacket.'},
+      {t:'choice', q:'Ali and Ainur play with these toys. The toys are ___.', opts:['theirs', 'they', 'their'], a:0,
+       why:'Игрушки принадлежат Али и Айнур, а после are вещи нет — theirs. they значит просто «они», а their ставят перед вещью: their toys.',
+       whyKk:'Ойыншықтар Әли мен Айнұрдікі, are-дан кейін зат жоқ — theirs. they — жай ғана «олар», ал their заттың алдында келеді: their toys.'},
+      {t:'choice', q:'The red scarf is ___.', opts:['him', 'he', 'his'], a:2,
+       why:'his одинаковый и с вещью, и без неё: his scarf, The scarf is his. him значит «его, ему», а не «его вещь».',
+       whyKk:'his затпен де, затсыз да бірдей: his scarf, The scarf is his. him — «оны, оған» деген сөз, «оныкі» емес.'},
+      {t:'choice', q:'Dana has a new phone. The phone is ___.', opts:['her', 'hers', 'she'], a:1,
+       why:'Телефон Даны, а после is вещи нет — hers. her ставят перед вещью: her phone.',
+       whyKk:'Телефон Дананікі, is-тен кейін зат жоқ — hers. her заттың алдында келеді: her phone.'},
+      {t:'order', ru:'Эта ручка моя.', kk:'Бұл қалам менікі.',
+       words:['This', 'pen', 'is', 'mine'], a:'This pen is mine'},
+      {t:'order', ru:'Нет, карандаш не твой.', kk:'Жоқ, қарындаш сенікі емес.',
+       words:['No,', 'the', 'pencil', 'is', 'not', 'yours'], a:'No, the pencil is not yours'},
+    ]
+  },
+
+  e4: {
+    title:'Articles', subtitle:'Какой-то или тот самый', subtitleKk:'Әйтеуір бір ме, әлде дәл сол ма',
+    rule:'Когда говоришь о предмете впервые или тебе подойдёт любой один, ставь a, а перед гласным звуком an: I saw a dog, an apple, an hour. Когда уже ясно, о каком именно речь, или он такой один на свете, ставь the: The dog was very friendly, the sun. Если предметов много или их не посчитать, a не нужно: I like books, I need water.',
+    ruleKk:'Бір затты алғаш рет айтсақ немесе кез келген біреуі бола берсе, a қоямыз, ал дауысты дыбыстың алдында an: I saw a dog, an apple, an hour. Қай зат туралы айтып тұрғанымыз белгілі болса немесе ол әлемде біреу ғана болса, the қоямыз: The dog was very friendly, the sun. Зат көп болса немесе оны санауға келмесе, a қойылмайды: I like books, I need water.',
+    examples:[
+      {en:'I saw a cat. The cat was black.', ru:'Я увидел кошку. Кошка была чёрная.', kk:'Мен бір мысық көрдім. Ол мысық қара еді.'},
+      {en:'He is an engineer.', ru:'Он инженер.', kk:'Ол — инженер.'},
+      {en:'Close the door, please.', ru:'Закрой, пожалуйста, дверь.', kk:'Есікті жауып жіберші.'},
+      {en:'I need water.', ru:'Мне нужна вода.', kk:'Маған су керек.'},
+    ],
+    words:[
+      {en:'kettle', ru:'чайник', kk:'шәйнек', ex:'Please pass me the kettle.', g:'thing'},
+      {en:'cookie', ru:'печенье', kk:'печенье', ex:'My mom is eating a cookie.', g:'thing'},
+      {en:'folder', ru:'папка', kk:'папка', ex:'Is it the big blue folder?', g:'thing'},
+      {en:'uncle', ru:'дядя', kk:'аға, нағашы', ex:'I have an uncle in Astana.', g:'thing'},
+      {en:'engineer', ru:'инженер', kk:'инженер', ex:'He is an engineer.', g:'thing'},
+      {en:'hour', ru:'час', kk:'сағат', ex:'The lesson is an hour long.', g:'time'},
+      {en:'need', ru:'нужно, нуждаться', kk:'керек болу', ex:'I need an apple.', g:'act'},
+      {en:'forget', ru:'забыть', kk:'ұмыту', ex:'Oh no, I forgot my folder at home.', g:'act'},
+    ],
+    tasks:[
+      {t:'choice', q:'I saw a cat in the park. ___ cat was black.', opts:['A', 'The', 'An'], a:1,
+       why:'Кошку уже упомянули, теперь ясно, о какой речь, — the.',
+       whyKk:'Мысық бұрын аталды, енді қай мысық екені белгілі — the.'},
+      {t:'choice', q:'The lesson is ___ hour long.', opts:['an', 'a', 'the'], a:0,
+       why:'hour пишется с h, но h не читается, и слово начинается с гласного звука «ауэр». Поэтому an.',
+       whyKk:'hour h әрпімен жазылады, бірақ h оқылмайды, сөз «ауэр» деген дауысты дыбыстан басталады. Сондықтан an.'},
+      {t:'choice', q:'Look at ___ moon. It is so big tonight.', opts:['a', 'an', 'the'], a:2,
+       why:'Луна на небе одна, поэтому the moon, как the sun и the earth.',
+       whyKk:'Аспанда ай біреу ғана, сондықтан the moon дейміз, the sun, the earth сияқты.'},
+      {t:'choice', q:'I am thirsty. I need ___.', opts:['a water', 'water', 'an water'], a:1,
+       why:'Воду не посчитать штуками, поэтому a перед water не ставим. Говорим просто I need water.',
+       whyKk:'Суды данамен санамаймыз, сондықтан water-дің алдына a қойылмайды. Жай ғана I need water дейміз.'},
+      {t:'order', ru:'Передай мне, пожалуйста, чайник.', kk:'Шәйнекті беріп жіберші.',
+       words:['Please', 'pass', 'me', 'the', 'kettle'], a:'Please pass me the kettle'},
+      {t:'order', ru:'Мой дядя — инженер.', kk:'Нағашы ағам — инженер.',
+       words:['My', 'uncle', 'is', 'an', 'engineer'], a:'My uncle is an engineer'},
+    ]
+  },
+
+  e5: {
+    title:'Demonstratives', subtitle:'Показать, что близко и что далеко', subtitleKk:'Жақындағы мен алыстағыны көрсету',
+    rule:'Близкий предмет, который можно взять в руку, — this, а если близких предметов много — these: this book, these apples. Далёкий предмет, который видишь, но не достанешь, — that, а много далёких — those: that house, those birds. После this и that ставь is, после these и those — are: These are my friends.',
+    ruleKk:'Қолмен ұстауға болатын жақын бір затты this деп, жақын заттар көп болса these деп көрсетеміз: this book, these apples. Көзің көріп тұр, бірақ қолың жетпейтін алыстағы бір зат — that, алыстағы көп зат — those: that house, those birds. this және that сөздерінен кейін is, these және those сөздерінен кейін are келеді: These are my friends.',
+    examples:[
+      {en:'This is my friend.', ru:'Это мой друг.', kk:'Бұл менің досым.'},
+      {en:'That car is new.', ru:'Вон та машина новая.', kk:'Анау көлік жаңа.'},
+      {en:'These apples are sweet.', ru:'Эти яблоки сладкие.', kk:'Мына алмалар тәтті.'},
+      {en:'Those cars are expensive.', ru:'Вон те машины дорогие.', kk:'Анау көліктер қымбат.'},
+    ],
+    words:[
+      {en:'this', ru:'это, этот', kk:'бұл, мынау', ex:'This book is interesting.', g:'word'},
+      {en:'that', ru:'то, вон тот', kk:'анау', ex:'That car is new.', g:'word'},
+      {en:'these', ru:'эти', kk:'мыналар, бұлар', ex:'These are my friends.', g:'word'},
+      {en:'those', ru:'те, вон те', kk:'аналар', ex:'Those are trees.', g:'word'},
+      {en:'pencil', ru:'карандаш', kk:'қарындаш', ex:'These are pencils.', g:'thing'},
+      {en:'shoe', ru:'туфля, ботинок', kk:'аяқ киім', ex:'I like these shoes.', g:'thing'},
+      {en:'sweet', ru:'сладкий', kk:'тәтті', ex:'These apples are sweet.', g:'sign'},
+      {en:'noisy', ru:'шумный', kk:'шулы', ex:'Those children are noisy.', g:'sign'},
+    ],
+    tasks:[
+      {t:'choice', q:'I have three pencils in my hand. ___ are my pencils.', opts:['These', 'This', 'Those'], a:0,
+       why:'Карандаши у меня в руке, и их три — близко и много. Значит these. Those говорят о том, что далеко.',
+       whyKk:'Қарындаштар қолымда, үшеуі де жақын әрі көп. Сондықтан these. Those алыстағы заттарға айтылады.'},
+      {t:'choice', q:'The house is far from us. ___ house is very big.', opts:['This', 'That', 'These'], a:1,
+       why:'Дом далеко, и он один — that. These ставят перед словом во множественном числе: these houses.',
+       whyKk:'Үй алыста тұр, әрі біреу ғана — that. These көпше түрдегі сөзбен келеді: these houses.'},
+      {t:'choice', q:'Those children ___ noisy.', opts:['is', 'am', 'are'], a:2,
+       why:'Those — это несколько предметов, children — несколько детей. Значит are, как после they.',
+       whyKk:'Those — бірнеше зат, children да бірнеше бала. Сондықтан they-дегідей are қойылады.'},
+      {t:'choice', q:'The birds are far away in the sky. ___ birds are flying.', opts:['Those', 'That', 'These'], a:0,
+       why:'Птицы в небе далеко, и их несколько. Далеко и много — those. That подходит только для одного предмета.',
+       whyKk:'Құстар аспанда, яғни алыста, әрі бірнешеу. Алыс әрі көп — those. That тек бір затқа айтылады.'},
+      {t:'order', ru:'Мне не нравятся вон те туфли.', kk:'Маған анау аяқ киім ұнамайды.',
+       words:['I', 'don’t', 'like', 'those', 'shoes'], a:'I don’t like those shoes'},
+      {t:'order', ru:'Это твоя сумка?', kk:'Бұл сенің сөмкең бе?',
+       words:['Is', 'this', 'your', 'bag'], a:'Is this your bag'},
+    ]
+  },
+
+  e6: {
+    title:'There Is, There Are', subtitle:'Сказать, что где есть', subtitleKk:'Не қайда бар екенін айту',
+    rule:'Чтобы сказать, что где-то что-то есть, начинай с there is, если предмет один или его не считают (вода, молоко), и с there are, если предметов несколько: There is a table in the room. There are many books on the shelf. В вопросе is или are встаёт перед there, а в отрицании к ним добавляется not: Is there a cat? There aren’t any people.',
+    ruleKk:'Бір жерде бір нәрсе бар екенін айтқанда, зат біреу болса не ол саналмайтын болса (су, сүт), there is, ал зат бірнешеу болса, there are аламыз: There is a table in the room. There are many books on the shelf. Сұрақта is не are there сөзінің алдына шығады, ал болымсыз сөйлемде оларға not қосылады: Is there a cat? There aren’t any people.',
+    examples:[
+      {en:'There is a book on the table.', ru:'На столе есть книга.', kk:'Үстелде бір кітап бар.'},
+      {en:'There are three apples in the bag.', ru:'В сумке три яблока.', kk:'Сөмкеде үш алма бар.'},
+      {en:'There isn’t a dog in the room.', ru:'В комнате нет собаки.', kk:'Бөлмеде ит жоқ.'},
+      {en:'Are there any books in the library?', ru:'В библиотеке есть книги?', kk:'Кітапханада кітаптар бар ма?'},
+    ],
+    words:[
+      {en:'some', ru:'несколько, немного', kk:'біраз, бірнеше', ex:'There are some flowers in the garden.', g:'word'},
+      {en:'any', ru:'какие-нибудь, никаких', kk:'ешқандай, қандай да бір', ex:'Are there any students in the class?', g:'word'},
+      {en:'many', ru:'много', kk:'көп', ex:'There are many students in the class.', g:'word'},
+      {en:'shelf', ru:'полка', kk:'сөре', ex:'There are many books on the shelf.', g:'thing'},
+      {en:'toy', ru:'игрушка', kk:'ойыншық', ex:'There are some toys on the floor.', g:'thing'},
+      {en:'floor', ru:'пол', kk:'еден', ex:'There is a ball on the floor.', g:'thing'},
+      {en:'fridge', ru:'холодильник', kk:'тоңазытқыш', ex:'There is milk in the fridge.', g:'thing'},
+      {en:'outside', ru:'за, снаружи', kk:'сыртында', ex:'There is a tree outside the window.', g:'word'},
+    ],
+    tasks:[
+      {t:'choice', q:'There ___ three apples in the bag.', opts:['is', 'are', 'am'], a:1,
+       why:'Яблок три, значит их несколько — there are. There is оставь для одного предмета.',
+       whyKk:'Алма үшеу, яғни бірнешеу — there are. There is бір затқа ғана айтылады.'},
+      {t:'choice', q:'There ___ milk in the fridge.', opts:['is', 'are', 'be'], a:0,
+       why:'Молоко по штукам не посчитаешь, а с такими словами всегда there is, даже если молока много.',
+       whyKk:'Сүтті дана деп санай алмаймыз, ал саналмайтын заттармен әрқашан there is келеді, көп болса да.'},
+      {t:'choice', q:'___ there a TV in your room?', opts:['Are', 'Do', 'Is'], a:2,
+       why:'Телевизор один, значит is. В вопросе is встаёт перед there: Is there a TV?',
+       whyKk:'Теледидар біреу, сондықтан is. Сұрақта is there сөзінің алдына шығады: Is there a TV?'},
+      {t:'choice', q:'There aren’t ___ chairs here.', opts:['some', 'any', 'a'], a:1,
+       why:'В отрицании и в вопросе ставят any. Some — для утвердительного предложения, а a — только для одного предмета.',
+       whyKk:'Болымсыз сөйлем мен сұрақта any қойылады. Some болымды сөйлемде келеді, ал a тек бір затпен айтылады.'},
+      {t:'order', ru:'На полке много книг.', kk:'Сөреде көп кітап бар.',
+       words:['There', 'are', 'many', 'books', 'on', 'the', 'shelf'], a:'There are many books on the shelf'},
+      {t:'order', ru:'В комнате есть кошка?', kk:'Бөлмеде мысық бар ма?',
+       words:['Is', 'there', 'a', 'cat', 'in', 'the', 'room'], a:'Is there a cat in the room'},
+    ]
+  },
+
+  e7: {
+    title:'Have Got, Has Got', subtitle:'Рассказать, что у тебя есть', subtitleKk:'Өзіңде не бар екенін айту',
+    rule:'Чтобы сказать «у меня есть», бери have got с I, you, we, they и has got с he, she, it: I have got a brother. She has got blue eyes. В отрицании not прилипает к have или has — haven’t got, hasn’t got, а в вопросе have или has встаёт вперёд: Have you got a dog?',
+    ruleKk:'«Менде бар» деу үшін I, you, we, they-мен have got, ал he, she, it-пен has got аламыз: I have got a brother. She has got blue eyes. Болымсыз сөйлемде not have не has сөзіне жалғанады — haven’t got, hasn’t got, ал сұрақта have не has сөйлемнің басына шығады: Have you got a dog?',
+    examples:[
+      {en:'I have got a brother.', ru:'У меня есть брат.', kk:'Менің інім бар.'},
+      {en:'She has got a big family.', ru:'У неё большая семья.', kk:'Оның үлкен отбасы бар.'},
+      {en:'We haven’t got a garden.', ru:'У нас нет сада.', kk:'Біздің бағымыз жоқ.'},
+      {en:'Has she got a computer?', ru:'У неё есть компьютер?', kk:'Оның компьютері бар ма?'},
+    ],
+    words:[
+      {en:'brother', ru:'брат', kk:'аға, іні', ex:'I have got a brother.', g:'thing'},
+      {en:'sister', ru:'сестра', kk:'әпке, сіңлі', ex:'He hasn’t got a sister.', g:'thing'},
+      {en:'eye', ru:'глаз', kk:'көз', ex:'He has got blue eyes.', g:'thing'},
+      {en:'long', ru:'длинный', kk:'ұзын', ex:'My sister has got long hair.', g:'sign'},
+      {en:'doll', ru:'кукла', kk:'қуыршақ', ex:'She has got a beautiful doll.', g:'thing'},
+      {en:'tail', ru:'хвост', kk:'құйрық', ex:'It has got a long tail.', g:'thing'},
+      {en:'a lot of', ru:'много', kk:'көп', ex:'We have got a lot of friends.', g:'word'},
+      {en:'homework', ru:'домашнее задание', kk:'үй тапсырмасы', ex:'We have got a lot of homework.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'My sister ___ long hair.', opts:['have got', 'has got', 'is got'], a:1,
+       why:'My sister — это she, а с he, she, it идёт has got. Have got — для I, you, we, they.',
+       whyKk:'My sister — ол she, ал he, she, it-пен has got келеді. Have got I, you, we, they-ге арналған.'},
+      {t:'choice', q:'___ you got a bike?', opts:['Has', 'Do', 'Have'], a:2,
+       why:'Вопрос начинается с have или has. С you нужно have: Have you got a bike?',
+       whyKk:'Сұрақ have не has сөзінен басталады. you-мен have келеді: Have you got a bike?'},
+      {t:'choice', q:'The dog ___ small ears.', opts:['has got', 'have got', 'is'], a:0,
+       why:'Одна собака — это it, значит has got. Have got говорят про I, you, we, they.',
+       whyKk:'Бір ит — ол it, сондықтан has got. Have got I, you, we, they туралы айтылады.'},
+      {t:'choice', q:'Aidar has got two brothers, but he ___ a sister.', opts:['haven’t got', 'doesn’t got', 'hasn’t got'], a:2,
+       why:'Aidar — это he, поэтому hasn’t got. Doesn’t got не бывает: not прилипает прямо к has.',
+       whyKk:'Aidar — ол he, сондықтан hasn’t got. Doesn’t got деген түр жоқ: not тікелей has сөзіне жалғанады.'},
+      {t:'order', ru:'У неё есть красивая кукла.', kk:'Оның әдемі қуыршағы бар.',
+       words:['She', 'has', 'got', 'a', 'beautiful', 'doll'], a:'She has got a beautiful doll'},
+      {t:'order', ru:'У тебя есть ноутбук?', kk:'Сенің ноутбугың бар ма?',
+       words:['Have', 'you', 'got', 'a', 'laptop'], a:'Have you got a laptop'},
+    ]
+  },
+
+  e8: {
+    title:'Present Continuous', subtitle:'Рассказать, что происходит сейчас', subtitleKk:'Дәл қазір не болып жатқанын айту',
+    rule:'Чтобы сказать, что происходит прямо сейчас, бери am, is или are и глагол с -ing: I am reading a book. She is playing football. Без am, is, are нельзя: не I reading, а I am reading. Для «не» добавь not — She isn’t sleeping, а для вопроса поставь am, is или are вперёд — Are you reading?',
+    ruleKk:'Дәл қазір болып жатқан әрекетті айту үшін am, is не are және -ing жалғанған етістікті аламыз: I am reading a book. She is playing football. am, is, are сөздерін түсіріп тастауға болмайды: I reading емес, I am reading. Болымсыз сөйлемде not қосамыз — She isn’t sleeping, ал сұрақта am, is не are сөйлемнің басына шығады — Are you reading?',
+    examples:[
+      {en:'She is talking on the phone.', ru:'Она сейчас говорит по телефону.', kk:'Ол қазір телефонмен сөйлесіп жатыр.'},
+      {en:'I am not watching TV.', ru:'Я не смотрю телевизор.', kk:'Мен теледидар көріп жатқан жоқпын.'},
+      {en:'What are they doing?', ru:'Что они делают?', kk:'Олар не істеп жатыр?'},
+      {en:'I am living in Astana these days.', ru:'Сейчас я живу в Астане.', kk:'Мен осы күндері Астанада тұрып жатырмын.'},
+    ],
+    words:[
+      {en:'now', ru:'сейчас', kk:'қазір', ex:'I am reading now.', g:'time'},
+      {en:'at the moment', ru:'в этот момент, сейчас', kk:'дәл осы сәтте', ex:'I am washing the dishes at the moment.', g:'time'},
+      {en:'sit', ru:'сидеть', kk:'отыру', ex:'His sister is sitting on a bench.', g:'act'},
+      {en:'run', ru:'бегать, бежать', kk:'жүгіру', ex:'A small dog is running around.', g:'act'},
+      {en:'ride', ru:'кататься, ехать', kk:'(велосипед) тебу, міну', ex:'Two girls are riding their bikes.', g:'act'},
+      {en:'wear', ru:'носить, быть одетым в', kk:'кию, тағу', ex:'He is wearing glasses.', g:'act'},
+      {en:'bench', ru:'скамейка', kk:'орындық', ex:'There is a bench under the big tree.', g:'thing'},
+      {en:'newspaper', ru:'газета', kk:'газет', ex:'An old man is reading a newspaper.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'Look, the children ___ football in the yard.', opts:['is playing', 'are playing', 'play'], a:1,
+       why:'Children — это они, значит are. «Посмотри» — значит происходит прямо сейчас: are playing.',
+       whyKk:'Children — олар, сондықтан are. «Қара» деп тұрмыз, демек әрекет дәл қазір болып жатыр: are playing.'},
+      {t:'choice', q:'I ___ not watching TV.', opts:['am', 'is', 'are'], a:0,
+       why:'С I всегда am. Is ставят с he, she, it, а are — с you, we, they.',
+       whyKk:'I-мен әрқашан am келеді. Is — he, she, it-пен, ал are — you, we, they-мен.'},
+      {t:'choice', q:'Be quiet. The baby is ___.', opts:['sleep', 'sleeps', 'sleeping'], a:2,
+       why:'После is нужен глагол с -ing: is sleeping. Просто sleep или sleeps после is не ставят.',
+       whyKk:'is сөзінен кейін -ing жалғанған етістік керек: is sleeping. Одан кейін sleep те, sleeps те тұрмайды.'},
+      {t:'choice', q:'His sister is ___ on a bench.', opts:['siting', 'sitting', 'sits'], a:1,
+       why:'В sit одна короткая гласная, а в конце согласная, поэтому t удваивается: sitting. Так же run — running.',
+       whyKk:'sit сөзінде бір қысқа дауысты бар, соңы дауыссызбен бітеді, сондықтан t екі еселенеді: sitting. run да солай — running.'},
+      {t:'order', ru:'Он пишет письмо?', kk:'Ол хат жазып жатыр ма?',
+       words:['Is', 'he', 'writing', 'a', 'letter'], a:'Is he writing a letter'},
+      {t:'order', ru:'Две девочки катаются на велосипедах.', kk:'Екі қыз велосипед тебіп жүр.',
+       words:['Two', 'girls', 'are', 'riding', 'their', 'bikes'], a:'Two girls are riding their bikes'},
+    ]
+  },
+
+  e9: {
+    title:'Present Simple', subtitle:'Что ты делаешь каждый день', subtitleKk:'Күнде не істейсің',
+    rule:'Когда говоришь о привычках, о том, что повторяется, и о фактах, бери глагол в первой форме: I go to school every day. С he, she, it к глаголу добавь -s или -es: she plays, he watches. В вопросе и с not помогают do и does, а глагол остаётся без -s: Does she play tennis? She doesn’t like pizza.',
+    ruleKk:'Әдетті, қайталанып тұратын істі және жалпы фактілерді айтқанда етістіктің бірінші формасын аламыз: I go to school every day. he, she, it болса, етістікке -s не -es жалғанады: she plays, he watches. Сұрақ пен болымсыз сөйлемде do мен does көмектеседі, ал етістікке -s жалғанбайды: Does she play tennis? She doesn’t like pizza.',
+    examples:[
+      {en:'My father goes to work every day.', ru:'Мой папа каждый день ходит на работу.', kk:'Әкем күнде жұмысқа барады.'},
+      {en:'The sun rises in the east.', ru:'Солнце встаёт на востоке.', kk:'Күн шығыстан шығады.'},
+      {en:'He doesn’t play football.', ru:'Он не играет в футбол.', kk:'Ол футбол ойнамайды.'},
+      {en:'Does your brother study at this school?', ru:'Твой брат учится в этой школе?', kk:'Ағаң осы мектепте оқи ма?'},
+    ],
+    words:[
+      {en:'get up', ru:'вставать (утром)', kk:'ұйқыдан тұру', ex:'I always get up early.', g:'act'},
+      {en:'breakfast', ru:'завтрак', kk:'таңғы ас', ex:'We eat breakfast together.', g:'thing'},
+      {en:'watch', ru:'смотреть', kk:'көру, қарау', ex:'He watches TV in the evening.', g:'act'},
+      {en:'live', ru:'жить', kk:'тұру, өмір сүру', ex:'Do they live here?', g:'act'},
+      {en:'work', ru:'работать', kk:'жұмыс істеу', ex:'They work in an office.', g:'act'},
+      {en:'always', ru:'всегда', kk:'әрқашан', ex:'She always wakes up early.', g:'word'},
+      {en:'never', ru:'никогда', kk:'ешқашан', ex:'He never drinks tea.', g:'word'},
+      {en:'every day', ru:'каждый день', kk:'күнде, күн сайын', ex:'I go to school every day.', g:'time'},
+    ],
+    tasks:[
+      {t:'choice', q:'My cat ___ a lot.', opts:['sleeps', 'sleep', 'sleeping'], a:0,
+       why:'Кошка — это it, а с it к глаголу добавляем -s: sleeps.',
+       whyKk:'Мысық — it, ал it болса, етістікке -s жалғанады: sleeps.'},
+      {t:'choice', q:'We ___ play games on weekdays.', opts:['doesn’t', 'don’t', 'not'], a:1,
+       why:'С we отрицание строим через don’t. Doesn’t нужен только для he, she, it, а одно not перед глаголом не ставят.',
+       whyKk:'we-мен болымсыз сөйлем don’t арқылы жасалады. Doesn’t тек he, she, it-ке керек, ал етістіктің алдына жалғыз not қойылмайды.'},
+      {t:'choice', q:'___ you speak English?', opts:['Does', 'Is', 'Do'], a:2,
+       why:'Вопрос с you начинаем с Do. Does ставят только перед he, she, it.',
+       whyKk:'you-мен сұрақ Do-дан басталады. Does тек he, she, it алдында тұрады.'},
+      {t:'choice', q:'Does she ___ tennis?', opts:['plays', 'play', 'playing'], a:1,
+       why:'После does глагол остаётся без -s: does уже взял -s на себя. Поэтому play, а не plays.',
+       whyKk:'does-тан кейін етістікке -s жалғанбайды, ол does-тың өзінде тұр. Сондықтан plays емес, play.'},
+      {t:'order', ru:'Моя мама не водит машину.', kk:'Анам көлік жүргізбейді.',
+       words:['My', 'mother', 'doesn’t', 'drive', 'a', 'car'], a:'My mother doesn’t drive a car'},
+      {t:'order', ru:'Твой брат живёт здесь?', kk:'Ағаң осында тұра ма?',
+       words:['Does', 'your', 'brother', 'live', 'here'], a:'Does your brother live here'},
+    ]
+  },
+
+  e10: {
+    title:'Would You Like vs. Do You Want', subtitle:'Предложить вежливо или по-дружески', subtitleKk:'Сыпайы не достарша ұсыну',
+    rule:'Would you like…? — так вежливо предлагают или приглашают: официант в кафе, продавец, незнакомый человек. С друзьями, родными и детьми спрашивают проще: Do you want some water? После обоих ставь сразу предмет (Would you like some tea?) или to + глагол (Do you want to play football?).',
+    ruleKk:'Would you like…? — сыпайы ұсыныс не шақыру: оны кафедегі даяшы, сатушы немесе бейтаныс адам қолданады. Достармен, жақындармен және балалармен қарапайым сұраймыз: Do you want some water? Екеуінен кейін бірден зат есім (Would you like some tea?) немесе to + етістік (Do you want to play football?) келеді.',
+    examples:[
+      {en:'Would you like another cup of tea?', ru:'Хотите ещё чашку чая?', kk:'Тағы бір шай ішесіз бе?'},
+      {en:'Would you like to come with us?', ru:'Хотите пойти с нами?', kk:'Бізбен бірге барғыңыз келе ме?'},
+      {en:'Do you want to play football?', ru:'Хочешь поиграть в футбол?', kk:'Футбол ойнағың келе ме?'},
+      {en:'Do you want a toy?', ru:'Хочешь игрушку?', kk:'Ойыншық қалайсың ба?'},
+    ],
+    words:[
+      {en:'menu', ru:'меню', kk:'мәзір', ex:'Would you like a menu?', g:'thing'},
+      {en:'order', ru:'заказать', kk:'тапсырыс беру', ex:'Would you like to order dessert?', g:'act'},
+      {en:'dessert', ru:'десерт', kk:'десерт, тәтті тағам', ex:'Would you like some dessert?', g:'thing'},
+      {en:'cinema', ru:'кинотеатр', kk:'кинотеатр', ex:'Do you want to go to the cinema?', g:'thing'},
+      {en:'tonight', ru:'сегодня вечером', kk:'бүгін кешке', ex:'Would you like to go to the cinema tonight?', g:'time'},
+      {en:'go shopping', ru:'ходить за покупками', kk:'дүкен аралау', ex:'Would you like to go shopping?', g:'act'},
+      {en:'learn', ru:'учиться, учить', kk:'үйрену', ex:'I want to learn to play the guitar.', g:'act'},
+      {en:'please', ru:'пожалуйста', kk:'өтінемін', ex:'Would you like some tea? — Yes, please.', g:'word'},
+    ],
+    tasks:[
+      {t:'choice', q:'In a café the waiter asks: "___ you like to see the menu?"', opts:['Would', 'Does', 'Are'], a:0,
+       why:'Официант вежливо предлагает — Would you like. Does с you не ставят, а are с like не сочетается.',
+       whyKk:'Даяшы сыпайы ұсыныс жасап тұр — Would you like. Does you-мен қолданылмайды, ал are like сөзімен тіркеспейді.'},
+      {t:'choice', q:'Do you want ___ play football with us?', opts:['for', 'to', 'a'], a:1,
+       why:'Если после want идёт глагол, перед ним ставим to: want to play.',
+       whyKk:'want-тан кейін етістік келсе, оның алдына to қойылады: want to play.'},
+      {t:'choice', q:'— Would you like some coffee? — Yes, ___.', opts:['I do', 'I would like', 'please'], a:2,
+       why:'На вежливое предложение коротко отвечают Yes, please. Yes, I do — ответ на вопрос с do, а после I would like чего-то не хватает.',
+       whyKk:'Сыпайы ұсынысқа қысқаша Yes, please деп жауап береміз. Yes, I do — do-мен қойылған сұраққа жауап, ал I would like-тан кейін сөйлем аяқталмай қалады.'},
+      {t:'choice', q:'— Do you want some tea? — No, I ___.', opts:['don’t', 'doesn’t', 'am not'], a:0,
+       why:'Вопрос задан с do, поэтому и отвечаем с do: No, I don’t. Doesn’t с I не ставят.',
+       whyKk:'Сұрақ do-мен қойылған, сондықтан жауап та do-мен беріледі: No, I don’t. Doesn’t I-мен қолданылмайды.'},
+      {t:'order', ru:'Хотите заказать десерт?', kk:'Десертке тапсырыс бергіңіз келе ме?',
+       words:['Would', 'you', 'like', 'to', 'order', 'dessert'], a:'Would you like to order dessert'},
+      {t:'order', ru:'Я хочу научиться играть на гитаре.', kk:'Мен гитарада ойнауды үйренгім келеді.',
+       words:['I', 'want', 'to', 'learn', 'to', 'play', 'the', 'guitar'], a:'I want to learn to play the guitar'},
+    ]
+  },
+
+  e11: {
+    title:'Adverbs', subtitle:'Как, где, когда и как часто', subtitleKk:'Қалай, қайда, қашан, қаншалықты жиі',
+    rule:'Слова quickly, outside, yesterday, always отвечают на вопросы «как?», «где?», «когда?» и «как часто?». Слова, которые отвечают на «как?», обычно делают из прилагательного с -ly: quick → quickly, beautiful → beautifully, но good → well, а fast, hard и late не меняются. Если таких слов несколько, порядок такой: как → где → когда: She sang beautifully in the hall yesterday.',
+    ruleKk:'quickly, outside, yesterday, always сияқты үстеулер «қалай?», «қайда?», «қашан?», «қаншалықты жиі?» деген сұрақтарға жауап береді. «Қалай?» үстеулері көбіне сын есімге -ly жалғау арқылы жасалады: quick → quickly, beautiful → beautifully, бірақ good → well болады, ал fast, hard, late өзгермейді. Үстеу бірнешеу болса, реті мынадай: қалай → қайда → қашан: She sang beautifully in the hall yesterday.',
+    examples:[
+      {en:'She sings beautifully.', ru:'Она красиво поёт.', kk:'Ол әдемі ән айтады.'},
+      {en:'He is waiting outside.', ru:'Он ждёт на улице.', kk:'Ол сыртта күтіп тұр.'},
+      {en:'I met her yesterday.', ru:'Я встретил её вчера.', kk:'Мен оны кеше кездестірдім.'},
+      {en:'He is never late.', ru:'Он никогда не опаздывает.', kk:'Ол ешқашан кешікпейді.'},
+    ],
+    words:[
+      {en:'quickly', ru:'быстро', kk:'тез, жылдам', ex:'He runs quickly.', g:'sign'},
+      {en:'carefully', ru:'осторожно', kk:'абайлап', ex:'He drives carefully.', g:'sign'},
+      {en:'well', ru:'хорошо', kk:'жақсы', ex:'She speaks English well.', g:'sign'},
+      {en:'outside', ru:'на улице, снаружи', kk:'сыртта, далада', ex:'They are playing outside.', g:'word'},
+      {en:'abroad', ru:'за границей', kk:'шетелде', ex:'She lives abroad.', g:'word'},
+      {en:'yesterday', ru:'вчера', kk:'кеше', ex:'I met her yesterday.', g:'time'},
+      {en:'already', ru:'уже', kk:'әлдеқашан', ex:'It is already dark.', g:'time'},
+      {en:'sometimes', ru:'иногда', kk:'кейде', ex:'We sometimes go to the cinema.', g:'word'},
+    ],
+    tasks:[
+      {t:'choice', q:'Aruzhan sings ___. Everyone loves her songs.', opts:['beautiful', 'beauty', 'beautifully'], a:2,
+       why:'Говорим, как она поёт, значит, нужно слово с -ly: beautifully. Beautiful описывает предмет, а не действие: a beautiful song.',
+       whyKk:'Оның қалай ән айтатынын айтып тұрмыз, сондықтан -ly жалғанған сөз керек: beautifully. Beautiful әрекетті емес, затты сипаттайды: a beautiful song.'},
+      {t:'choice', q:'Timur is a good player. He plays football very ___.', opts:['well', 'good', 'goodly'], a:0,
+       why:'От good слово «как?» особое: well. Goodly так не говорят, а good описывает человека или вещь: a good player.',
+       whyKk:'good-тан жасалатын «қалай?» сөзі ерекше: well. Goodly деген сөз жоқ, ал good адамды не затты сипаттайды: a good player.'},
+      {t:'choice', q:'My brother ___ late for school.', opts:['never is', 'never be', 'is never'], a:2,
+       why:'Never и always обычно стоят перед глаголом, но после am, is, are: he is never late.',
+       whyKk:'never, always сияқты сөздер әдетте етістіктің алдында тұрады, бірақ am, is, are-дан кейін келеді: he is never late.'},
+      {t:'choice', q:'I met Dana ___.', opts:['tomorrow', 'yesterday', 'soon'], a:1,
+       why:'Met — это прошлое, значит, нужно слово о прошлом: yesterday. Tomorrow и soon говорят о будущем.',
+       whyKk:'Met — өткен шақ, сондықтан өткенді білдіретін сөз керек: yesterday. Tomorrow мен soon келешек туралы айтады.'},
+      {t:'order', ru:'Мой папа водит машину очень осторожно.', kk:'Әкем көлікті өте абайлап жүргізеді.',
+       words:['My', 'father', 'drives', 'very', 'carefully'], a:'My father drives very carefully'},
+      {t:'order', ru:'Брат Даны живёт за границей.', kk:'Дананың ағасы шетелде тұрады.',
+       words:['Dana’s', 'brother', 'lives', 'abroad'], a:'Dana’s brother lives abroad'},
+    ]
+  },
+
+  e12: {
+    title:'Prepositions of Place', subtitle:'Сказать, где что стоит', subtitleKk:'Не қайда тұрғанын айту',
+    rule:'Где лежит или стоит вещь, показывает предлог перед местом: in — внутри, on — на, under — под, next to — рядом, between — между двумя. Порядок слов такой — кто или что + am, is, are + предлог + место: The books are on the shelf. Вещь касается поверхности — on, висит выше и не касается — above: The lamp is above the table.',
+    ruleKk:'Заттың қайда жатқанын не тұрғанын орынның алдындағы предлог көрсетеді: in — ішінде, on — үстінде, under — астында, next to — қасында, between — екі заттың ортасында. Сөйлем былай құралады — кім немесе не + am, is, are + предлог + орын: The books are on the shelf. Зат бетке тиіп тұрса — on, тимей жоғарыда тұрса — above: The lamp is above the table.',
+    examples:[
+      {en:'The cat is in the box.', ru:'Кошка в коробке.', kk:'Мысық қораптың ішінде.'},
+      {en:'The shoes are under the bed.', ru:'Обувь под кроватью.', kk:'Аяқ киім төсектің астында.'},
+      {en:'The pencil is between the two books.', ru:'Карандаш лежит между двумя книгами.', kk:'Қарындаш екі кітаптың ортасында жатыр.'},
+      {en:'The lamp is above the table.', ru:'Лампа висит над столом.', kk:'Шам үстелдің жоғарысында ілулі тұр.'},
+    ],
+    words:[
+      {en:'under', ru:'под', kk:'астында', ex:'The shoes are under the bed.', g:'word'},
+      {en:'next to', ru:'рядом с', kk:'қасында, жанында', ex:'The school is next to the bank.', g:'word'},
+      {en:'between', ru:'между', kk:'ортасында, арасында', ex:'The pencil is between the two books.', g:'word'},
+      {en:'behind', ru:'за, позади', kk:'артында', ex:'The dog is behind the door.', g:'word'},
+      {en:'in front of', ru:'перед', kk:'алдында', ex:'The car is in front of the house.', g:'word'},
+      {en:'above', ru:'над', kk:'жоғарысында', ex:'The lamp is above the table.', g:'word'},
+      {en:'opposite', ru:'напротив', kk:'қарсысында', ex:'The bank is opposite the post office.', g:'word'},
+      {en:'shelf', ru:'полка', kk:'сөре', ex:'The books are on the shelf.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'The lamp doesn’t touch the table. It is ___ the table.', opts:['above', 'on', 'in'], a:0,
+       why:'Лампа стола не касается, она висит выше — above. On ставят, когда вещь лежит прямо на поверхности: The phone is on the table.',
+       whyKk:'Шам үстелге тимейді, жоғарыда ілулі тұр — above. On зат бір нәрсенің тура бетінде жатқанда қойылады: The phone is on the table.'},
+      {t:'choice', q:'Aruzhan sits in the middle, ___ Dana and Timur.', opts:['next', 'between', 'in front'], a:1,
+       why:'Аружан посередине, по бокам Дана и Тимур — between, «между двумя». Next и in front без to и of не говорят: next to, in front of.',
+       whyKk:'Аружан ортада, екі жағында Дана мен Тимур отыр — between. Next пен in front сөздері to мен of-сыз айтылмайды: next to, in front of.'},
+      {t:'choice', q:'All the students look at the teacher. She stands ___ the class.', opts:['behind', 'under', 'in front of'], a:2,
+       why:'Ученики смотрят на учителя, значит, она стоит перед классом — in front of. Behind — это «сзади», туда ученики не смотрят.',
+       whyKk:'Оқушылар мұғалімге қарап отыр, демек ол сыныптың алдында тұр — in front of. Behind — «артында», оқушылар артқа қарап отырған жоқ.'},
+      {t:'choice', q:'The books ___ on the shelf.', opts:['is', 'are', 'be'], a:1,
+       why:'Книг несколько — are. Is ставят, когда вещь одна: The book is on the shelf.',
+       whyKk:'Кітап бірнешеу болғандықтан are қойылады. Зат біреу болса — is: The book is on the shelf.'},
+      {t:'order', ru:'Обувь под кроватью.', kk:'Аяқ киім төсектің астында.',
+       words:['The', 'shoes', 'are', 'under', 'the', 'bed'], a:'The shoes are under the bed'},
+      {t:'order', ru:'Мой друг сидит рядом со мной.', kk:'Досым менің қасымда отыр.',
+       words:['My', 'friend', 'is', 'sitting', 'next', 'to', 'me'], a:'My friend is sitting next to me'},
+    ]
+  },
+
+  e13: {
+    title:'Can and Cannot', subtitle:'Умею и можно', subtitleKk:'Істей алу және рұқсат',
+    rule:'Can значит «умею» или «можно», can’t — «не умею» или «нельзя». Can одинаковый для всех: I can, he can, they can, а глагол после него идёт без to и без -s: She can run very fast. Когда просим разрешения, can встаёт в начало: Can I open the window?',
+    ruleKk:'Can «істей аламын» немесе «болады» дегенді білдіреді, can’t — «істей алмаймын» немесе «болмайды». Can барлық есімдікпен бірдей: I can, he can, they can, ал одан кейінгі етістікке to да, -s те қосылмайды: She can run very fast. Рұқсат сұрағанда can сөйлемнің басына шығады: Can I open the window?',
+    examples:[
+      {en:'I can speak three languages.', ru:'Я говорю на трёх языках.', kk:'Мен үш тілде сөйлей аламын.'},
+      {en:'We can’t fly.', ru:'Мы не умеем летать.', kk:'Біз ұша алмаймыз.'},
+      {en:'Can I open the window?', ru:'Можно открыть окно?', kk:'Терезені ашсам бола ма?'},
+      {en:'No, you can’t talk during the exam.', ru:'Нет, на экзамене разговаривать нельзя.', kk:'Жоқ, емтихан кезінде сөйлесуге болмайды.'},
+    ],
+    words:[
+      {en:'speak', ru:'говорить (на языке)', kk:'сөйлеу', ex:'I can speak three languages.', g:'act'},
+      {en:'language', ru:'язык', kk:'тіл', ex:'She can speak two languages.', g:'thing'},
+      {en:'swim', ru:'плавать', kk:'жүзу', ex:'Dogs can swim.', g:'act'},
+      {en:'fly', ru:'летать', kk:'ұшу', ex:'We can’t fly.', g:'act'},
+      {en:'draw', ru:'рисовать', kk:'сурет салу', ex:'I can draw.', g:'act'},
+      {en:'piano', ru:'пианино', kk:'пианино', ex:'He can’t play the piano.', g:'thing'},
+      {en:'leave', ru:'уйти, уехать', kk:'кету', ex:'Can we leave now?', g:'act'},
+      {en:'exam', ru:'экзамен', kk:'емтихан', ex:'No, you can’t talk during the exam.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'I have no money. I ___ buy a ticket.', opts:['can', 'am not', 'can’t'], a:2,
+       why:'Денег нет, значит купить не получится — can’t. Am not перед глаголом buy не ставят.',
+       whyKk:'Ақша жоқ, демек билет ала алмаймын — can’t. Am not buy етістігінің алдында тұрмайды.'},
+      {t:'choice', q:'___ I ask a question, please?', opts:['Can', 'Am', 'Does'], a:0,
+       why:'Просим разрешения — can встаёт в начало вопроса: Can I ask a question? Am и does с I ask не сочетаются.',
+       whyKk:'Рұқсат сұрағанда can сұрақтың басына шығады: Can I ask a question? Am мен does I ask-пен қолданылмайды.'},
+      {t:'choice', q:'My dad is strong. He ___ lift that box.', opts:['can’t', 'can', 'is'], a:1,
+       why:'Папа сильный, значит поднять может — can. Глагол после can идёт без -s: he can lift.',
+       whyKk:'Әкем күшті, демек жәшікті көтере алады — can. Can-нан кейінгі етістікке -s жалғанбайды: he can lift.'},
+      {t:'choice', q:'No, you ___ eat the cake before dinner.', opts:['can’t', 'aren’t', 'can'], a:0,
+       why:'No в начале — это запрет, а запрещаем через can’t: No, you can’t.',
+       whyKk:'Басындағы No — тыйым, ал тыйым can’t арқылы айтылады: No, you can’t.'},
+      {t:'order', ru:'Он не умеет играть на пианино.', kk:'Ол пианинода ойнай алмайды.',
+       words:['He', 'can’t', 'play', 'the', 'piano'], a:'He can’t play the piano'},
+      {t:'order', ru:'Можно мне открыть окно?', kk:'Терезені ашсам бола ма?',
+       words:['Can', 'I', 'open', 'the', 'window'], a:'Can I open the window'},
+    ]
+  },
+
+  e14: {
+    title:'Imperatives', subtitle:'Сделай и не делай', subtitleKk:'Істе және істеме',
+    rule:'Когда велим, просим или советуем, начинаем сразу с глагола, без you: Open the door. Запрещаем через don’t + глагол: Don’t be late. Зовём с собой — let’s + глагол: Let’s go to the park, а please делает просьбу вежливой: Help me, please.',
+    ruleKk:'Біреуге бұйырғанда, өтінгенде не кеңес бергенде сөйлемді бірден етістіктен бастаймыз, you қойылмайды: Open the door. Тыйым салу үшін don’t + етістік: Don’t be late. Өзімізді қоса шақырғанда let’s + етістік айтамыз: Let’s go to the park, ал please өтінішті сыпайы етеді: Help me, please.',
+    examples:[
+      {en:'Open the door.', ru:'Открой дверь.', kk:'Есікті аш.'},
+      {en:'Don’t touch that wire.', ru:'Не трогай этот провод.', kk:'Ана сымға тиме.'},
+      {en:'Please open the window.', ru:'Открой, пожалуйста, окно.', kk:'Өтінемін, терезені ашшы.'},
+      {en:'Let’s not waste time.', ru:'Давай не будем терять время.', kk:'Уақытты босқа өткізбейік.'},
+    ],
+    words:[
+      {en:'sit down', ru:'сесть', kk:'отыру', ex:'Please sit down.', g:'act'},
+      {en:'touch', ru:'трогать', kk:'тию, ұстау', ex:'Don’t touch that!', g:'act'},
+      {en:'careful', ru:'осторожный', kk:'абай, сақ', ex:'Be careful!', g:'sign'},
+      {en:'quiet', ru:'тихий', kk:'тыныш', ex:'Be quiet!', g:'sign'},
+      {en:'worry', ru:'волноваться', kk:'уайымдау', ex:'Don’t worry.', g:'act'},
+      {en:'shout', ru:'кричать', kk:'айғайлау', ex:'Don’t shout in the library!', g:'act'},
+      {en:'traffic lights', ru:'светофор', kk:'бағдаршам', ex:'Turn left at the traffic lights.', g:'thing'},
+      {en:'salt', ru:'соль', kk:'тұз', ex:'Pass the salt, please.', g:'thing'},
+    ],
+    tasks:[
+      {t:'choice', q:'___ the door, please. It’s cold.', opts:['Close', 'Closes', 'Closing'], a:0,
+       why:'Просьбу начинаем с глагола в начальной форме, без you и без -s: Close the door.',
+       whyKk:'Өтініш етістіктің бастапқы түрінен басталады, you да, -s те керек емес: Close the door.'},
+      {t:'choice', q:'___ run in the classroom!', opts:['Not', 'Don’t', 'No'], a:1,
+       why:'Запрещаем — don’t + глагол: Don’t run. Not и no сами перед глаголом не встают.',
+       whyKk:'Тыйым салғанда don’t + етістік: Don’t run. Not пен no етістіктің алдында жалғыз тұрмайды.'},
+      {t:'choice', q:'It’s a nice day. Let’s ___ to the park.', opts:['to go', 'going', 'go'], a:2,
+       why:'После let’s глагол идёт без to: Let’s go. Let’s to go — частая ошибка.',
+       whyKk:'Let’s-тен кейін етістік to-сыз келеді: Let’s go. Let’s to go деу — жиі кездесетін қате.'},
+      {t:'choice', q:'The lesson starts at nine. Don’t ___ late.', opts:['be', 'are', 'to be'], a:0,
+       why:'После don’t глагол стоит в начальной форме, а у am, is, are это be: Don’t be late.',
+       whyKk:'Don’t-тан кейін етістік бастапқы түрінде тұрады, ал am, is, are-дың бастапқы түрі — be: Don’t be late.'},
+      {t:'order', ru:'Не трогай этот провод.', kk:'Ана сымға тиме.',
+       words:['Don’t', 'touch', 'that', 'wire'], a:'Don’t touch that wire'},
+      {t:'order', ru:'Давай пойдём в кино.', kk:'Кеттік, киноға барайық.',
+       words:['Let’s', 'go', 'to', 'the', 'cinema'], a:'Let’s go to the cinema'},
+    ]
+  },
+
 
   /* Pre-Intermediate · Junior */
   p1:  { title:'Past Simple' },
@@ -1335,35 +1883,6 @@ window.CONTENT = {
     ]
   },
 
-  e13: {
-    title:'Can', subtitle:'Умею и можно',
-    rule:'can — умею или можно, can’t — не умею или нельзя. После can глагол идёт голым, без to и без окончания: I can swim, а не I can to swim.',
-    examples:[
-      {en:'I can swim.',              ru:'Я умею плавать.'},
-      {en:'He can’t drive a car.',    ru:'Он не умеет водить машину.'},
-      {en:'Can I open the window?',   ru:'Можно я открою окно?'},
-      {en:'Can we leave now?',        ru:'Нам можно сейчас уйти?'}
-    ],
-    words:[
-      {en:'swim',    ru:'плавать',        ex:'I can swim well.'},
-      {en:'drive',   ru:'водить машину',  ex:'My mother can drive.'},
-      {en:'ask',     ru:'спросить',       ex:'Can I ask a question?'},
-      {en:'lift',    ru:'поднять',        ex:'He can lift that box.'},
-      {en:'ticket',  ru:'билет',          ex:'I can’t buy a ticket.'},
-      {en:'strong',  ru:'сильный',        ex:'My dad is strong.'},
-      {en:'borrow',  ru:'взять на время', ex:'Can I borrow your pen?'},
-      {en:'dinner',  ru:'ужин',           ex:'Wash your hands before dinner.'}
-    ],
-    tasks:[
-      {t:'choice', q:'I have no money. I ___ buy a ticket.',     opts:['can','can’t','am not'], a:1, why:'Денег нет, значит купить не получится: can’t.'},
-      {t:'choice', q:'___ I ask a question, please?',            opts:['Can','Am','Do'], a:0, why:'Просьба и разрешение — тоже can, и оно встаёт первым.'},
-      {t:'choice', q:'My dad is strong. He ___ lift that box.',  opts:['can’t','can','is'], a:1, why:'Сильный, значит может: can.'},
-      {t:'choice', q:'No, you ___ eat the cake before dinner.',  opts:['can','can’t','don’t'], a:1, why:'Запрет — can’t.'},
-      {t:'order',  ru:'Я не умею водить машину.', words:['I','can’t','drive','a','car'], a:'I can’t drive a car'},
-      {t:'order',  ru:'Можно взять твою ручку?',  words:['Can','I','borrow','your','pen'], a:'Can I borrow your pen'}
-    ]
-  }
-
 };
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -1432,6 +1951,76 @@ window.TEXTS = {
   b14: 'Today Aliya is [absent]. She is sick. Her mom goes to the shop. [How much] [milk] does she need? One litre. ' +
        '[How many] [apples|apple] does she need? Five. She also buys [water] and a little [sugar].\n' +
        'In the evening Aliya asks her friend: "[How much] [homework] do we have?" "Not much," says her friend.',
+
+  e1: 'Hi, I am Aruzhan. I am 12 years old, and I am from Almaty. It is seven in the morning. I am [awake], but my brother Timur is [sleepy]. ' +
+      'He is still in his [room]. My mom is a [doctor], and she is at work. Our cat is [hungry].\n' +
+      'Now it is eight. It is sunny and warm [outside]. Timur and I are at school. Dana and Arman are my [classmates|classmate]. ' +
+      'They are funny. We are [ready] for the English lesson.',
+
+  e2: 'My name is Dana. This is my family. My father is [strong], and my mother is [kind]. Our [grandparents] live in Almaty. ' +
+      'Their house is big, and their dog is old. When we come, the dog [wags|wag] its [tail].\n' +
+      'My [best friend] is Aruzhan. Her brother Timur is very [funny]. His [jacket] is green, and his bag is red. ' +
+      'Our school is near my house, and our teacher is nice. I love my family and my friends.',
+
+  e3: 'After school, Aruzhan and Timur look in a big box in their classroom. Timur finds a black [hat]. "Is it [mine]?" he asks. ' +
+      '"No, it is not [yours]. It is Arman’s hat. It is his." Then Aruzhan finds a pink [phone]. "This phone is Dana’s. It is [hers]."\n' +
+      'There are two small [toys|toy] in the box too. The twins Ali and Ainur play with them, so they are [theirs]. ' +
+      'The long red [scarf] is the teacher’s. And the blue pen? Timur smiles: "Oh, that pen is mine."',
+
+  e4: 'It is Sunday morning. Timur is in the kitchen with his [uncle]. His uncle is an [engineer] in Almaty. ' +
+      'He puts the [kettle] on and eats a [cookie]. Timur [needs|need] an apple. The apple is on the table.\n' +
+      'After breakfast, they go to the park for an [hour]. Timur sees a dog. The dog is white and very friendly. ' +
+      'At home, Timur looks for his blue [folder]. He often [forgets|forget] it at school, but today the folder is in his bag.',
+
+  e5: 'Aruzhan and her brother Timur are at the market in Almaty. Aruzhan has a bag in her hand. "[This] bag is heavy," she says. "[These] apples are very [sweet]." ' +
+      'Timur looks at a shop far away. "Look at [those] [shoes|shoe]. And [that] red jacket is nice."\n' +
+      '[Those] children near the shop are [noisy]. They are playing with a ball. Timur buys three [pencils|pencil] for school. ' +
+      '"[These] two are for me, and [this] one is for you," he tells Aruzhan.',
+
+  e6: 'Dana lives in Almaty. Her room is small. There is a desk near the window, and there are [many] books on the [shelf]. ' +
+      'There is a tall tree [outside] the window. Her little brother Timur often plays here, so there are [some] [toys|toy] on the [floor].\n' +
+      'In the evening Dana is hungry. She opens the [fridge]. There is milk, but there aren’t [any] apples. ' +
+      '"Mom, are there [any] apples in your bag?" she asks. "No, there aren’t," says Mom.',
+
+  e7: 'Aruzhan lives in Almaty. She has got a [brother], Timur, and a little [sister], Dana. Dana is five. ' +
+      'She has got big brown [eyes|eye] and [long] hair. She has got [a lot of] [dolls|doll].\n' +
+      'The family has got a cat too. It has got a long [tail] and green eyes. ' +
+      'Timur hasn’t got a phone, but he has got a new bike. Today the children haven’t got time to play. They have got a lot of [homework].',
+
+  e8: 'It is Saturday, and Timur’s family is in the park. Timur is [riding|ride] his bike. He is [wearing|wear] a helmet. ' +
+      'His little sister Dana is [running|run] after a ball. Grandpa is [sitting|sit] on a [bench] and reading a [newspaper].\n' +
+      'Mom is talking to Aunt Saule on the phone [now]. "What are you doing [at the moment]?" asks Saule. ' +
+      '"We are having a picnic," says Mom. "The kids are playing, and Grandpa isn’t sleeping. He is reading."',
+
+  e9: 'Aruzhan [lives|live] in Almaty with her family. She [always] [gets up|get up] at seven. Her mother cooks [breakfast], and they eat together. ' +
+      'Her father [works|work] in an office and goes there [every day].\n' +
+      'After school Aruzhan does her homework. Her brother Timur [watches|watch] TV in the evening, but Aruzhan doesn’t. She reads books. ' +
+      'Their cat [never] gets up early. It sleeps a lot and drinks milk every morning.',
+
+  e10: 'Dana and her mum are in a café in Almaty. The waiter smiles: "Would you like to see the [menu]?" Dana says: "Yes, [please]." ' +
+       'Later he asks: "Would you like to [order] [dessert]?" Mum says: "No, thank you."\n' +
+       'In the evening Dana calls her friend Timur: "Do you want to [go shopping] tomorrow?" Timur answers: "Not really. I want to [learn] to play the guitar. ' +
+       'But do you want to go to the [cinema] [tonight]?"',
+
+  e11: 'Timur lives in Almaty, but his uncle lives [abroad]. Every morning Timur eats [quickly] and runs to school. ' +
+       'He speaks English [well], and he [sometimes] helps his friends with homework.\n' +
+       'Today is Saturday. [Yesterday] it was cold, but now the sun is out, and the boys are playing football [outside]. ' +
+       'In the evening Timur’s dad drives home [carefully]. When they get home, it is [already] dark.',
+
+  e12: 'My name is Aruzhan. This is my room. My bed is [next to] the window, and my desk is [between] the bed and the door. ' +
+       'There is a lamp [above] the desk. My books are on the [shelf], and my cat sleeps [under] the bed.\n' +
+       'We live in Almaty. There is a small park [in front of] our house and a garden [behind] it. ' +
+       'My school is [opposite] the bank, only five minutes from home.',
+
+  e13: 'My name is Timur. I can [speak] three [languages|language]: Kazakh, Russian and English. ' +
+       'I can [swim] and [draw], but I can’t play the [piano]. My little sister can’t read yet, but she can sing.\n' +
+       'Today we have an English [exam]. During the exam we can’t talk. After it I ask the teacher: "Can we [leave] now?" ' +
+       '"Yes, you can," she says. We run outside. I can run fast, but I can’t [fly].',
+
+  e14: 'It’s Dana’s first day at a new school. Mom says: "Be [careful] and stop at the [traffic lights]." ' +
+       'The teacher smiles: "Come in and [sit down], please. Don’t [worry]."\n' +
+       'In the library a boy is loud. The teacher says: "Be [quiet], please. Don’t [shout]." ' +
+       'In the art room she says: "Don’t [touch] the paint, it’s wet." At home Mom says: "Wash your hands, please." At dinner Dad asks: "Pass the [salt], please."',
 
   i1: 'Last Friday was a bad day. I left work late, and [by the time] I [arrived|arrive] at the station, my train had gone. ' +
       'Then I [realized|realize] that I had left my wallet in the office.\n' +
