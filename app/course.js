@@ -134,6 +134,9 @@ window.CARTOONS = {
   b1: { src: 'media/cartoon/b1.mp4', poster: 'media/cartoon/b1.jpg' },
   b2: { src: 'media/cartoon/b2.mp4', poster: 'media/cartoon/b2.jpg' },
   b3: { src: 'media/cartoon/b3.mp4', poster: 'media/cartoon/b3.jpg' },
+  b4: { src: 'media/cartoon/b4.mp4', poster: 'media/cartoon/b4.jpg' },
+  b5: { src: 'media/cartoon/b5.mp4', poster: 'media/cartoon/b5.jpg' },
+  b6: { src: 'media/cartoon/b6.mp4', poster: 'media/cartoon/b6.jpg' },
   b14: { src: 'media/cartoon/b14.mp4', poster: 'media/cartoon/b14.jpg' }
 };
 
