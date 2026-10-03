@@ -131,7 +131,10 @@ window.VIDEOS_RU = {
    играет в практике над видеоуроком. Шагов не добавляет: практика отмечается
    той же кнопкой. Исходники мультика — в vault, cartoon-english/<id>/. */
 window.CARTOONS = {
-  b1: { src: 'media/cartoon/b1.mp4', poster: 'media/cartoon/b1.jpg' }
+  b1: { src: 'media/cartoon/b1.mp4', poster: 'media/cartoon/b1.jpg' },
+  b2: { src: 'media/cartoon/b2.mp4', poster: 'media/cartoon/b2.jpg' },
+  b3: { src: 'media/cartoon/b3.mp4', poster: 'media/cartoon/b3.jpg' },
+  b14: { src: 'media/cartoon/b14.mp4', poster: 'media/cartoon/b14.jpg' }
 };
 
 /* Ролики урока на нужном языке: { theory, practice }. Одна функция на
