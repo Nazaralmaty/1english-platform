@@ -27,6 +27,8 @@
   var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrYXl5ZGFxbmN2bmJlY2psbHRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2ODE1MjUsImV4cCI6MjA3NTI1NzUyNX0.o_7QJTdpkl14axm8vDfVH7NahbTvJreHAuI62dYG6U8';
   var AUTH_DOMAIN = '1eng.kz';
   var STORE_KEY = '1eng.session';
+  var LESSON_COLS = 'id,card_id,month,idx,topic,plan_date,done,done_at,taught,taught_on,taught_at,' +
+                    'client_answer,client_quality,client_note,client_at,review,review_note,review_at';
 
   var session = null;
 
@@ -321,15 +323,27 @@
              роняет весь дашборд. */
           req('/rest/v1/en_teachers?select=*&order=created_at', { token: tk })
             .catch(function () { return []; }),
-          req('/rest/v1/en_teacher_students?select=*,lessons:en_teacher_lessons(id,done,done_at)' +
+          /* Уроки — со всем, что нужно контролю: отметка учителя, ответ
+             клиента, решение админа. Патча 16.10 в базе ещё нет — колонок
+             нет, и запрос откатывается к прежнему, а дашборд работает как
+             раньше, только без вкладки контроля. */
+          req('/rest/v1/en_teacher_students?select=*,lessons:en_teacher_lessons(' + LESSON_COLS + ')' +
               '&order=archived,name', { token: tk })
-            .catch(function () { return []; })
+            .catch(function () {
+              return req('/rest/v1/en_teacher_students?select=*,lessons:en_teacher_lessons(id,done,done_at)' +
+                         '&order=archived,name', { token: tk });
+            })
+            .catch(function () { return []; }),
+          req('/rest/v1/en_confirm_requests?select=*&order=period_from.desc', { token: tk })
+            .catch(function () { return null; })
         ]);
       }).then(function (r) {
         return {
           students: r[0] || [], progress: r[1] || [],
           isAdmin: (r[2] || []).length > 0, errors: r[3] || [], games: r[4] || [],
-          teachers: r[5] || [], cards: r[6] || []
+          teachers: r[5] || [], cards: r[6] || [],
+          /* null — таблицы запросов нет: патч контроля не применён */
+          requests: r[7]
         };
       });
     },
@@ -361,6 +375,11 @@
       return token().then(function (tk) {
         return req('/rest/v1/rpc/' + name, { method: 'POST', token: tk, body: body || {} });
       });
+    },
+    /* Без входа: экран клиента по ссылке. Пускает функция в базе по ключу
+       ссылки, а не токен — у клиента аккаунта нет. */
+    anonRpc: function (name, body) {
+      return req('/rest/v1/rpc/' + name, { method: 'POST', body: body || {} });
     },
 
     normPhone: normPhone

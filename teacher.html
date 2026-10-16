@@ -7,6 +7,8 @@
 <title>1English · кабинет учителя</title>
 <link rel="icon" href="assets/logo.png">
 <link rel="stylesheet" href="app/style.css">
+<link rel="stylesheet" href="app/eco-1english.css">
+<link rel="stylesheet" href="app/eco.css">
 <style>
   /* Кабинет учителя. Четыре колонки в одну строку на ученика:
        1 — учитель (стоит слева и не уезжает),
@@ -95,6 +97,13 @@
   .t-les .n{font-size:11.5px;color:var(--faint);width:15px;flex:none;font-variant-numeric:tabular-nums;text-align:right}
   .t-les .tp{flex:1;min-width:0;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .t-les.ok .tp{color:var(--ok)}
+  /* статус урока точкой: подтверждён, ждёт клиента, вопрос */
+  .t-st{width:8px;height:8px;border-radius:50%;flex:none;background:transparent}
+  .t-st.ok{background:var(--ok)} .t-st.wait{background:var(--navy);opacity:.45}
+  .t-st.warn{background:#C8961C} .t-st.bad{background:var(--accent)} .t-st.mute{background:var(--faint)}
+  .t-res small{display:block;font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .t-issues{margin-bottom:16px}
+  .t-issues .e-tickets{margin-top:12px}
   .t-les .tp.empty{color:var(--faint)}
   .t-addmon{flex:none;width:92px;border:1px dashed var(--line);background:transparent;border-radius:14px;
             color:var(--muted);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
@@ -179,6 +188,7 @@
 <script src="app/db.js"></script>
 <script src="app/course.js"></script>
 <script src="app/schedule.js"></script>
+<script src="app/control.js"></script>
 <script>
 (function () {
   'use strict';
@@ -198,6 +208,31 @@
   /* Ставка одного урока в 1English. Пусто в карточке ученика и у учителя —
      значит она. */
   var RATE = 1150;
+  var C = window.CTRL;
+  function today() { return C.day(new Date()); }
+
+  /* Урок до патча контроля (patch_2026-10-16_control.sql) знает только
+     done — галочку админа. Такой урок читается как проведённый и
+     засчитанный администратором: и экран, и правило выплаты видят его так
+     же, как база после патча. */
+  function normLesson(l, card) {
+    l.card_id = card.id;
+    return C.legacy(l);
+  }
+  function isTaught(l) { return !!(l.taught || l.done); }
+  function dateOfLesson(l) { return C.dateOf(l); }
+
+  /* Разбор по правилам контроля: статус каждого урока и вопросы, которые
+     ждут администратора. Запросов клиентам учитель не видит — поэтому
+     «клиент молчит» здесь не считается, только «ждёт клиента». */
+  function analysis() {
+    var lessons = [];
+    S.cards.forEach(function (c) { (c.lessons || []).forEach(function (l) { lessons.push(normLesson(l, c)); }); });
+    var an = C.analyze({ teachers: S.teachers, cards: S.cards, lessons: lessons, requests: [] }, today());
+    an.byId = {};
+    an.rows.forEach(function (r) { an.byId[r.l.id] = r; });
+    return an;
+  }
 
   /* Кавычки экранируются наравне со скобками: имя ученика, город и цель
      пишет учитель руками, а часть значений уходит внутрь атрибутов. */
@@ -245,31 +280,43 @@
       .map(function (m) {
         var list = by[m];
         return { month: m, lessons: list,
-                 done: list.filter(function (l) { return l.done; }).length,
+                 done: list.filter(isTaught).length,
                  total: list.length };
       });
   }
+  /* done в ответе — проведённые учителем уроки (процент от плана), money —
+     только то, что уже к выплате: подтверждено клиентом или админом.
+     Остальное лежит в wait (ждёт клиента) и review (вопрос у админа). */
   function statOf(card) {
     var all = lessonsOf(card);
-    var done = all.filter(function (l) { return l.done; }).length;
+    all.forEach(function (l) { normLesson(l, card); });
+    var done = all.filter(isTaught).length;
     var rate = card.rate == null ? ((S.teacher && S.teacher.rate) || RATE) : card.rate;
-    var last = null;
-    all.forEach(function (l) { if (l.done_at && (!last || l.done_at > last)) last = l.done_at; });
+    var last = null, paid = 0, wait = 0, review = 0;
+    all.forEach(function (l) {
+      var d = l.taught_on || l.done_at;
+      if (isTaught(l) && d && (!last || d > last)) last = d;
+      var st = C.status(l);
+      if (C.BUCKET[st] === 'payable') paid++;
+      else if (st === 'awaiting') wait++;
+      else if (C.BUCKET[st] === 'review') review++;
+    });
     return { done: done, total: all.length,
              pct: all.length ? Math.round(done / all.length * 100) : 0,
-             rate: rate, money: done * rate, last: last };
+             rate: rate, money: paid * rate, wait: wait * rate, review: review * rate, last: last };
   }
-  /* Зарплата считается по календарному месяцу, когда галочку поставили, а
-     не по месяцу обучения: платят за отработанное в августе, а не за
-     «третий месяц Аяжан». Уроки без даты (галочка стояла до патча) падают
-     в «без даты» отдельной строкой, а не растворяются. */
+  /* Зарплата считается по календарному месяцу, когда прошёл урок, а не по
+     месяцу обучения: платят за отработанное в августе, а не за «третий
+     месяц Аяжан». И только за то, что подтвердил клиент или админ. */
   function salaryByMonth(cards) {
     var by = {};
     cards.forEach(function (c) {
       var rate = c.rate == null ? ((S.teacher && S.teacher.rate) || RATE) : c.rate;
       lessonsOf(c).forEach(function (l) {
-        if (!l.done) return;
-        var key = l.done_at ? String(l.done_at).slice(0, 7) : 'без даты';
+        if (!C.payable(normLesson(l, c))) return;
+        /* месяц — когда прошёл урок; у старых галочек дня урока нет, берём день галочки */
+        var day = l.taught_on || l.plan_date || l.done_at;
+        var key = day ? String(day).slice(0, 7) : 'без даты';
         var row = by[key] || (by[key] = { key: key, lessons: 0, sum: 0 });
         row.lessons++; row.sum += rate;
       });
@@ -363,8 +410,10 @@
     var mine = S.teacher || {};
     var live = S.cards.filter(function (c) { return !c.archived; });
     var totals = live.reduce(function (a, c) {
-      var s = statOf(c); a.done += s.done; a.total += s.total; a.money += s.money; return a;
-    }, { done: 0, total: 0, money: 0 });
+      var s = statOf(c); a.done += s.done; a.total += s.total; a.money += s.money;
+      a.wait += s.wait; a.review += s.review; return a;
+    }, { done: 0, total: 0, money: 0, wait: 0, review: 0 });
+    S.an = analysis();
 
     root.innerHTML =
       '<div class="t-top">' +
@@ -385,9 +434,10 @@
 
       (S.me.admin
         ? ''
-        : '<div class="banner">Учеников и их карточки заводит администратор в дашборде, ' +
-          'галочку «урок проведён» тоже ставит он. Ваше — темы уроков и домашние задания: ' +
-          'кнопки «?» и «ДЗ» в сетке.</div>') +
+        : '<div class="banner">Учеников и их карточки заводит администратор в дашборде. ' +
+          'Ваше — отметить проведённый урок галочкой в сетке и вести темы и домашку: кнопки «?» и «ДЗ», ' +
+          'готовый урок — «Взять из курса». Раз в две недели клиент подтверждает уроки по ссылке: ' +
+          'подтверждённые уходят в зарплату сами, спорные решает администратор.</div>') +
 
       '<div class="t-grid">' +
 
@@ -401,12 +451,14 @@
             '<div><span>Учеников</span><b>' + live.length + '</b></div>' +
             '<div><span>Уроков проведено</span><b>' + totals.done + ' из ' + totals.total + '</b></div>' +
             '<div><span>Ставка за урок</span><b>' + money(mine.rate || RATE) + '</b></div>' +
-            '<div><span>Заработано всего</span><b>' + money(totals.money) + '</b></div>' +
+            '<div><span>К выплате, подтверждено</span><b>' + money(totals.money) + '</b></div>' +
+            (totals.wait ? '<div><span>Ждёт клиента</span><b>' + money(totals.wait) + '</b></div>' : '') +
+            (totals.review ? '<div><span>На проверке</span><b style="color:var(--accent)">' + money(totals.review) + '</b></div>' : '') +
           '</div>' +
           '<div class="t-acts"><button data-bio="1">Править резюме</button></div>' +
         '</div>' +
 
-        '<div>' + (S.view === 'board' ? board()
+        '<div>' + (S.view === 'board' ? issues() + board()
                  : S.view === 'week'  ? week(mine, live)
                  : report(live)) + '</div>' +
       '</div>';
@@ -491,18 +543,34 @@
         '<div class="t-ring" style="--p:' + s.pct + '%"><i>' + s.pct + '%</i></div>' +
         '<span>' + s.done + ' из ' + s.total + ' уроков</span>' +
         '<b>' + money(s.money) + '</b>' +
+        (s.wait || s.review ? '<small>' + (s.wait ? 'ждёт клиента ' + money(s.wait) : '') +
+          (s.wait && s.review ? '<br>' : '') + (s.review ? 'на проверке ' + money(s.review) : '') + '</small>' : '') +
       '</div>' +
     '</div>';
   }
 
-  /* Строка урока: галочка админа, номер, тема и две кнопки «?» —
-     на тему и на домашнее задание. Полный текст открывается в окне. */
+  /* Строка урока: галочка, номер, точка статуса, тема и две кнопки «?» —
+     на тему и на домашнее задание. Полный текст открывается в окне.
+
+     Галочка у двоих своя. Учитель отмечает «урок проведён» — это заявка;
+     как только клиент ответил или админ решил, она под замком. Админ
+     ставит «засчитать к выплате» — решение, которое сильнее ответа. */
   function lesRow(l) {
+    var row = S.an && S.an.byId[l.id], st = row ? row.status : C.status(l);
+    var tone = (C.STATUS[st] || {}).tone;
+    var day = dateOfLesson(l), future = !!day && day > today();
+    var locked = !!(l.client_answer || l.review);
+    var checked = S.me.admin ? !!l.done : isTaught(l);
+    var off = !S.me.admin && (locked || (!isTaught(l) && future));
+    var title = S.me.admin ? (l.done ? 'Засчитан к выплате — снять' : 'Засчитать к выплате')
+      : locked ? 'Клиент ответил — отметка закрыта'
+      : future ? 'Урок ещё не наступил'
+      : isTaught(l) ? 'Снять отметку' : 'Урок проведён';
     return '<div class="t-les' + (l.done ? ' ok' : '') + '">' +
       '<input type="checkbox" data-check="' + esc(l.id) + '"' +
-        (l.done ? ' checked' : '') + (S.me.admin ? '' : ' disabled') +
-        ' title="' + (S.me.admin ? 'Урок проведён' : 'Ставит администратор') + '">' +
+        (checked ? ' checked' : '') + (off ? ' disabled' : '') + ' title="' + title + '">' +
       '<span class="n">' + l.idx + '</span>' +
+      '<i class="t-st ' + (st === 'planned' ? '' : tone) + '" title="' + esc((C.STATUS[st] || {}).ru || '') + '"></i>' +
       '<span class="tp' + (l.topic ? '' : ' empty') + '">' + esc(l.topic || 'тема не задана') + '</span>' +
       '<button class="t-q" data-les="' + esc(l.id) + '" data-focus="topic" title="Описание урока">?</button>' +
       '<button class="t-q hw" data-les="' + esc(l.id) + '" data-focus="homework" title="Домашнее задание">ДЗ</button>' +
@@ -537,7 +605,8 @@
       '</div>' +
 
       '<div class="t-wrap"><h3>По ученикам</h3>' +
-        '<div class="hint">Проведено — это галочки администратора. План — месяцы обучения × уроков в месяце.</div>' +
+        '<div class="hint">Проведено — отметки учителя. План — месяцы обучения × уроков в месяце. ' +
+          'Начислено — только подтверждённое клиентом или администратором.</div>' +
         '<div class="scrollx"><table><thead><tr>' +
           '<th>Ученик</th><th>Формат</th><th>График</th>' +
           '<th class="num">Проведено</th><th class="num">План</th><th class="num">%</th>' +
@@ -556,8 +625,8 @@
         '</tbody></table></div></div>' +
 
       '<div class="t-wrap"><h3>Зарплата по месяцам</h3>' +
-        '<div class="hint">Месяц — тот, в котором администратор отметил урок проведённым. ' +
-          'Ставка берётся из карточки ученика, а если её там нет — из карточки учителя.</div>' +
+        '<div class="hint">Месяц — тот, в котором прошёл урок. К выплате — уроки, подтверждённые клиентом ' +
+          'или администратором. Ставка — из карточки ученика, а если её там нет — из карточки учителя.</div>' +
         '<div class="scrollx"><table><thead><tr>' +
           '<th>Месяц</th><th class="num">Уроков</th><th class="num">К выплате</th>' +
         '</tr></thead><tbody>' +
@@ -584,7 +653,9 @@
     var t = S.teacher;
     open('<h3>Учитель</h3><div class="sub">Имя и резюме видит администратор и вы. Ставка — ₸ за проведённый урок.</div>' +
       '<div class="f"><div><label>Имя</label><input id="tn" value="' + esc(t.name || '') + '"></div>' +
-      '<div><label>Ставка, ₸ за урок</label><input id="tr" type="number" min="0" value="' + (t.rate || 0) + '"></div></div>' +
+      /* ставку меняет только админ: в базе её от учителя бережёт триггер */
+      (S.me.admin ? '<div><label>Ставка, ₸ за урок</label><input id="tr" type="number" min="0" value="' + (t.rate || 0) + '"></div>' : '') +
+      '</div>' +
       '<div class="f one"><div><label>Резюме</label><textarea id="tb">' + esc(t.bio || '') + '</textarea></div></div>' +
       '<div class="state"></div>' +
       '<div class="dlg-foot"><button id="no">Отмена</button><button class="go" id="ok">Сохранить</button></div>');
@@ -592,7 +663,8 @@
     dlgBody.querySelector('#ok').onclick = function () {
       DB.rest('en_teachers?id=eq.' + encodeURIComponent(t.id), {
         method: 'PATCH', headers: { Prefer: 'return=minimal' },
-        body: { name: val('tn'), bio: val('tb'), rate: Number(val('tr')) || 0 }
+        body: S.me.admin ? { name: val('tn'), bio: val('tb'), rate: Number(val('tr')) || 0 }
+                         : { name: val('tn'), bio: val('tb') }
       }).then(function () { close(); load(); })
         .catch(function (e) { say(e.message, true); });
     };
@@ -690,9 +762,22 @@
       (c.lessons || []).forEach(function (l) { if (l.id === id) { card = c; les = l; } });
     });
     if (!les) return;
+    var st = C.STATUS[C.status(normLesson(les, card))] || {};
     open('<h3>Месяц ' + les.month + ', урок ' + les.idx + '</h3>' +
       '<div class="sub">' + esc(card.name) + ' · ' +
-        (les.done ? 'проведён ' + dateRu(les.done_at) : 'ещё не проведён') + '</div>' +
+        (isTaught(les) ? 'проведён ' + dateRu(les.taught_on || les.done_at) : 'ещё не проведён') +
+        (st.ru && isTaught(les) ? ' · <b>' + esc(st.ru.toLowerCase()) + '</b>' : '') +
+        (les.client_answer === 'yes' && les.client_quality ? ', оценка клиента ' + les.client_quality + ' из 5' : '') +
+        (les.client_note ? '<br>Клиент: «' + esc(les.client_note) + '»' : '') + '</div>' +
+      /* Готовый урок курса: тема и домашка подставляются одним выбором —
+         составлять урок с нуля не нужно, а в платформе у ученика лежит
+         ровно этот урок с видео, словами и заданиями. */
+      '<div class="f one"><div><label>Взять из курса</label><select id="lc"><option value="">— готовый урок курса —</option>' +
+        ((window.COURSE || {}).levels || []).map(function (lv) {
+          return '<optgroup label="' + esc(lv.code + ' ' + lv.title) + '">' + lv.lessons.map(function (x) {
+            return '<option value="' + esc(x.id) + '">' + esc(x.n + '. ' + x.title) + '</option>';
+          }).join('') + '</optgroup>';
+        }).join('') + '</select></div></div>' +
       '<div class="f one"><div><label>Тема урока</label>' +
         '<textarea id="lt">' + esc(les.topic || '') + '</textarea></div></div>' +
       '<div class="f one"><div><label>Домашнее задание</label>' +
@@ -704,6 +789,12 @@
         '<button class="go" id="ok">Сохранить</button></div>');
     var f = dlgBody.querySelector(focus === 'homework' ? '#lh' : '#lt');
     if (f) f.focus();
+    dlgBody.querySelector('#lc').onchange = function () {
+      var c = fromCourse(this.value);
+      if (!c) return;
+      dlgBody.querySelector('#lt').value = c.topic;
+      dlgBody.querySelector('#lh').value = c.homework;
+    };
     dlgBody.querySelector('#no').onclick = close;
     dlgBody.querySelector('#ok').onclick = function () {
       DB.rest('en_teacher_lessons?id=eq.' + encodeURIComponent(id), {
@@ -714,17 +805,67 @@
     };
   }
 
+  /* Урок курса → тема и домашка для журнала. */
+  function fromCourse(id) {
+    var lv = null, L = null;
+    ((window.COURSE || {}).levels || []).forEach(function (x) {
+      x.lessons.forEach(function (y) { if (y.id === id) { lv = x; L = y; } });
+    });
+    if (!L) return null;
+    var words = (L.words || []).map(function (w) { return w.en; });
+    return {
+      topic: lv.title + ', урок ' + L.n + ' · ' + L.title + (L.subtitle ? ' — ' + L.subtitle : ''),
+      homework: 'В платформе: ' + lv.title + ', урок ' + L.n + ' «' + L.title + '» — видео с правилом, ' +
+        words.length + ' слов' + (words.length ? ' (' + words.slice(0, 8).join(', ') + ')' : '') +
+        ', задания (' + (L.tasks || []).length + ') и чтение. Слова повторить флип-картами.'
+    };
+  }
+
   /* Галочка. Ходит через функцию в базе: колонка done из браузера закрыта,
      и функция сама проверяет, что зовёт админ. Не прошло — возвращаем
      галочку обратно, чтобы на экране не осталось вранья. */
   function check(id, want, box) {
     box.disabled = true;
-    DB.rpc('en_lesson_check', { p_id: id, p_done: want }).then(function (answer) {
+    var call = S.me.admin
+      ? DB.rpc('en_lesson_check', { p_id: id, p_done: want })
+      : DB.rpc('en_lesson_taught', { p_id: id, p_taught: want });
+    call.then(function (answer) {
       if (String(answer) !== 'Готово') { box.checked = !want; alert(answer); }
       return cards();
     }).catch(function (e) {
-      box.checked = !want; box.disabled = false; alert(e.message);
+      box.checked = !want; box.disabled = false;
+      alert(/en_lesson_taught|schema cache/i.test(e.message || '')
+        ? 'В базе ещё нет контроля уроков: Supabase → SQL Editor → backend/patch_2026-10-16_control.sql → Run.'
+        : e.message);
     });
+  }
+
+  /* Вопросы по урокам этого учителя — то же, что видит админ в очереди.
+     Учитель знает, что именно спросит администратор, ещё до звонка. */
+  var ISSUE = {
+    dispute: 'Клиент ответил, что урока не было. Администратор свяжется с вами.',
+    suspect: 'Отметку клиент не подтверждал, и она не по графику. Администратор уточнит.',
+    ghost:   'Клиент подтвердил урок, а отметки нет. Если урок был — отметьте его или скажите администратору.',
+    unsure:  'Клиент не уверен, был ли урок. Администратор уточнит у него.',
+    lowq:    'Клиент поставил низкую оценку.',
+    silent:  'Клиент пока не ответил.'
+  };
+  function issues() {
+    var tk = (S.an ? S.an.tickets : []).filter(function (t) { return !t.card.archived; });
+    if (!tk.length) return '';
+    return '<div class="t-wrap t-issues" style="padding:18px 20px"><h3 style="padding:0">Вопросы по урокам</h3>' +
+      '<div class="hint" style="padding:4px 0 0">Эти уроки пока не в выплате. Решает администратор — вам видно то же, что и ему.</div>' +
+      '<div class="e-tickets">' + tk.map(function (t) {
+        var r = t.rows[0], st = C.STATUS[r.status] || {};
+        return '<div class="e-ticket"><div class="hd"><span class="e-chip ' + st.tone + '">' + esc(st.ru) + '</span>' +
+          '<span class="sum">' + money(t.sum) + '</span></div>' +
+          '<div class="nm"><b>' + esc(t.card.name) + '</b> ' + (r.date ? dateRu(r.date) : '') + ' · ' +
+            esc(r.l.topic || 'урок ' + r.l.idx) + '</div>' +
+          (r.l.client_note ? '<div class="e-quote">«' + esc(r.l.client_note) + '»</div>' : '') +
+          (r.flags && r.flags.length ? '<div class="e-tags">' + r.flags.map(function (f) {
+            return '<span class="e-flag">' + esc(C.FLAG[f]) + '</span>'; }).join('') + '</div>' : '') +
+          '<p>' + ISSUE[t.kind] + '</p></div>';
+      }).join('') + '</div></div>';
   }
 
   /* Кнопка «?» у ученика: что он делает в самой платформе. Карточка и
@@ -776,21 +917,35 @@
      галочки живые, но живут только в памяти вкладки и пропадают с
      обновлением страницы. Ничего никуда не уходит. */
   function demo(asAdmin) {
-    var les = [], k = 0;
-    for (var m = 1; m <= 4; m++) for (var i = 1; i <= 12; i++, k++) {
-      var topics = ['Знакомство','Глагол to be','Present Simple','Множественное число',
-                    'Артикли','Числа и время','Мой день','Семья','Еда','Город',
-                    'Past Simple','Повторение'];
-      les.push({ id: 'l' + k, month: m, idx: i, topic: topics[i - 1],
-                 homework: 'Слова ' + (i * 10 - 9) + '–' + i * 10 + ', упражнение ' + i,
-                 done: k < 18,
-                 done_at: k < 18 ? (k < 9 ? '2026-08-' + (10 + k) : '2026-09-0' + (k - 8)) + 'T10:00:00Z' : null });
+    /* Аяжан, пн-ср-пт: уроки по графику назад от сегодняшнего дня. Первые
+       двенадцать подтверждены клиентом, дальше — спор, низкая оценка,
+       два ждут клиента, остальное впереди. */
+    var topics = ['Знакомство','Глагол to be','Present Simple','Множественное число',
+                  'Артикли','Числа и время','Мой день','Семья','Еда','Город',
+                  'Past Simple','Повторение'];
+    var t0 = C.day(new Date()), dates = [], d = C.addDays(t0, -45);
+    while (dates.length < 48) { if (['mon','wed','fri'].indexOf(C.weekday(d)) >= 0) dates.push(d); d = C.addDays(d, 1); }
+    var past = dates.filter(function (x) { return x < t0; }).length;
+    var les = [];
+    for (var k = 0; k < 48; k++) {
+      var on = k < past, ans = null, q = null, note = null;
+      if (on && k < past - 4) { ans = 'yes'; q = k % 5 ? 5 : 4; }
+      if (on && k === past - 4) { ans = 'no'; note = 'В этот день урока не было, перенесли.'; }
+      if (on && k === past - 3) { ans = 'yes'; q = 2; note = 'Половину урока не работал микрофон.'; }
+      les.push({ id: 'l' + k, month: Math.floor(k / 12) + 1, idx: k % 12 + 1, topic: topics[k % 12],
+                 homework: 'Слова ' + (k % 12 * 10 + 1) + '–' + (k % 12 * 10 + 10) + ', упражнение ' + (k % 12 + 1),
+                 plan_date: dates[k], taught: on, taught_on: on ? dates[k] : null,
+                 taught_at: on ? dates[k] + 'T19:10:00+05:00' : null,
+                 client_answer: ans, client_quality: q, client_note: note, review: null });
     }
+    les.forEach(function (l) { l.done = C.payable(l); l.done_at = l.done ? l.taught_at : null; });
     var les2 = [];
     for (var j = 0; j < 16; j++)
       les2.push({ id: 'g' + j, month: Math.floor(j / 8) + 1, idx: j % 8 + 1,
                   topic: j < 5 ? 'Разговорный клуб ' + (j + 1) : null, homework: null,
-                  done: j < 5, done_at: j < 5 ? '2026-09-0' + (j + 1) + 'T12:00:00Z' : null });
+                  plan_date: null, taught: j < 5, taught_on: j < 5 ? C.addDays(t0, -30 + j * 7) : null,
+                  client_answer: j < 5 ? 'yes' : null, client_quality: j < 5 ? 5 : null, review: null,
+                  done: j < 5, done_at: j < 5 ? C.addDays(t0, -29 + j * 7) + 'T12:00:00Z' : null });
 
     var data = {
       teachers: [{ id: 't1', name: 'Айгерім Нұрлан', phone: '77015550000', rate: 1150,
@@ -822,15 +977,28 @@
       if (path.indexOf('en_teacher_students') === 0) return Promise.resolve(data.cards);
       return Promise.resolve([]);
     };
+    function lesson(id) {
+      var hit = null;
+      data.cards.forEach(function (c) { c.lessons.forEach(function (l) { if (l.id === id) hit = l; }); });
+      return hit;
+    }
     DB.rpc = function (name, body) {
+      /* Те же правила, что у функций в базе: учитель не трогает отметку,
+         на которую клиент ответил, и не отмечает будущее; админ решает. */
       if (name === 'en_lesson_check') {
-        data.cards.forEach(function (c) {
-          c.lessons.forEach(function (l) {
-            if (l.id !== body.p_id) return;
-            l.done = body.p_done;
-            l.done_at = body.p_done ? new Date().toISOString() : null;
-          });
-        });
+        var a = lesson(body.p_id);
+        a.review = body.p_done ? 'paid' : 'void';
+        if (body.p_done && !a.taught) { a.taught = true; a.taught_on = a.plan_date || C.day(new Date()); }
+        a.done = C.payable(a); a.done_at = a.done ? new Date().toISOString() : null;
+        return Promise.resolve('Готово');
+      }
+      if (name === 'en_lesson_taught') {
+        var l = lesson(body.p_id);
+        if (l.client_answer || l.review) return Promise.resolve('Клиент уже ответил по этому уроку — отметка закрыта');
+        if (body.p_taught && l.plan_date && l.plan_date > C.day(new Date())) return Promise.resolve('Урок ещё не наступил');
+        l.taught = !!body.p_taught; l.taught_on = l.taught ? (l.plan_date || C.day(new Date())) : null;
+        l.taught_at = l.taught ? new Date().toISOString() : null;
+        l.done = C.payable(l);
         return Promise.resolve('Готово');
       }
       if (name === 'en_student_progress') {

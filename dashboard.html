@@ -7,6 +7,8 @@
 <title>1English · дашборд</title>
 <link rel="icon" href="assets/logo.png">
 <link rel="stylesheet" href="app/style.css">
+<link rel="stylesheet" href="app/eco-1english.css">
+<link rel="stylesheet" href="app/eco.css">
 <style>
   /* Дашборд — та же таблица Supabase, просто читаемая. Смотрят с ноутбука,
      поэтому колонка одна, но широкая; на телефоне таблица едет вбок внутри
@@ -23,11 +25,13 @@
   .d-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
   .d-head h1{font-size:26px;letter-spacing:-.03em}
   .d-tabs{display:flex;gap:4px;background:var(--card);border-radius:999px;padding:4px;
-          box-shadow:var(--sh-1);flex:1;min-width:260px;max-width:460px}
+          box-shadow:var(--sh-1);flex:1;min-width:260px;max-width:620px;overflow-x:auto;scrollbar-width:none}
   .d-tabs button{flex:1;border:0;background:transparent;border-radius:999px;padding:9px 14px;
                  font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;
                  white-space:nowrap;transition:background .15s var(--ease),color .15s var(--ease)}
   .d-tabs button.on{background:var(--navy);color:var(--on-navy)}
+  .d-badge{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;
+           background:var(--accent);color:#fff;font-size:11.5px;font-variant-numeric:tabular-nums;margin-left:2px}
   /* листы графиков: по одному на учителя */
   .sheets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   .sheets button{background:var(--card);border:0;border-radius:999px;padding:11px 18px;font:inherit;
@@ -198,6 +202,7 @@
 <script src="app/db.js"></script>
 <script src="app/course.js"></script>
 <script src="app/schedule.js"></script>
+<script src="app/control.js"></script>
 <script>
 (function () {
   'use strict';
@@ -211,7 +216,10 @@
      карточке ученика и у учителя пусто, берётся она. */
   var RATE = 1150;
 
-  var view = 'students';   /* students | new | sched | all */
+  var view = 'students';   /* students | new | sched | all | control */
+  var C = window.CTRL;
+  var ctlPeriod = null;    /* контроль: какой период открыт, ключ вида 2026-10-1 */
+  var ctlLang = 'kk';      /* язык сообщения клиенту: родители 1English — казахоязычные */
   /* Ответ формы после записи: id элемента → [класс, разметка]. Страница
      перерисовывается раз в 10 секунд, а выданный код ученику нужно ещё
      продиктовать — поэтому ответ живёт до следующего нажатия или до
@@ -411,6 +419,7 @@
   }
 
   function render(d) {
+    ctlCache.d = null;   /* разбор контроля — заново на каждую перерисовку: в тестовом режиме объект данных один и тот же */
     var byStudent = {};
     d.progress.forEach(function (r) {
       var s = byStudent[r.student_id] || (byStudent[r.student_id] = { steps: 0, lessons: {}, last: null });
@@ -471,10 +480,11 @@
       '<div class="d-head">' +
         '<h1>Дашборд</h1>' +
         '<div class="d-tabs">' +
-          [['students','Ученики'],['new','Завести'],['sched','Графики'],['all','Сводная']]
+          [['students','Ученики'],['new','Завести'],['sched','Графики'],['all','Сводная'],['control','Контроль']]
             .map(function (t) {
+              var n = t[0] === 'control' ? control(d).an.tickets.length : 0;
               return '<button data-view="' + t[0] + '"' + (view === t[0] ? ' class="on"' : '') +
-                     '>' + t[1] + '</button>';
+                     '>' + t[1] + (n ? ' <span class="d-badge">' + n + '</span>' : '') + '</button>';
             }).join('') +
         '</div>' +
         '<span class="live"><i></i><span>обновлено ' +
@@ -629,7 +639,11 @@
           '</div>'
         )
       : view === 'sched' ? viewSched(d)
+      : view === 'control' ? viewControl(d)
       : viewAll(d));
+    /* Вопросы в контроле видны и на свёрнутой вкладке браузера. */
+    var nq = control(d).an.tickets.length;
+    document.title = (nq ? '(' + nq + ') ' : '') + '1English · дашборд';
 
     root.querySelector('#out').onclick = function () { stop(); DB.signOut(); auth(''); };
 
@@ -649,6 +663,7 @@
     wireNewStudent();
     wireTeachers();
     wireSched();
+    wireControl();
     Object.keys(flash).forEach(function (id) {
       var el = root.querySelector('#' + id);
       if (el) { el.className = flash[id][0]; el.innerHTML = flash[id][1]; }
@@ -741,11 +756,13 @@
 
     var rows = cards.map(function (c) {
       var t = byId[c.teacher_id] || {};
-      var all = c.lessons || [];
-      var done = all.filter(function (l) { return l.done; }).length;
+      var all = (c.lessons || []).map(C.legacy);
+      /* Проведено — отметки учителя; за месяц — то, что уже к выплате
+         (подтвердил клиент или админ), по месяцу, когда прошёл урок. */
+      var done = all.filter(function (l) { return l.taught; }).length;
       var rate = c.rate == null ? (t.rate || RATE) : c.rate;
       var nowLessons = all.filter(function (l) {
-        return l.done && String(l.done_at || '').slice(0, 7) === month;
+        return C.payable(l) && String(l.taught_on || l.plan_date || l.done_at || '').slice(0, 7) === month;
       }).length;
       return { c: c, t: t, done: done, total: all.length, rate: rate,
                pct: all.length ? Math.round(done / all.length * 100) : 0,
@@ -769,7 +786,7 @@
           ? '<table><thead><tr>' +
               '<th>Ученик</th><th>Учитель</th><th>Формат</th><th>График</th>' +
               '<th class="num">Проведено</th><th class="num">План</th><th class="num">%</th>' +
-              '<th class="num">Ставка</th><th class="num">За месяц</th>' +
+              '<th class="num">Ставка</th><th>Оплата клиента</th><th class="num">За месяц</th>' +
             '</tr></thead><tbody>' +
             rows.map(function (r) {
               return '<tr>' +
@@ -784,14 +801,241 @@
                 '<td class="num">' + r.total + '</td>' +
                 '<td class="num">' + r.pct + '%</td>' +
                 '<td class="num">' + r.rate + ' ₸</td>' +
+                '<td>' + payChip(r.c) + '</td>' +
                 '<td class="num">' + money(r.sum) + '</td>' +
               '</tr>';
             }).join('') +
-            '</tbody><tfoot><tr><td colspan="8">Всего к выплате за ' + esc(monthRu(month)) + '</td>' +
+            '</tbody><tfoot><tr><td colspan="9">Всего к выплате за ' + esc(monthRu(month)) + '</td>' +
             '<td class="num">' + money(sumMonth) + '</td></tr></tfoot></table>'
           : '<div class="d-empty">Ни одной карточки у учителей. Заводите ученика на вкладке «Завести» ' +
             'и выбирайте учителя — он появится здесь.</div>') +
       '</div></div>';
+  }
+
+  /* ── контроль уроков ────────────────────────────────────────────────
+     Учитель отмечает урок, два раза в месяц клиент подтверждает уроки по
+     ссылке из WhatsApp, подтверждённое уходит в выплату само. Здесь —
+     всё, где ответы расходятся или отметка выглядит странно, и ведомость.
+     Правила — app/control.js, тот же файл, что в витрине; база считает
+     done тем же правилом (patch_2026-10-16_control.sql). */
+  function controlOn(d) { return !!d && d.requests != null; }
+  var ctlCache = { d: null, v: null };
+  function control(d) {
+    if (ctlCache.d === d) return ctlCache.v;
+    var today = C.day(new Date()), lessons = [];
+    (d.cards || []).forEach(function (c) {
+      (c.lessons || []).forEach(function (l) { l.card_id = c.id; lessons.push(C.legacy(l)); });
+    });
+    var reqs = (d.requests || []).map(function (r) {
+      return Object.assign({}, r, { period_key: C.period(r.period_from).key });
+    });
+    var an = controlOn(d)
+      ? C.analyze({ teachers: d.teachers || [], cards: d.cards || [], lessons: lessons, requests: reqs }, today)
+      : { rows: [], tickets: [] };
+    ctlCache = { d: d, v: { an: an, today: today, reqs: reqs } };
+    return ctlCache.v;
+  }
+  function payChip(c) {
+    if (!c.paid_until) return '<span class="mini2">—</span>';
+    var left = C.diffDays(C.day(new Date()), c.paid_until);
+    var tone = left < 0 ? 'bad' : left <= 3 ? 'warn' : 'ok';
+    return '<span class="e-chip ' + tone + '">' + (left < 0 ? 'просрочено ' + (-left) + ' дн' :
+      left === 0 ? 'оплата сегодня' : 'до ' + C.dateLabel(c.paid_until, 'ru')) + '</span>';
+  }
+  function confirmUrl(token) {
+    var loc = typeof location === 'undefined' ? { origin: '', pathname: '/' } : location;
+    return (loc.origin || '') + String(loc.pathname || '/').replace(/[^/]*$/, '') + 'confirm.html?t=' + encodeURIComponent(token);
+  }
+  function reqText(d, r, kind) {
+    var card = (d.cards || []).filter(function (c) { return c.id === r.card_id; })[0] || {};
+    var t = (d.teachers || []).filter(function (x) { return x.id === card.teacher_id; })[0] || {};
+    var p = C.period(r.period_from); p.to = r.period_to;
+    var count = (card.lessons || []).filter(function (l) {
+      return l.taught && C.inPeriod(C.dateOf(l), p);
+    }).length;
+    return C.text(kind || 'request', { school: '1English', student: card.name, teacher: t.name || '',
+      period: p, count: count, url: confirmUrl(r.token) }, ctlLang);
+  }
+
+  var CTL_ACTS = {
+    dispute: [['paid', 'Урок был — к выплате'], ['void', 'Урока не было — снять'], ['client'], ['teacher']],
+    suspect: [['paid', 'Подтверждаю — к выплате'], ['void', 'Снять отметку'], ['teacher'], ['client']],
+    ghost:   [['paid', 'Засчитать урок'], ['void', 'Не засчитывать'], ['teacher']],
+    unsure:  [['paid', 'Урок был — к выплате'], ['void', 'Не засчитывать'], ['client']],
+    lowq:    [['paid', 'Выплатить'], ['void', 'Не выплачивать'], ['teacher']],
+    silent:  [['remind'], ['paid', 'Выплатить по журналу'], ['void', 'Не выплачивать']]
+  };
+  var CTL_TONE = { dispute: 'bad', suspect: 'bad', ghost: 'warn', unsure: 'warn', lowq: 'warn', silent: 'warn' };
+
+  function viewControl(d) {
+    if (!controlOn(d)) {
+      return '<div class="d-panel" style="margin-top:16px"><h2>Контроль уроков ещё не включён</h2>' +
+        '<div class="d-hint" style="margin:6px 0 0">Один раз: Supabase → SQL Editor → вставить целиком ' +
+        '<b>backend/patch_2026-10-16_control.sql</b> → Run. Запускать можно повторно, старые галочки ' +
+        'останутся к выплате. Посмотреть, как это работает, — <a href="dashboard.html?demo=1">dashboard.html?demo=1</a>.</div></div>';
+    }
+    var x = control(d), an = x.an, today = x.today;
+    var P1 = C.lastClosed(today), P2 = C.period(today), P0 = C.prevPeriod(P1);
+    var p = C.periodByKey(ctlPeriod) || P1;
+    var rows = C.forPeriod(an, p), mm = C.money(rows);
+    var byCard = {}; (d.cards || []).forEach(function (c) { byCard[c.id] = c; });
+
+    var reqs = x.reqs.filter(function (r) { return r.period_key === p.key; });
+    var missing = (d.cards || []).filter(function (c) {
+      return !c.archived && c.teacher_id && !reqs.some(function (r) { return r.card_id === c.id; }) &&
+        (c.lessons || []).some(function (l) { return (l.taught || l.plan_date) && C.inPeriod(C.dateOf(l), p); });
+    }).length;
+
+    function ticket(t) {
+      var r = t.rows[0], l = r.l, phoneC = t.card.phone, phoneT = (t.teacher || {}).phone;
+      var acts = CTL_ACTS[t.kind].map(function (a) {
+        if (a[0] === 'paid') return '<button class="e-btn sm ok" data-res="' + esc(t.id) + '" data-how="paid">' + a[1] + '</button>';
+        if (a[0] === 'void') return '<button class="e-btn sm danger" data-res="' + esc(t.id) + '" data-how="void">' + a[1] + '</button>';
+        if (a[0] === 'remind') return t.request && phoneC
+          ? '<a class="e-btn sm wa" target="_blank" rel="noopener" data-remind="' + esc(t.request.id) + '" href="' +
+            esc(C.waLink(phoneC, reqText(d, t.request, 'reminder'))) + '">Напомнить в WhatsApp</a>' : '';
+        var to = a[0] === 'client' ? phoneC : phoneT;
+        if (!to) return '';
+        var msg = a[0] === 'client'
+          ? 'Здравствуйте! Это администратор 1English. Уточните, пожалуйста, по уроку ' + t.card.name + ' ' +
+            C.dateLabel(r.date, 'ru') + ': как он прошёл? Хотим, чтобы всё было честно и для вас, и для учителя.'
+          : 'Добрый день! По уроку ' + t.card.name + ' ' + C.dateLabel(r.date, 'ru') + ' есть вопрос: ' +
+            C.KIND[t.kind].toLowerCase() + '. Расскажите, пожалуйста, как прошло занятие.';
+        return '<a class="e-btn sm sec" target="_blank" rel="noopener" href="' + esc(C.waLink(to, msg)) + '">' +
+          (a[0] === 'client' ? 'Написать клиенту' : 'Написать учителю') + '</a>';
+      }).join('');
+      return '<article class="e-ticket ' + CTL_TONE[t.kind] + '">' +
+        '<div class="hd"><span class="e-chip ' + CTL_TONE[t.kind] + '">' + esc(C.KIND[t.kind]) + '</span>' +
+          '<span class="sum">' + money(t.sum) + '</span></div>' +
+        '<div class="nm"><b>' + esc(t.card.name) + '</b> учитель ' + esc((t.teacher || {}).name || '—') + ' · ' +
+          C.periodLabel(t.period, 'ru') + '</div>' +
+        (t.kind === 'silent'
+          ? '<p>' + t.rows.map(function (q) { return C.dateLabel(q.date, 'ru'); }).join(' · ') + '. Запрос ушёл ' +
+            (t.request && t.request.sent_at ? C.dateLabel(C.day(t.request.sent_at), 'ru') : '—') +
+            (t.request && t.request.reminded_at ? ', напоминание — ' + C.dateLabel(C.day(t.request.reminded_at), 'ru') : '') + '.</p>'
+          : '<p><b>' + C.dateLabel(r.date, 'ru') + '</b> · ' + esc(l.topic || 'урок ' + l.idx) + '</p>') +
+        (l.client_note && t.kind !== 'silent' ? '<div class="e-quote">«' + esc(l.client_note) + '»</div>' : '') +
+        (t.kind === 'suspect' ? '<div class="e-tags">' + r.flags.map(function (f) {
+          return '<span class="e-flag">' + esc(C.FLAG[f]) + '</span>'; }).join('') + '</div>' : '') +
+        '<div class="e-acts">' + acts + '</div></article>';
+    }
+
+    function request(r) {
+      var c = byCard[r.card_id] || {}, silent = C.isSilent(r, today);
+      var state = r.answered_at ? '<span class="e-chip ok">ответил ' + C.dateLabel(C.day(r.answered_at), 'ru') + '</span>'
+        : silent ? '<span class="e-chip warn">молчит ' + C.diffDays(C.day(r.sent_at), today) + ' дн</span>'
+        : r.sent_at ? '<span class="e-chip wait">отправлен ' + C.dateLabel(C.day(r.sent_at), 'ru') + '</span>'
+        : '<span class="e-chip mute">не отправлен</span>';
+      var kind = r.sent_at && !r.answered_at ? 'reminder' : 'request';
+      return '<div class="e-li"><span class="e-who"><span class="e-ava">' + esc(initial(c.name)) + '</span>' +
+          '<span style="min-width:0"><b>' + esc(c.name || '—') + '</b><small>' + esc(phoneFmt(c.phone)) + '</small></span></span>' + state +
+        '<div class="e-acts">' +
+          (c.phone && !r.answered_at ? '<a class="e-btn sm wa" target="_blank" rel="noopener" data-sent="' + esc(r.id) +
+            '" data-kind="' + kind + '" href="' + esc(C.waLink(c.phone, reqText(d, r, kind))) + '">' +
+            (kind === 'reminder' ? 'Напомнить' : 'Отправить') + ' в WhatsApp</a>' : '') +
+          '<button class="e-btn sm sec" data-copy="' + esc(confirmUrl(r.token)) + '">Скопировать ссылку</button>' +
+          '<a class="e-btn sm sec" target="_blank" rel="noopener" href="' + esc(confirmUrl(r.token)) + '">Как видит клиент</a>' +
+        '</div></div>';
+    }
+
+    var pay = C.payroll(an, p, d.teachers || []);
+    var tot = { payable: 0, review: 0, awaiting: 0 };
+    pay.forEach(function (y) { tot.payable += y.money.payable; tot.review += y.money.review; tot.awaiting += y.money.awaiting; });
+
+    return '<div class="d-sub" style="margin-top:4px"><h2>Контроль уроков</h2>' +
+        '<span>Учитель отмечает урок → клиент подтверждает по ссылке → подтверждённое уходит в выплату само.</span></div>' +
+      '<div class="sheets">' + [P0, P1, P2].map(function (q) {
+        return '<button data-cp="' + q.key + '"' + (q.key === p.key ? ' class="on"' : '') + '>' + C.periodLabel(q, 'ru') +
+          '<span>' + (C.isClosed(q, today) ? 'закрыт' : 'идёт') + '</span></button>';
+      }).join('') + '</div>' +
+      '<div class="e-flow">' +
+        '<div class="e-kpi navy"><span>Учителя отметили</span><b>' + money(mm.claimed) + '</b><small>' +
+          plural(mm.n.claimed, 'урок', 'урока', 'уроков') + '</small></div>' +
+        '<div class="arrow" aria-hidden="true">→</div>' +
+        '<div class="e-kpi ok"><span>Подтверждено, к выплате</span><b>' + money(mm.payable) + '</b><small>' + mm.n.payable + ' ур.</small></div>' +
+        '<div class="e-kpi"><span>Ждёт ответа клиента</span><b>' + money(mm.awaiting) + '</b><small>' + mm.n.awaiting + ' ур.</small></div>' +
+        '<div class="e-kpi ' + (mm.review ? 'bad' : '') + '"><span>На проверке</span><b>' + money(mm.review) + '</b><small>' +
+          mm.n.review + ' ур. не выплачиваются</small></div>' +
+      '</div>' +
+      '<div class="e-grid two">' +
+        '<section class="e-card"><div class="e-card-h"><h2>Очередь на разбор</h2>' +
+          '<span class="e-chip ' + (an.tickets.length ? 'bad' : 'ok') + ' plain">' + an.tickets.length + '</span>' +
+          '<span class="sub">Все периоды. Пока админ не решил — деньги не выплачиваются.</span></div>' +
+          (an.tickets.length ? '<div class="e-tickets">' + an.tickets.map(ticket).join('') + '</div>'
+            : '<div class="e-empty"><b>Всё разобрано</b>Расхождений нет.</div>') +
+        '</section>' +
+        '<div class="e-stack">' +
+          '<section class="e-card flush"><div class="e-card-h"><h2>Запросы клиентам · ' + C.periodLabel(p, 'ru') + '</h2>' +
+            '<span class="sp"></span><div class="e-seg">' + ['kk', 'ru'].map(function (l) {
+              return '<button data-cl="' + l + '"' + (l === ctlLang ? ' class="on"' : '') + '>' + (l === 'kk' ? 'ҚАЗ' : 'РУС') + '</button>';
+            }).join('') + '</div>' +
+            '<span class="sub">' + (C.isClosed(p, today)
+              ? 'Кнопка открывает WhatsApp с готовым текстом и личной ссылкой. Через 2 дня без ответа — напомнить.'
+              : 'Период идёт: запросы лучше отправлять, когда он закроется — ' + C.dateLabel(C.addDays(p.to, 1), 'ru') + '.') + '</span></div>' +
+            (missing ? '<div style="padding:0 20px 14px"><button class="e-btn sm" id="ctlOpen">Создать ссылки за период (' + missing + ')</button></div>' : '') +
+            (reqs.length ? '<div class="e-list">' + reqs.map(request).join('') + '</div>'
+              : (missing ? '' : '<div class="e-empty">За этот период уроков нет.</div>')) +
+          '</section>' +
+          '<section class="e-card flush"><div class="e-card-h"><h2>Ведомость · ' + C.periodLabel(p, 'ru') + '</h2>' +
+            '<span class="sub">К выплате — только подтверждённое клиентом или администратором.</span></div>' +
+            '<table class="e-table"><thead><tr><th>Учитель</th><th class="num">К выплате</th><th class="num">На проверке</th>' +
+              '<th class="num">Ждёт</th></tr></thead><tbody>' +
+            pay.map(function (y) {
+              return '<tr><td class="lead"><b>' + esc(y.teacher.name || phoneFmt(y.teacher.phone)) + '</b></td>' +
+                '<td class="num" data-l="К выплате"><b>' + money(y.money.payable) + '</b></td>' +
+                '<td class="num" data-l="На проверке">' + (y.money.review ? money(y.money.review) : '—') + '</td>' +
+                '<td class="num" data-l="Ждёт">' + (y.money.awaiting ? money(y.money.awaiting) : '—') + '</td></tr>';
+            }).join('') + '</tbody><tfoot><tr><td class="lead">Итого</td>' +
+              '<td class="num" data-l="К выплате">' + money(tot.payable) + '</td>' +
+              '<td class="num" data-l="На проверке">' + money(tot.review) + '</td>' +
+              '<td class="num" data-l="Ждёт">' + money(tot.awaiting) + '</td></tr></tfoot></table>' +
+          '</section>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function wireControl() {
+    function each(sel, fn) { Array.prototype.forEach.call(root.querySelectorAll(sel), fn); }
+    each('[data-cp]', function (b) { b.onclick = function () { ctlPeriod = b.getAttribute('data-cp'); render(lastData); }; });
+    each('[data-cl]', function (b) { b.onclick = function () { ctlLang = b.getAttribute('data-cl'); render(lastData); }; });
+    each('[data-res]', function (b) {
+      b.onclick = function () {
+        var t = control(lastData).an.tickets.filter(function (x) { return x.id === b.getAttribute('data-res'); })[0];
+        if (!t) return;
+        b.disabled = true;
+        DB.rpc('en_control_resolve', { p_ids: t.rows.map(function (r) { return r.l.id; }),
+                                       p_how: b.getAttribute('data-how'), p_note: 'решение администратора' })
+          .then(function (answer) { if (answer !== 'Готово') alert(answer); return pull(true); })
+          .catch(function (e) { b.disabled = false; alert(e.message); });
+      };
+    });
+    /* WhatsApp открывается ссылкой; отметку «отправлено» ставим тут же —
+       дальше видно, кто молчит. */
+    each('[data-sent],[data-remind]', function (a) {
+      a.addEventListener('click', function () {
+        var id = a.getAttribute('data-sent') || a.getAttribute('data-remind');
+        var field = a.getAttribute('data-remind') || a.getAttribute('data-kind') === 'reminder' ? 'reminded_at' : 'sent_at';
+        var body = {}; body[field] = new Date().toISOString();
+        DB.rest('en_confirm_requests?id=eq.' + encodeURIComponent(id), {
+          method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: body
+        }).then(function () { return pull(true); }).catch(function () {});
+      });
+    });
+    each('[data-copy]', function (b) {
+      b.onclick = function () {
+        var url = b.getAttribute('data-copy');
+        (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+          .then(function () { b.textContent = 'Скопировано'; })
+          .catch(function () { prompt('Ссылка клиента:', url); });
+      };
+    });
+    var open = root.querySelector('#ctlOpen');
+    if (open) open.onclick = function () {
+      var p = C.periodByKey(ctlPeriod) || C.lastClosed(C.day(new Date()));
+      open.disabled = true;
+      DB.rpc('en_confirm_open', { p_from: p.from, p_to: p.to }).then(function () { return pull(true); })
+        .catch(function (e) { open.disabled = false; alert(e.message); });
+    };
   }
 
   function money(n) { return String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₸'; }
@@ -913,6 +1157,15 @@
         '<div><label>Ставка учителю, ₸ за урок</label><input id="' + p + 'Rate" type="number" min="0" placeholder="как у учителя, ' + RATE + '" value="' + val(c.rate) + '"></div>' +
         '<div><label>Начало занятий</label><input id="' + p + 'Start" type="date" value="' +
           val(c.started_on || new Date().toISOString().slice(0, 10)) + '"></div>' +
+        /* Оплата клиента: у индивидуальных учеников она у всех своя. Поля
+           появляются, когда в базе есть патч контроля уроков. */
+        (controlOn(d) ?
+          '<div><label>Оплата клиента</label><select id="' + p + 'Pay">' +
+            [['', 'не указано'], ['month', 'помесячно'], ['two_weeks', 'раз в 2 недели'], ['lessons8', 'пакет 8 уроков'], ['other', 'другое']]
+              .map(function (x) {
+                return '<option value="' + x[0] + '"' + ((c.pay_plan || '') === x[0] ? ' selected' : '') + '>' + x[1] + '</option>';
+              }).join('') + '</select></div>' +
+          '<div><label>Оплачено до</label><input id="' + p + 'Paid" type="date" value="' + val(c.paid_until) + '"></div>' : '') +
         (edit ? '' :
           '<div><label>Месяцев обучения</label><input id="' + p + 'Months" type="number" min="1" max="36" value="4"></div>' +
           '<div><label>Уроков в месяце</label><input id="' + p + 'Per" type="number" min="1" max="31" value="12"></div>') +
@@ -1011,7 +1264,7 @@
 
     return DB.rest('en_teacher_students', {
       method: 'POST', headers: { Prefer: 'return=representation' },
-      body: {
+      body: Object.assign({
         teacher_id: teacher, name: String(name).slice(0, 60), phone: norm(phone),
         age: age, city: v(p + 'City') || null,
         level: v(p + 'LvlText') || null, format: v(p + 'Format') || 'individual',
@@ -1019,7 +1272,7 @@
         goal: v(p + 'Goal') || null, note: v(p + 'Note') || null,
         rate: v(p + 'Rate') === '' ? null : Math.max(0, Number(v(p + 'Rate')) || 0),
         months: months, per_month: per, started_on: v(p + 'Start') || null
-      }
+      }, payOf(v, p))
     }).then(function (rows) {
       var topics = v(p + 'Topics').split('\n'), hw = v(p + 'Hw').split('\n');
       var plan = [], k = 0;
@@ -1160,7 +1413,9 @@
     var arch = cs.filter(function (c) { return c.archived; });
     var ts = d.teachers || [];
 
-    function doneOf(c) { return (c.lessons || []).filter(function (l) { return l.done; }).length; }
+    /* Проведённые — по отметке учителя: урок, который ждёт клиента, уже
+       принадлежит прежнему учителю, хоть ещё и не в выплате. */
+    function doneOf(c) { return (c.lessons || []).map(C.legacy).filter(function (l) { return l.taught; }).length; }
 
     /* Уже заведённая карточка: вся анкета открыта для правки. */
     function cardBox(c, k) {
@@ -1348,14 +1603,20 @@
   function cardBody(v, p, scope) {
     var age = Number(v(p + 'Age')) || null;
     if (age != null && (age < 3 || age > 99)) age = null;
-    return {
+    return Object.assign({
       teacher_id: v(p + 'Teacher') || null, format: v(p + 'Format') || 'individual',
       days: checkedDays(scope).join(','), time_at: v(p + 'Time') || null,
       age: age, city: v(p + 'City') || null, level: v(p + 'LvlText') || null,
       rate: v(p + 'Rate') === '' ? null : Math.max(0, Number(v(p + 'Rate')) || 0),
       started_on: v(p + 'Start') || null,
       goal: v(p + 'Goal') || null, note: v(p + 'Note') || null
-    };
+    }, payOf(v, p));
+  }
+  /* Поля оплаты — только если в базе есть их колонки, иначе PostgREST
+     отклонит всю запись из-за одного незнакомого поля. */
+  function payOf(v, p) {
+    if (!controlOn(lastData)) return {};
+    return { pay_plan: v(p + 'Pay') || null, paid_until: v(p + 'Paid') || null };
   }
 
   /* Смена учителя, когда уроки уже шли. Проведённые уроки держат зарплату
@@ -1369,8 +1630,13 @@
      потом удаление старых непроведённых и архив. */
   function moveCard(c, body) {
     var fresh;
+    /* Переезжают только нетронутые уроки: не отмеченные учителем, без
+       ответа клиента и без решения админа. Урок, который ждёт клиента,
+       остаётся у того, кто его провёл. До патча контроля колонок taught
+       нет — тогда, как раньше, по done. */
     return DB.rest('en_teacher_lessons?card_id=eq.' + encodeURIComponent(c.id) +
-                   '&done=is.false&select=id,month,idx,topic,homework,plan_date')
+                   (controlOn(lastData) ? '&taught=is.false&client_answer=is.null&review=is.null' : '&done=is.false') +
+                   '&select=id,month,idx,topic,homework,plan_date')
       .then(function (rest) {
         fresh = rest || [];
         return DB.rest('en_teacher_students', {
@@ -1431,13 +1697,42 @@
      ни одна строка никуда не уходит. Кабинет учителя устроен так же —
      teacher.html?demo=1. */
   function demo() {
-    function les(done, tag) {
-      var out = [];
-      for (var i = 0; i < 12; i++)
-        out.push({ id: tag + i, month: 1, idx: i + 1, done: i < done,
-                   done_at: i < done ? new Date(Date.now() - i * 864e5).toISOString() : null });
+    /* Уроки по графику ученика: прошлая половина месяца закрыта и
+       подтверждена клиентами (с расхождениями), текущая — отмечена и ждёт.
+       scene: дата → ответ клиента, по ней видно каждый тип вопроса. */
+    var today = C.day(new Date()), P1 = C.lastClosed(today);
+    function les(tag, days, scene, extra) {
+      var out = [], d = P1.from, k = 0;
+      while (d < C.addDays(today, 10) && k < 24) {
+        if (days.indexOf(C.weekday(d)) >= 0) {
+          var past = d < today, inP1 = C.inPeriod(d, P1), sc = (scene || {})[k] || {};
+          var l = { id: tag + k, month: 1, idx: k + 1, topic: ['Present Simple', 'Артикли', 'Числа и время', 'Мой день',
+                    'Семья', 'Еда', 'Город', 'Past Simple'][k % 8], plan_date: d,
+                    taught: past && !sc.notTaught, taught_on: past && !sc.notTaught ? d : null,
+                    taught_at: past && !sc.notTaught ? d + 'T19:10:00+05:00' : null,
+                    client_answer: inP1 && !(scene || {}).silent ? (sc.a || 'yes') : null,
+                    client_quality: inP1 && !(scene || {}).silent && (sc.a || 'yes') === 'yes' ? (sc.q || 5) : null,
+                    client_note: sc.note || null, review: null };
+          out.push(l); k++;
+        }
+        d = C.addDays(d, 1);
+      }
+      (extra || []).forEach(function (x, i) {
+        out.push({ id: tag + 'x' + i, month: 1, idx: 30 + i, topic: 'Доп. занятие', plan_date: null,
+                   taught: true, taught_on: x, taught_at: C.addDays(today, -1) + 'T22:40:00+05:00',
+                   client_answer: null, client_quality: null, client_note: null, review: null });
+      });
+      out.forEach(function (l) { l.done = C.payable(l); l.done_at = l.done ? l.taught_at : null; });
       return out;
     }
+    function req(card, answered) {
+      return { id: 'r-' + card, token: 'demo-' + card, card_id: card, period_from: P1.from, period_to: P1.to,
+               created_at: C.addDays(today, -3) + 'T10:00:00+05:00', sent_at: C.addDays(today, -3) + 'T10:00:00+05:00',
+               reminded_at: answered ? null : C.addDays(today, -1) + 'T10:00:00+05:00',
+               answered_at: answered ? C.addDays(today, -2) + 'T12:30:00+05:00' : null };
+    }
+    /* суббота первой половины — «урок не по графику» у Данияра (у него только чт) */
+    var sat = P1.from; while (C.weekday(sat) !== 'sat') sat = C.addDays(sat, 1);
     var now = new Date().toISOString();
     var data = {
       isAdmin: true,
@@ -1473,18 +1768,23 @@
       cards: [
         { id: 'c1', teacher_id: 't1', name: 'Аяжан', phone: '77011234567', age: 14, city: 'Алматы',
           format: 'individual', days: 'mon,wed,fri', time_at: '18:00', archived: false,
-          rate: null, months: 1, per_month: 12, lessons: les(9, 'a') },
+          rate: null, months: 1, per_month: 12, pay_plan: 'month', paid_until: C.addDays(today, 12),
+          lessons: les('a', ['mon','wed','fri'], { 2: { a: 'no', note: 'Урока не было: перенесли и не провели.' } }) },
         { id: 'c2', teacher_id: 't1', name: 'Ернар', phone: '77029876543', age: 11, city: 'Астана',
           format: 'group', days: 'tue,thu', time_at: '17:00', archived: false,
-          rate: null, months: 1, per_month: 12, lessons: les(5, 'b') },
+          rate: null, months: 1, per_month: 12, pay_plan: 'two_weeks', paid_until: C.addDays(today, -2),
+          lessons: les('b', ['tue','thu'], { silent: true }) },
         { id: 'c3', teacher_id: 't1', name: 'Данияр', phone: '77014445566', age: 16, city: 'Шымкент',
           format: 'individual', days: 'thu', time_at: '20:00', archived: false,
-          rate: 2000, months: 1, per_month: 12, lessons: les(3, 'c') },
+          rate: 2000, months: 1, per_month: 12, pay_plan: 'lessons8', paid_until: C.addDays(today, 2),
+          lessons: les('c', ['thu'], { 1: { a: 'unsure', note: 'Не помню, был ли урок — уезжали.' } }, [sat]) },
         { id: 'c4', teacher_id: 't2', name: 'Әсем', phone: '77013332211', age: 12, city: 'Алматы',
           format: 'group', days: 'sat', time_at: '11:00', archived: false,
-          rate: null, months: 1, per_month: 12, lessons: les(7, 'd') }
+          rate: null, months: 1, per_month: 12, pay_plan: 'month', paid_until: C.addDays(today, 20),
+          lessons: les('d', ['sat'], { 0: { a: 'yes', notTaught: true }, 1: { a: 'yes', q: 2, note: 'Полурока шумно, плохо слышно.' } }) }
       ]
     };
+    data.requests = [req('c1', true), req('c2', false), req('c3', true), req('c4', true)];
 
     DB.init = function () { return true; };
     DB.userId = 'admin';
@@ -1516,7 +1816,8 @@
       opt = opt || {};
       var table = path.split('?')[0], q = path.slice(table.length), how = opt.method || 'GET';
       var list = table === 'en_teacher_students' ? data.cards
-               : table === 'en_teachers' ? data.teachers : null;
+               : table === 'en_teachers' ? data.teachers
+               : table === 'en_confirm_requests' ? data.requests : null;
       if (table === 'en_teacher_lessons') {
         if (how === 'POST') {
           var rows = [].concat(opt.body);
@@ -1552,6 +1853,28 @@
       return Promise.resolve([]);
     };
     DB.rpc = function (name, body) {
+      /* Решения админа и запросы — по тем же правилам, что функции в базе. */
+      if (name === 'en_control_resolve') {
+        lessonsAll().forEach(function (l) {
+          if (body.p_ids.indexOf(l.id) < 0) return;
+          l.review = body.p_how === 'reopen' ? null : body.p_how;
+          if (body.p_how === 'paid' && !l.taught) { l.taught = true; l.taught_on = l.plan_date || C.day(new Date()); }
+          l.done = C.payable(l); l.done_at = l.done ? new Date().toISOString() : null;
+        });
+        return Promise.resolve('Готово');
+      }
+      if (name === 'en_confirm_open') {
+        var made = 0;
+        data.cards.forEach(function (c) {
+          if (c.archived || !c.teacher_id) return;
+          if (data.requests.some(function (r) { return r.card_id === c.id && r.period_from === body.p_from; })) return;
+          if (!(c.lessons || []).some(function (l) { return C.inPeriod(C.dateOf(l), C.period(body.p_from)); })) return;
+          data.requests.push({ id: 'r' + (++seq), token: 'demo' + seq, card_id: c.id, period_from: body.p_from,
+                               period_to: body.p_to, created_at: new Date().toISOString() });
+          made++;
+        });
+        return Promise.resolve(made);
+      }
       if (name === 'en_edit_student') {
         var st = data.students.filter(function (x) { return x.id === body.p_id; })[0];
         var ph = DB.normPhone(body.p_phone);

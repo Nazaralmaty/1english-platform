@@ -46,6 +46,9 @@ ctx.document.createElement = () => ({ style: {} });
 ctx.document.head = { appendChild() {} };
 vm.runInContext(fs.readFileSync('app/schedule.js', 'utf8'), ctx);
 ctx.SCHED = ctx.window.SCHED;
+/* Правила контроля уроков: статусы, очередь, ведомость. */
+vm.runInContext(fs.readFileSync('app/control.js', 'utf8'), ctx);
+ctx.CTRL = ctx.window.CTRL;
 
 const now = new Date().toISOString();
 
@@ -226,5 +229,46 @@ has('2000 ₸', 'своя ставка из карточки');
 has('18 350 ₸', 'итого к выплате за месяц');
 has('>13<', 'уроков в этом месяце');
 
-console.log(fails.length ? '✗ ' + fails.join('\n✗ ') : 'OK: дашборд собирается, цифры сходятся');
+/* ── контроль уроков ─────────────────────────────────────────────────
+   Без патча 16.10 в базе таблицы запросов нет — вкладка не падает, а
+   говорит, какой файл применить. */
+await tab('control');
+has('Контроль уроков ещё не включён', 'вкладка контроля без патча подсказывает, что применить');
+has('patch_2026-10-16_control.sql', 'имя патча в подсказке');
+
+/* С патчем: в прошлой половине месяца у Аяжан урок подтверждён, второй —
+   спор, третий ждёт без ответа, и клиент молчит третий день. */
+const C = ctx.CTRL, today = C.day(new Date()), P1 = C.lastClosed(today);
+ctx.DB.listAll = () => base().then(d => Object.assign(d, {
+  teachers: [{ id: 't1', name: 'Айгерім', phone: '77015550000', rate: 1150, slots: '' }],
+  cards: [
+    { id: 'c1', teacher_id: 't1', name: 'Аяжан', phone: '77011234567', days: '', rate: null, archived: false,
+      lessons: [
+        { id: 'k1', month: 1, idx: 1, taught: true, taught_on: P1.from, client_answer: 'yes', client_quality: 5, done: true },
+        { id: 'k2', month: 1, idx: 2, topic: 'Артикли', taught: true, taught_on: C.addDays(P1.from, 1),
+          client_answer: 'no', client_note: 'Урока не было', done: false } ] },
+    { id: 'c2', teacher_id: 't1', name: 'Тимур', phone: '77029876543', days: '', rate: 1400, archived: false,
+      lessons: [{ id: 'm1', month: 1, idx: 1, taught: true, taught_on: P1.from, done: false }] }
+  ],
+  requests: [
+    { id: 'r1', token: 'a'.repeat(36), card_id: 'c1', period_from: P1.from, period_to: P1.to,
+      sent_at: C.addDays(today, -4) + 'T10:00:00Z', answered_at: C.addDays(today, -3) + 'T10:00:00Z' },
+    { id: 'r2', token: 'b'.repeat(36), card_id: 'c2', period_from: P1.from, period_to: P1.to,
+      sent_at: C.addDays(today, -3) + 'T10:00:00Z', answered_at: null }
+  ]
+}));
+await tab('control');
+has('Учитель и клиент расходятся', 'спор в очереди');
+has('«Урока не было»', 'слова клиента в споре');
+has('Клиент не ответил', 'молчание клиента в очереди');
+has('data-res="dispute-k2"', 'кнопки решения по спору');
+has('wa.me/77029876543', 'напоминание молчащему клиенту — WhatsApp на его номер');
+has('confirm.html?t=' + 'a'.repeat(36), 'личная ссылка клиента');
+has('молчит 3 дн', 'сколько дней молчит');
+/* к выплате только k1: 1150; на проверке спор 1150 и молчание 1400 */
+has('<b>1 150 ₸</b>', 'к выплате в ведомости — только подтверждённое');
+has('2 550 ₸', 'на проверке: спор и молчание');
+has('<span class="d-badge">2</span>', 'на вкладке — число вопросов');
+
+console.log(fails.length ? '✗ ' + fails.join('\n✗ ') : 'OK: дашборд собирается, цифры сходятся, контроль уроков считает');
 process.exit(fails.length ? 1 : 0);

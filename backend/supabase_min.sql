@@ -239,13 +239,9 @@ drop policy if exists en_allowed_admin on public.en_allowed;
 create policy en_allowed_admin on public.en_allowed
   for all using (public.en_is_admin()) with check (public.en_is_admin());
 
--- ученику нужно знать одно: пускают его или нет. Строк он при этом не видит.
-create or replace function public.en_am_i_allowed()
-returns boolean language sql stable security definer set search_path = public, auth as $$
-  select public.en_phone_ok();
-$$;
-grant execute on function public.en_am_i_allowed() to authenticated;
-
+-- en_phone_ok идёт первой: тело SQL-функции Postgres проверяет при
+-- создании, и en_am_i_allowed, заведённая раньше неё, роняла весь файл на
+-- чистой базе — новую школу с нуля было не поднять.
 create or replace function public.en_phone_ok()
 returns boolean language sql stable security definer set search_path = public, auth as $$
   select not exists (select 1 from public.en_allowed)
@@ -254,6 +250,13 @@ returns boolean language sql stable security definer set search_path = public, a
         where a.phone = split_part((select email from auth.users where id = auth.uid()), '@', 1)
       );
 $$;
+
+-- ученику нужно знать одно: пускают его или нет. Строк он при этом не видит.
+create or replace function public.en_am_i_allowed()
+returns boolean language sql stable security definer set search_path = public, auth as $$
+  select public.en_phone_ok();
+$$;
+grant execute on function public.en_am_i_allowed() to authenticated;
 
 -- фильтр вешается на запись: читать своё пустое ученику не вредно
 drop policy if exists en_students_write on public.en_students;
