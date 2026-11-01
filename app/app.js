@@ -1189,7 +1189,8 @@ function inv(kind) { return INV && INV !== 'off' ? INV[kind] || {} : null; }
 
 function famLink(kind, rel) {
   var base = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
-  return base + (kind === 'kid' ? 'kids/' : 'elders/') + '?c=' + INV.code + (rel ? '&r=' + rel : '');
+  return base + (kind === 'kid' ? 'kids/' : 'elders/') + '?c=' + INV.code + (rel ? '&r=' + rel : '') +
+    (DEMO ? '&demo=1' : ''); /* демо-код выдуман, живая база его не знает */
 }
 function codeShow(c) { return c ? c.slice(0, 4) + '-' + c.slice(4) : ''; }
 
