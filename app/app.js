@@ -243,20 +243,21 @@ var LANG = {
     famWho:'Кому отправляем?', famRel:{ mama:'Маме', papa:'Папе', aje:'Бабушке', ata:'Дедушке', aga:'Брату', apke:'Сестре' },
     famSend:'Отправить в WhatsApp', famCopy:'Скопировать ссылку', famCopied:'Ссылка скопирована',
     famPreview:'Посмотреть, что увидят', famRenew:'Новая ссылка', famRenewCap:'Старая ссылка перестанет открываться',
-    famRenewed:'Готово: отправьте новую ссылку', famOff:'Приглашения заработают после обновления базы.',
-    famMsgKid:function (l) { return 'Тебе подарок: английский по мультикам в 1English. Открой ссылку: ' + l; },
-    famMsgElder:function (l) { return 'Дарю вам английский: короткие фразы для жизни, по 5 минут в день. Откройте ссылку: ' + l; },
-    futTab:function (w) { return w === 'school' ? 'Гранты' : w === 'adult' ? 'Вакансии' : 'Будущее'; },
-    futAsk:'Что вам ближе?', futAskSub:'Покажем то, ради чего стоит учить английский.',
-    futSchool:'Я школьник', futSchoolCap:'Гранты на учёбу за рубежом',
-    futAdult:'Я взрослый', futAdultCap:'Работа, где нужен английский',
-    jobsTitle:'Работа с английским', jobsSub:'Вакансии с hh.kz, где просят английский. Список обновляется раз в неделю.',
-    jobsAll:'Все', noSalary:'зарплата не указана', jobsEmpty:'Вакансий этой профессии сейчас нет',
+    famOff:'Подарок заработает после обновления базы.',
+    famCode:'Ваш промокод', famCodeCap:'Один на обе платформы. Ребёнок и старший входят с ним и своим именем; первый вход закрепляет платформу за этим человеком.',
+    famNoteThanks:function (n) { return (n || 'Ваш близкий') + ' говорит спасибо за подарок'; },
+    famNoteDone:function (n) { return (n || 'Ваш близкий') + ' прошёл(а) новую тему'; },
+    famOk:'Хорошо', famRow:'Подарок семье', famRowCap:'Промокод и две платформы',
+    famMsgKid:function (l, c) { return 'Тебе подарок: английский по мультикам в 1English. Открой ссылку: ' + l + ' Промокод: ' + c; },
+    famMsgElder:function (l, c) { return 'Дарю вам английский: короткие фразы для жизни, по 5 минут в день. Откройте ссылку: ' + l + ' Промокод: ' + c; },
+    futTab:function (w) { return w === 'school' ? 'Гранты' : 'Вакансии'; },
+    segJobs:'Работа', segUnis:'Учёба за рубежом',
+    jobsTitle:'Работа с английским', jobsSub:'Вакансии hh.kz, где просят английский. Обновляем раз в неделю. Выберите сферу.',
+    jobsN:function (n) { return n + ' ваканс.'; }, allProfs:'Все сферы', noSalary:'зарплата не указана', jobsEmpty:'Вакансий этой сферы сейчас нет',
     unisTitle:'Учёба за рубежом', unisSub:'Гранты и стипендии, куда поступают с английским.',
     unisChecked:function (d) { return 'Данные проверены ' + d; },
-    uniCovers:'Что оплачивают', uniEnglish:'Английский', uniOther:'Требования', uniCost:'Сколько стоит без гранта',
-    uniWhen:'Когда подавать', uniHow:'Как подать', uniSite:'Официальный сайт',
-    toJobs:'Мне нужны вакансии', toUnis:'Мне нужны гранты на учёбу'
+    uniCovers:'Что оплачивают', uniEnglish:'Язык', uniOther:'Требования', uniCost:'Сколько стоит без гранта',
+    uniWhen:'Когда подавать', uniHow:'Как подать', uniSite:'Официальный сайт', uniMore:'Подробнее'
   },
   kk: {
     next:'Әрі қарай', enter:'Кіру', phone:'Телефон нөмірі',
@@ -330,20 +331,21 @@ var LANG = {
     famWho:'Кімге жібересіз?', famRel:{ mama:'Анама', papa:'Әкеме', aje:'Әжеме', ata:'Атама', aga:'Ағама', apke:'Әпкеме' },
     famSend:'WhatsApp-қа жіберу', famCopy:'Сілтемені көшіру', famCopied:'Сілтеме көшірілді',
     famPreview:'Олар не көреді', famRenew:'Жаңа сілтеме', famRenewCap:'Ескі сілтеме ашылмай қалады',
-    famRenewed:'Дайын: жаңа сілтемені жіберіңіз', famOff:'Шақырулар база жаңартылғаннан кейін іске қосылады.',
-    famMsgKid:function (l) { return 'Саған сыйлық: 1English-те мультфильммен ағылшын тілі. Сілтемені аш: ' + l; },
-    famMsgElder:function (l) { return 'Сізге ағылшын тілін сыйлаймын: өмірге керек қысқа фразалар, күніне 5 минут. Сілтемені ашыңыз: ' + l; },
-    futTab:function (w) { return w === 'school' ? 'Грант' : w === 'adult' ? 'Жұмыс' : 'Болашақ'; },
-    futAsk:'Сізге не жақын?', futAskSub:'Ағылшын тілі не үшін керек екенін көрсетеміз.',
-    futSchool:'Мен мектеп оқушысымын', futSchoolCap:'Шетелде оқуға гранттар',
-    futAdult:'Мен ересекпін', futAdultCap:'Ағылшын тілі керек жұмыс',
-    jobsTitle:'Ағылшынмен жұмыс', jobsSub:'hh.kz-тегі ағылшын тілі сұралатын вакансиялар. Тізім аптасына бір рет жаңарады.',
-    jobsAll:'Барлығы', noSalary:'жалақы көрсетілмеген', jobsEmpty:'Бұл мамандық бойынша қазір вакансия жоқ',
+    famOff:'Сыйлық база жаңартылғаннан кейін іске қосылады.',
+    famCode:'Сіздің промокодыңыз', famCodeCap:'Екі платформаға бір промокод. Бала мен үлкен адам оны өз атымен енгізеді; алғашқы кіру платформаны сол адамға бекітеді.',
+    famNoteThanks:function (n) { return (n || 'Жақыныңыз') + ' сыйлық үшін рахмет айтады'; },
+    famNoteDone:function (n) { return (n || 'Жақыныңыз') + ' жаңа тақырып өтті'; },
+    famOk:'Жақсы', famRow:'Отбасыға сыйлық', famRowCap:'Промокод және екі платформа',
+    famMsgKid:function (l, c) { return 'Саған сыйлық: 1English-те мультфильммен ағылшын тілі. Сілтемені аш: ' + l + ' Промокод: ' + c; },
+    famMsgElder:function (l, c) { return 'Сізге ағылшын тілін сыйлаймын: өмірге керек қысқа фразалар, күніне 5 минут. Сілтемені ашыңыз: ' + l + ' Промокод: ' + c; },
+    futTab:function (w) { return w === 'school' ? 'Грант' : 'Жұмыс'; },
+    segJobs:'Жұмыс', segUnis:'Шетелде оқу',
+    jobsTitle:'Ағылшынмен жұмыс', jobsSub:'hh.kz-тегі ағылшын тілі сұралатын вакансиялар. Аптасына бір рет жаңарады. Саланы таңдаңыз.',
+    jobsN:function (n) { return n + ' вакансия'; }, allProfs:'Барлық салалар', noSalary:'жалақы көрсетілмеген', jobsEmpty:'Бұл сала бойынша қазір вакансия жоқ',
     unisTitle:'Шетелде оқу', unisSub:'Ағылшын тілімен түсуге болатын гранттар мен стипендиялар.',
     unisChecked:function (d) { return 'Деректер тексерілді: ' + d; },
-    uniCovers:'Не төленеді', uniEnglish:'Ағылшын тілі', uniOther:'Талаптар', uniCost:'Грантсыз құны',
-    uniWhen:'Қашан тапсыру керек', uniHow:'Қалай тапсыру керек', uniSite:'Ресми сайт',
-    toJobs:'Маған вакансиялар керек', toUnis:'Маған оқу гранттары керек'
+    uniCovers:'Не төленеді', uniEnglish:'Тіл', uniOther:'Талаптар', uniCost:'Грантсыз құны',
+    uniWhen:'Қашан тапсыру керек', uniHow:'Қалай тапсыру керек', uniSite:'Ресми сайт', uniMore:'Толығырақ'
   }
 };
 function t(k) {
@@ -699,7 +701,7 @@ function scrHome() {
       '<h2>1English</h2>' +
       '<p>' + t('brandLine1') + '<br>' + t('brandLine2') + '</p>' +
     '</div>' +
-    '<div id="bn"></div>' +
+    '<div id="bn"></div>' + famNotes() +
 
     (mine
       ? '<h2 class="sect">' + t('myCourse') + '</h2>' + courseCard(mine, true) + famBlock() +
@@ -1166,107 +1168,132 @@ function scrWords(id) {
    backend/patch_2026-11-01_family.sql. Нет патча — блок говорит, что
    приглашения заработают после обновления базы, остальное не трогается.
    ══════════════════════════════════════════════════════════════════ */
-var INV = null;               /* null — ещё не спрашивали; 'off' — в базе нет функций; {kid, elder} */
+var INV = null;               /* null — ещё не спрашивали; 'off' — в базе нет функций; {code, kid, elder} */
 
 function loadInvites() {
   if (!BETA) return;
   if (DEMO) {
-    INV = { kid:   { token: 'demo', guest_name: 'Айсұлу', progress: { seen: ['b1', 'b2', 'b3'] } },
-            elder: { token: 'demo', guest_name: '', progress: {} } };
+    INV = { code: 'K7M4PX2Q',
+            kid:   { guest_name: 'Айсұлу', progress: { seen: ['b1', 'b2', 'b3'] }, note: 'thanks', note_new: true },
+            elder: { guest_name: '', progress: {} } };
     return;
   }
   if (!global_DB() || !DB.rpc) return;
-  DB.rpc('en_my_invites', {}).then(function (rows) {
-    INV = {};
-    (rows || []).forEach(function (r) { INV[r.kind] = r; });
-    if (!INV.kid) INV = 'off';
-    if (/^#\/?home/.test(location.hash)) route();
+  DB.rpc('en_my_invites', {}).then(function (r) {
+    INV = r && r.code ? r : 'off';
+    if (/^#\/?(home|settings)/.test(location.hash)) route();
   }).catch(function () { INV = 'off'; });
 }
 
-function famLink(kind, inv, rel) {
+function inv(kind) { return INV && INV !== 'off' ? INV[kind] || {} : null; }
+
+function famLink(kind, rel) {
   var base = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
-  return base + (kind === 'kid' ? 'kids/' : 'elders/') +
-    (inv.token === 'demo' ? '?demo=1' : '?i=' + encodeURIComponent(inv.token)) + (rel ? '&r=' + rel : '');
+  return base + (kind === 'kid' ? 'kids/' : 'elders/') + '?c=' + INV.code + (rel ? '&r=' + rel : '');
 }
+function codeShow(c) { return c ? c.slice(0, 4) + '-' + c.slice(4) : ''; }
 
 function famState(kind) {
-  var inv = INV && INV !== 'off' ? INV[kind] : null;
-  if (!inv) return INV === 'off' ? t('famOff') : '';
-  var pr = inv.progress || {}, n = kind === 'kid' ? (pr.seen || []).length : (pr.done || []).length;
-  if (!inv.guest_name && !inv.opened_at && !n) return t('famNotSent');
-  return t('famOpened')(inv.guest_name) + (n ? ' · ' + t(kind === 'kid' ? 'famProgKid' : 'famProgElder')(n) : '');
+  var x = inv(kind);
+  if (!x) return INV === 'off' ? t('famOff') : '';
+  var pr = x.progress || {}, n = kind === 'kid' ? (pr.seen || []).length : (pr.done || []).length;
+  if (!x.guest_name) return t('famNotSent');
+  return t('famOpened')(x.guest_name) + (n ? ' · ' + t(kind === 'kid' ? 'famProgKid' : 'famProgElder')(n) : '');
 }
 
-function famBlock() {
-  if (!BETA) return '';
+/* «Аяулым рахмет айтады» — уведомление от гостя, висит, пока не нажали «Жақсы». */
+function famNotes() {
+  if (!BETA || !INV || INV === 'off') return '';
+  return ['kid', 'elder'].map(function (k) {
+    var x = INV[k];
+    if (!x || !x.note_new) return '';
+    var txt = /^done/.test(x.note || '') ? t('famNoteDone')(x.guest_name) : t('famNoteThanks')(x.guest_name);
+    return '<div class="bn note">' + icon('heart', 22) + '<span><b>' + esc(txt) + '</b></span>' +
+      '<button class="chip" data-seen>' + t('famOk') + '</button></div>';
+  }).join('');
+}
+
+function famRows() {
   function row(kind, ic, name) {
     return '<button class="row" data-fam="' + kind + '"><span class="mark">' + icon(ic, 24) + '</span>' +
       '<span class="grow"><b>' + name + '</b><span class="cap">' + esc(famState(kind)) + '</span></span>' +
       '<span class="chev">' + icon('right', 20) + '</span></button>';
   }
-  return '<div class="fam"><h2 class="sect">' + icon('gift', 22) + t('famTitle') + '</h2>' +
-    '<p class="sub" style="margin:-6px 0 12px">' + t('famSub') + '</p>' +
-    '<div class="rows">' + row('kid', 'kid', t('famKid')) + row('elder', 'heart', t('famElder')) + '</div></div>';
+  return (INV && INV !== 'off' ? '<div class="code-card"><span class="cap">' + t('famCode') + '</span><b class="num">' + codeShow(INV.code) +
+      '</b><span class="cap">' + t('famCodeCap') + '</span></div>' : '') +
+    '<div class="rows">' + row('kid', 'kid', t('famKid')) + row('elder', 'heart', t('famElder')) + '</div>';
 }
 
-function wireFam() {
-  $$('[data-fam]').forEach(function (b) {
+function famBlock() {
+  if (!BETA) return '';
+  return '<div class="fam"><h2 class="sect">' + icon('gift', 22) + t('famTitle') + '</h2>' +
+    '<p class="sub" style="margin:-6px 0 12px">' + t('famSub') + '</p>' + famRows() + '</div>';
+}
+
+function wireFam(root) {
+  Array.prototype.forEach.call((root || view).querySelectorAll('[data-fam]'), function (b) {
     b.onclick = function () { famSheet(b.getAttribute('data-fam')); };
+  });
+  Array.prototype.forEach.call((root || view).querySelectorAll('[data-seen]'), function (b) {
+    b.onclick = function () {
+      ['kid', 'elder'].forEach(function (k) { if (INV[k]) INV[k].note_new = false; });
+      b.parentNode.remove();
+      if (!DEMO) DB.rpc('en_invite_seen', {}).catch(function () {});
+    };
   });
 }
 
 function famSheet(kind) {
-  var inv = INV && INV !== 'off' ? INV[kind] : null;
   var rel = kind === 'elder' ? 'mama' : '';
   var rels = t('famRel');
   function body() {
-    var link = inv ? famLink(kind, inv, rel) : '';
-    var msg = t(kind === 'kid' ? 'famMsgKid' : 'famMsgElder')(link);
+    var ok = INV && INV !== 'off';
+    var link = ok ? famLink(kind, rel) : '';
     return '<h1 style="margin:0 0 10px">' + t(kind === 'kid' ? 'famKid' : 'famElder') + '</h1>' +
       '<p class="sub" style="margin-bottom:16px">' + t(kind === 'kid' ? 'famKidAbout' : 'famElderAbout') + '</p>' +
-      (!inv ? '<p class="note" style="text-align:left">' + t('famOff') + '</p>' :
+      (!ok ? '<p class="note" style="text-align:left">' + t('famOff') + '</p>' :
+        '<p class="cap" style="margin:0 0 14px">' + esc(famState(kind)) + '</p>' +
         (kind === 'elder' ? '<b style="display:block;margin-bottom:8px">' + t('famWho') + '</b><div class="chips wrap">' +
           Object.keys(rels).map(function (k) {
             return '<button data-rel="' + k + '"' + (k === rel ? ' class="on"' : '') + '>' + rels[k] + '</button>';
           }).join('') + '</div>' : '') +
-        '<a class="btn" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">' + t('famSend') + '</a>' +
+        '<a class="btn" target="_blank" rel="noopener" href="https://wa.me/?text=' +
+          encodeURIComponent(t(kind === 'kid' ? 'famMsgKid' : 'famMsgElder')(link, codeShow(INV.code))) + '">' + t('famSend') + '</a>' +
         '<div class="gap-sm"></div><button class="btn ghost" id="fcopy">' + t('famCopy') + '</button>' +
         '<div class="gap-sm"></div><a class="btn quiet" target="_blank" rel="noopener" href="' +
-          esc(famLink(kind, { token: 'demo' }, rel)) + '">' + t('famPreview') + '</a>' +
-        (inv.opened_at || inv.guest_name ? '<div class="gap-sm"></div><button class="btn quiet" id="frenew">' + t('famRenew') +
-          '</button><p class="note">' + t('famRenewCap') + '</p>' : ''));
+          (kind === 'kid' ? 'kids/' : 'elders/') + '?demo=1' + (rel ? '&r=' + rel : '') + '">' + t('famPreview') + '</a>');
   }
-  openSheet('<div id="fsheet">' + body() + '</div>', function (veil, close) {
+  openSheet('<div id="fsheet">' + body() + '</div>', function (veil) {
     function wire() {
       Array.prototype.forEach.call(veil.querySelectorAll('[data-rel]'), function (b) {
         b.onclick = function () { rel = b.getAttribute('data-rel'); veil.querySelector('#fsheet').innerHTML = body(); wire(); };
       });
       var cp = veil.querySelector('#fcopy');
       if (cp) cp.onclick = function () {
-        var l = famLink(kind, inv, rel);
+        var l = famLink(kind, rel);
         (navigator.clipboard ? navigator.clipboard.writeText(l) : Promise.reject())
           .then(function () { toast(t('famCopied')); }, function () { window.prompt('', l); });
-      };
-      var rn = veil.querySelector('#frenew');
-      if (rn) rn.onclick = function () {
-        if (DEMO) return toast(t('famRenewed'));
-        DB.rpc('en_invite_renew', { p_kind: kind }).then(function (tok) {
-          if (!tok) return;
-          inv.token = tok; inv.guest_name = inv.guest_name || ''; inv.opened_at = null;
-          veil.querySelector('#fsheet').innerHTML = body(); wire(); toast(t('famRenewed'));
-        });
       };
     }
     wire();
   });
 }
 
+/* Профиль: тот же подарок — промокод и обе платформы в шторке. */
+function famFromProfile() {
+  var v = openSheet('<h1 style="margin:0 0 10px">' + t('famTitle') + '</h1><p class="sub" style="margin-bottom:14px">' + t('famSub') + '</p>' + famRows());
+  Array.prototype.forEach.call(v.querySelectorAll('[data-fam]'), function (b) {
+    b.onclick = function () { v.remove(); famSheet(b.getAttribute('data-fam')); };
+  });
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    ВКЛАДКА «ВАКАНСИИ / ГРАНТЫ» (черновик, BETA)
-   Взрослый видит вакансии с английским (app/jobs.js, раз в неделю
-   собирает backend/jobs.py), школьник — гранты за рубежом (app/unis.js).
-   Кто есть кто, ученик говорит сам один раз; S.who живёт на телефоне.
+   Сверху переключатель «Работа | Учёба за рубежом», выбор помнится (S.who).
+   Работа: сначала сфера плиткой с числом вакансий, потом список сферы.
+   Гранты: карточка сразу показывает, что дают, язык и когда подавать;
+   полный разбор — в шторке. Данные: app/jobs.js (backend/jobs.py раз в
+   неделю), app/unis.js.
    ══════════════════════════════════════════════════════════════════ */
 function needScript(src, done) {
   var id = 'js-' + src.replace(/\W/g, '');
@@ -1276,43 +1303,42 @@ function needScript(src, done) {
   document.head.appendChild(el);
 }
 
-function scrFuture() {
-  if (S.who === 'adult') return needScript('app/jobs.js', scrJobs);
-  if (S.who === 'school') return needScript('app/unis.js', scrUnis);
-  paint('<div class="head"><h1>' + t('futAsk') + '</h1></div>' +
-    '<p class="sub" style="margin:-8px 0 20px">' + t('futAskSub') + '</p>' +
-    '<div class="rows">' +
-      '<button class="row" data-who="school"><span class="mark">' + icon('cap', 24) + '</span><span class="grow"><b>' +
-        t('futSchool') + '</b><span class="cap">' + t('futSchoolCap') + '</span></span><span class="chev">' + icon('right', 20) + '</span></button>' +
-      '<button class="row" data-who="adult"><span class="mark">' + icon('brief', 24) + '</span><span class="grow"><b>' +
-        t('futAdult') + '</b><span class="cap">' + t('futAdultCap') + '</span></span><span class="chev">' + icon('right', 20) + '</span></button>' +
-    '</div>');
-  wireWho();
+function seg() {
+  return '<div class="seg"><button data-who="adult"' + (S.who !== 'school' ? ' class="on"' : '') + '>' + icon('brief', 20) + t('segJobs') + '</button>' +
+    '<button data-who="school"' + (S.who === 'school' ? ' class="on"' : '') + '>' + icon('cap', 20) + t('segUnis') + '</button></div>';
 }
-
 function wireWho() {
   $$('[data-who]').forEach(function (b) {
-    b.onclick = function () { S.who = b.getAttribute('data-who'); save(); route(); };
+    b.onclick = function () { var w = b.getAttribute('data-who'); if (w === S.who) return; S.who = w; save(); route(); };
   });
+}
+
+function scrFuture() {
+  if (S.who === 'school') return needScript('app/unis.js', scrUnis);
+  needScript('app/jobs.js', scrJobs);
 }
 
 var JOB_PROF = '';
 function scrJobs() {
   var J = window.JOBS || { profs: [], items: [] };
-  var list = J.items.filter(function (j) { return !JOB_PROF || j.p === JOB_PROF; });
-  paint('<div class="head"><h1>' + t('jobsTitle') + '</h1></div>' +
-    '<p class="sub" style="margin:-8px 0 16px">' + t('jobsSub') + '</p>' +
-    '<div class="chips"><button data-prof=""' + (!JOB_PROF ? ' class="on"' : '') + '>' + t('jobsAll') + '</button>' +
-      J.profs.map(function (p) {
-        return '<button data-prof="' + p.id + '"' + (p.id === JOB_PROF ? ' class="on"' : '') + '>' + esc(p[S.lang] || p.ru) + '</button>';
-      }).join('') + '</div>' +
-    '<div class="rows">' + (list.length ? list.map(function (j) {
-      return '<a class="row" target="_blank" rel="noopener" href="' + esc(j.url) + '"><span class="grow"><b>' + esc(j.t) + '</b>' +
-        '<span class="cap">' + esc([j.c, j.city].filter(Boolean).join(' · ')) + '</span>' +
-        '<span class="cap' + (j.sal ? ' ok' : '') + '">' + esc(j.sal || t('noSalary')) + '</span></span>' +
-        '<span class="chev">' + icon('right', 20) + '</span></a>';
-    }).join('') : '<p class="note">' + t('jobsEmpty') + '</p>') + '</div>' +
-    '<button class="btn quiet" style="margin-top:18px" data-who="school">' + t('toUnis') + '</button>');
+  function count(p) { return J.items.filter(function (j) { return j.p === p; }).length; }
+  if (!JOB_PROF) {
+    paint(seg() + '<h1 style="margin:18px 0 6px">' + t('jobsTitle') + '</h1><p class="sub" style="margin:0 0 16px">' + t('jobsSub') + '</p>' +
+      '<div class="tiles">' + J.profs.map(function (p) {
+        return '<button class="tile" data-prof="' + p.id + '"><b>' + esc(p[S.lang] || p.ru) + '</b><span class="cap">' + t('jobsN')(count(p.id)) + '</span></button>';
+      }).join('') + '</div>');
+  } else {
+    var prof = J.profs.filter(function (p) { return p.id === JOB_PROF; })[0] || {};
+    var list = J.items.filter(function (j) { return j.p === JOB_PROF; });
+    paint(seg() + '<button class="crumb" data-prof="">' + icon('left', 18) + t('allProfs') + '</button>' +
+      '<h1 style="margin:6px 0 14px">' + esc(prof[S.lang] || prof.ru || '') + '</h1>' +
+      '<div class="rows">' + (list.length ? list.map(function (j) {
+        return '<a class="row job" target="_blank" rel="noopener" href="' + esc(j.url) + '"><span class="grow"><b>' + esc(j.t) + '</b>' +
+          '<span class="cap">' + esc(j.c || '') + '</span><span class="tags">' + (j.city ? '<i>' + esc(j.city) + '</i>' : '') +
+          '<i class="' + (j.sal ? 'ok' : 'none') + '">' + esc(j.sal || t('noSalary')) + '</i></span></span>' +
+          '<span class="chev">' + icon('right', 20) + '</span></a>';
+      }).join('') : '<p class="note">' + t('jobsEmpty') + '</p>') + '</div>');
+  }
   $$('[data-prof]').forEach(function (b) {
     b.onclick = function () { JOB_PROF = b.getAttribute('data-prof'); scrJobs(); };
   });
@@ -1322,26 +1348,30 @@ function scrJobs() {
 function scrUnis() {
   var U = window.UNIS || [], L = S.lang === 'kk' ? 'kk' : 'ru';
   function tr(o) { return o ? (o[L] || o.ru || '') : ''; }
-  var list = U;
+  function lang(u) {
+    var en = u.english || {};
+    return [en.ielts && 'IELTS ' + en.ielts, en.toefl && 'TOEFL ' + en.toefl].filter(Boolean).join(' · ') || tr(en.note);
+  }
   var checked = U.map(function (u) { return u.checked || ''; }).sort().pop();
-  paint('<div class="head"><h1>' + t('unisTitle') + '</h1></div>' +
-    '<p class="sub" style="margin:-8px 0 16px">' + t('unisSub') + (checked ? ' ' + t('unisChecked')(checked.split('-').reverse().join('.')) : '') + '</p>' +
-    '<div class="rows">' + list.map(function (u) {
-      var en = u.english && (u.english.ielts ? 'IELTS ' + u.english.ielts : '');
-      return '<button class="row" data-uni="' + u.id + '"><span class="mark num">' + esc(u.flag) + '</span><span class="grow"><b>' + esc(u.name) +
-        '</b><span class="cap">' + esc([tr(u.country), en].filter(Boolean).join(' · ')) + '</span></span><span class="chev">' + icon('right', 20) + '</span></button>';
-    }).join('') + '</div>' +
-    '<button class="btn quiet" style="margin-top:18px" data-who="adult">' + t('toJobs') + '</button>');
+  paint(seg() + '<h1 style="margin:18px 0 6px">' + t('unisTitle') + '</h1>' +
+    '<p class="sub" style="margin:0 0 16px">' + t('unisSub') + (checked ? ' ' + t('unisChecked')(checked.split('-').reverse().join('.')) : '') + '</p>' +
+    U.map(function (u) {
+      return '<button class="uni" data-uni="' + u.id + '"><span class="uhead"><span class="flag num">' + esc(u.flag) + '</span><span class="grow"><b>' +
+        esc(L === 'kk' && u.name_kk || u.name) + '</b><span class="cap">' + esc(tr(u.country)) + '</span></span></span>' +
+        '<span class="kvs"><span><i>' + t('uniCovers') + '</i>' + esc(tr(u.covers)) + '</span>' +
+        (lang(u) ? '<span><i>' + t('uniEnglish') + '</i>' + esc(lang(u)) + '</span>' : '') +
+        '<span><i>' + t('uniWhen') + '</i>' + esc(tr(u.when)) + '</span></span>' +
+        '<span class="more">' + t('uniMore') + icon('right', 16) + '</span></button>';
+    }).join(''));
   $$('[data-uni]').forEach(function (b) {
     b.onclick = function () {
       var u = U.filter(function (x) { return x.id === b.getAttribute('data-uni'); })[0];
       function kv(k, v) { return v ? '<div class="kv"><b>' + t(k) + '</b><p>' + esc(v) + '</p></div>' : ''; }
       var en = u.english || {};
-      var enLine = [en.ielts && 'IELTS ' + en.ielts, en.toefl && 'TOEFL ' + en.toefl].filter(Boolean).join(' · ');
       var how = (u.how && (u.how[L] || u.how.ru)) || [];
       var v = openSheet('<span class="chip accent">' + esc(tr(u.country)) + '</span>' +
-        '<h1 style="margin:12px 0 4px">' + esc(u.name) + '</h1>' +
-        kv('uniCovers', tr(u.covers)) + kv('uniEnglish', [enLine, tr(en.note)].filter(Boolean).join('. ')) +
+        '<h1 style="margin:12px 0 4px">' + esc(L === 'kk' && u.name_kk || u.name) + '</h1>' +
+        kv('uniCovers', tr(u.covers)) + kv('uniEnglish', [lang(u), en.ielts || en.toefl ? tr(en.note) : ''].filter(Boolean).join('. ')) +
         kv('uniOther', tr(u.other)) + kv('uniCost', tr(u.cost)) + kv('uniWhen', tr(u.when)) +
         (how.length ? '<div class="kv"><b>' + t('uniHow') + '</b><ol>' + how.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol></div>' : '') +
         '<div class="gap-sm"></div><a class="btn" target="_blank" rel="noopener" href="' + esc(u.url) + '">' + t('uniSite') + '</a>');
@@ -1449,6 +1479,7 @@ function scrProfile() {
       row('profile', t('gender'), nameOf(GENDERS, S.gender, t('notSetM')), 'rGender') +
     '</div>' +
 
+    (BETA ? '<div class="group">' + row('gift', t('famRow'), INV && INV !== 'off' ? codeShow(INV.code) : t('famRowCap'), 'rFam') + '</div>' : '') +
     '<div class="group">' + row('globe', t('langLabel'), nameOf(LANGS, S.lang, 'Русский'), 'rLang') + '</div>' +
     '<div class="group">' + row('moon', t('theme'), nameOf(THEMES, S.theme, t('themeSystem')), 'rTheme') + '</div>' +
 
@@ -1462,6 +1493,8 @@ function scrProfile() {
 
     '<div class="gap-sm"></div>' +
     '<button class="btn danger" id="out">' + t('logout') + '</button>');
+
+  if ($('#rFam')) $('#rFam').onclick = famFromProfile;
 
   $('#rWipe').onclick = function () {
     openSheet(

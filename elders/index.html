@@ -69,6 +69,10 @@ label b{display:block;margin:6px 0 8px}
 .bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 22px}
 .bar i{display:block;height:100%;width:100%;background:var(--ok);border-radius:99px;transform-origin:left;transition:transform .3s}
 .msg{text-align:center;padding-top:10vh}
+.err{color:var(--accent);font-weight:700;min-height:1.3em;margin:12px 0 0}
+.field.code{text-transform:uppercase;letter-spacing:.12em}
+.ok-line{display:flex;gap:10px;align-items:center;color:var(--ok);font-weight:700;margin:16px 0 0}
+.btn:disabled{opacity:.55}
 .demo{background:#14202E;color:#fff;text-align:center;font-size:14px;padding:6px}
 svg{flex:none}
 </style>
@@ -81,12 +85,11 @@ svg{flex:none}
 <script>
 (function () {
 'use strict';
-var F = FAM; F.KIND = 'elder';
-var S = F.S, app = document.getElementById('app'), esc = F.esc, P = window.ELDER;
+var F = FAM.make('elder'), S = F.S, app = document.getElementById('app'), esc = FAM.esc, P = window.ELDER;
 
 /* Кто пригласил — по связи из ссылки (&r=) и полу ученика. */
 function who() {
-  var g = S.owner && S.owner.owner_gender, r = S.rel || '';
+  var g = S.owner && S.owner.gender, r = S.rel || '';
   var kk = { m: 'балаңыз', f: 'балаңыз', '': 'балаңыз' }, ru = { m: 'ваш ребёнок', f: 'ваш ребёнок', '': 'ваш ребёнок' };
   if (r === 'mama' || r === 'papa') { kk = { m: 'ұлыңыз', f: 'қызыңыз', '': 'балаңыз' }; ru = { m: 'ваш сын', f: 'ваша дочь', '': 'ваш ребёнок' }; }
   if (r === 'aje' || r === 'ata')   { kk = { m: 'немереңіз', f: 'немереңіз', '': 'немереңіз' }; ru = { m: 'ваш внук', f: 'ваша внучка', '': 'ваш внук' }; }
@@ -98,16 +101,21 @@ var T = {
   kk: {
     thanksHead: function (w, n) { return '<em>Рахмет айтыңыз:</em> ' + w + (n ? ' ' + esc(n) : '') + ' сізге ағылшын тілін сыйлады'; },
     thanksSub: 'Асықпай, күніне 5 минут. Өмірде керек фразалар: сапар, дәрігер, немерелер, телефон. Әр фразаның оқылуы қазақ әрпімен жазылған.',
-    thanksBtn: 'Рахмет айту', thanksMsg: 'Рахмет, балам! Сыйлығыңды аштым, ағылшынды бастадым.',
-    name: 'Сізді қалай атайық?', namePh: 'Мысалы: Гүлнара апа', start: 'Бастау',
+    thanksBtn: 'Рахмет айту', thanked: function (n) { return 'Рахметіңіз жіберілді. ' + (n || '') + ' оны кабинетінен көреді.'; },
+    gift: 'Сізге сыйлық: ағылшын тілі', giftSub: 'Асықпай, күніне 5 минут. Кіру үшін атыңызды және промокодты жазыңыз.',
+    name: 'Атыңыз', namePh: 'Мысалы: Гүлнара апа', code: 'Промокод', codePh: 'ABCD-EFGH', enter: 'Кіру', start: 'Бастау',
+    codeNote: 'Промокод сілтемеде болды. Сілтемесіз кірсеңіз, оны сыйлық жасаған адамнан сұраңыз.',
+    errName: 'Атыңызды жазыңыз', errCode: 'Промокод қате. Сыйлық жасаған адамнан қайта сұраңыз.',
+    errTaken: 'Бұл промокодпен үлкендер платформасы басқа адамға бекітілген. Бұрын кірсеңіз, атыңызды сол кездегідей жазыңыз.',
+    errNet: 'Интернет жоқ. Желіге қосылып, қайта басыңыз.',
     hi: function (n) { return 'Сәлеметсіз бе' + (n ? ', ' + esc(n) : '') + '!'; },
     today: 'Бүгінгі сабақ', todaySub: '6 фраза · 5 минут', open: 'Ашу', allDone: 'Барлық тақырып өтілді. Қайталауға болады.',
     topics: 'Тақырыптар', six: '6 фраза', done: 'өтілді',
     listen: 'Тыңдау', slow: 'Баяу', check: 'Тексеріп көрейік',
     q: 'Бұл фраза нені білдіреді?', ok: 'Дұрыс!', no: 'Дұрысы:', next: 'Келесі',
     fin: function (a, b) { return 'Жарайсыз! ' + a + ' / ' + b; }, finSub: 'Үйренгеніңізбен бөлісіңіз: ол қуанады.',
-    brag: function (list) { return 'Бүгін ағылшынша үйрендім: ' + list + ' Рахмет сыйлығыңа!'; },
-    share: 'WhatsApp-қа жіберу', home: 'Басты бетке',
+    brag: function (n) { return (n || 'Сыйлық жасаған адамға') + ' айтайық: ол қуанады'; },
+    share: 'Жетістікпен бөлісу', shared: 'Жіберілді: ол кабинетінен көреді', home: 'Басты бетке',
     bad: 'Сілтеме ескірген', badSub: 'Сізді шақырған адамнан жаңа сілтеме сұраңыз.',
     taken: 'Бұл сілтеме басқа телефонда ашылған', takenSub: 'Шақырған адам кабинетінде «Жаңа сілтеме» басып, сізге қайта жіберсін.',
     none: 'Сілтеме керек', noneSub: 'Бұл бет шақыру арқылы ашылады. WhatsApp-тағы хаттағы сілтемені басыңыз.',
@@ -116,16 +124,21 @@ var T = {
   ru: {
     thanksHead: function (w, n) { return '<em>Скажите спасибо:</em> ' + w + (n ? ' ' + esc(n) : '') + ' подарил(а) вам английский'; },
     thanksSub: 'Без спешки, по 5 минут в день. Фразы, которые нужны в жизни: поездка, врач, внуки, телефон. Как читается каждая фраза, написано русскими буквами.',
-    thanksBtn: 'Сказать спасибо', thanksMsg: 'Спасибо, родной! Открыл(а) твой подарок, начинаю английский.',
-    name: 'Как к вам обращаться?', namePh: 'Например: Гульнара апа', start: 'Начать',
+    thanksBtn: 'Сказать спасибо', thanked: function (n) { return 'Спасибо отправлено. ' + (n || '') + ' увидит его в своём кабинете.'; },
+    gift: 'Вам подарок: английский язык', giftSub: 'Без спешки, по 5 минут в день. Чтобы войти, напишите имя и промокод.',
+    name: 'Ваше имя', namePh: 'Например: Гульнара апа', code: 'Промокод', codePh: 'ABCD-EFGH', enter: 'Войти', start: 'Начать',
+    codeNote: 'Промокод был в ссылке. Если входите без ссылки, спросите его у того, кто подарил.',
+    errName: 'Напишите имя', errCode: 'Промокод неверный. Спросите его ещё раз у того, кто подарил.',
+    errTaken: 'Платформа для старших по этому промокоду уже закреплена за другим человеком. Если входили раньше, напишите имя так же, как тогда.',
+    errNet: 'Нет интернета. Подключитесь и нажмите ещё раз.',
     hi: function (n) { return 'Здравствуйте' + (n ? ', ' + esc(n) : '') + '!'; },
     today: 'Урок на сегодня', todaySub: '6 фраз · 5 минут', open: 'Открыть', allDone: 'Все темы пройдены. Можно повторять.',
     topics: 'Темы', six: '6 фраз', done: 'пройдено',
     listen: 'Слушать', slow: 'Медленно', check: 'Проверим себя',
     q: 'Что значит эта фраза?', ok: 'Верно!', no: 'Правильно так:', next: 'Дальше',
     fin: function (a, b) { return 'Молодец! ' + a + ' из ' + b; }, finSub: 'Поделитесь, чему научились: ему будет приятно.',
-    brag: function (list) { return 'Сегодня выучил(а) по-английски: ' + list + ' Спасибо за подарок!'; },
-    share: 'Отправить в WhatsApp', home: 'На главную',
+    brag: function (n) { return 'Расскажем ' + (n || 'тому, кто подарил') + ': ему будет приятно'; },
+    share: 'Поделиться успехом', shared: 'Отправлено: он увидит это в кабинете', home: 'На главную',
     bad: 'Ссылка устарела', badSub: 'Попросите новую ссылку у того, кто вас пригласил.',
     taken: 'Эту ссылку уже открыли на другом телефоне', takenSub: 'Пусть пригласивший нажмёт «Новая ссылка» в кабинете и пришлёт её снова.',
     none: 'Нужна ссылка', noneSub: 'Эта страница открывается по приглашению. Нажмите ссылку из сообщения в WhatsApp.',
@@ -140,7 +153,7 @@ var IC = {
   slow: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
   back: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>',
   ok:   '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>',
-  wa:   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8.2 19z"/></svg>'
+  heart: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7.6-4.6-7.6-10.2A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.6 2.4C19.6 15.4 12 20 12 20z"/></svg>'
 };
 
 function top() {
@@ -159,23 +172,48 @@ function paint(html) {
   });
 }
 
-function scrMsg(kind) {
-  paint(top() + '<div class="msg"><h1>' + esc(t(kind)) + '</h1><p class="sub">' + esc(t(kind + 'Sub')) + '</p>' +
-    (kind === 'net' ? '<button class="btn" id="re">' + t('again') + '</button>' : '') + '</div>');
-  var re = document.getElementById('re'); if (re) re.onclick = boot;
+/* Язык — самым первым экраном. */
+function scrLang() {
+  app.innerHTML = '<div class="msg" style="padding-top:18vh"><img src="../assets/logo.png" alt="" style="width:84px;border-radius:22px">' +
+    '<button class="btn" data-pick="kk" style="margin-top:28px">Қазақша</button><button class="btn" data-pick="ru">Русский</button></div>';
+  Array.prototype.forEach.call(app.querySelectorAll('[data-pick]'), function (b) {
+    b.onclick = function () { S.lang = b.getAttribute('data-pick'); F.save(); route(); };
+  });
 }
 
-/* Первый экран — «Рахмет айтыңыз». С него начинается подарок. */
+function scrLogin() {
+  paint(top() + '<h1>' + t('gift') + '</h1><p class="sub">' + t('giftSub') + '</p>' +
+    '<label><b>' + t('name') + '</b><input class="field" id="nm" maxlength="30" placeholder="' + t('namePh') + '" value="' + esc(S.name || '') + '"></label>' +
+    '<label><b style="margin-top:16px">' + t('code') + '</b><input class="field code" id="cd" maxlength="9" autocapitalize="characters" autocomplete="off" placeholder="' + t('codePh') + '" value="' +
+      esc(F.linkCode ? F.linkCode.slice(0, 4) + '-' + F.linkCode.slice(4) : '') + '"></label>' +
+    (F.linkCode ? '' : '<p class="sub" style="margin:10px 0 0">' + t('codeNote') + '</p>') +
+    '<p class="err" id="er"></p><button class="btn" id="go">' + t('enter') + '</button>');
+  var go = document.getElementById('go'), er = document.getElementById('er');
+  go.onclick = function () {
+    go.disabled = true; er.textContent = '';
+    F.enter(document.getElementById('cd').value, document.getElementById('nm').value).then(function (r) {
+      go.disabled = false;
+      if (r.ok) { location.hash = '#/'; return route(); }
+      er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet' }[r.reason] || 'errCode');
+    });
+  };
+}
+
+/* После первого входа — «Рахмет айтыңыз». С него начинается подарок. */
 function scrThanks() {
   paint(top() +
     '<div class="card gift"><h1>' + t('thanksHead')(who(), F.owner()) + '</h1><p class="sub" style="margin:0">' + t('thanksSub') + '</p>' +
-    '<a class="btn wa" target="_blank" rel="noopener" href="' + esc(F.wa(t('thanksMsg'))) + '">' + IC.wa + t('thanksBtn') + '</a></div>' +
-    '<div style="margin-top:26px"><label><b>' + t('name') + '</b><input class="field" id="nm" maxlength="30" placeholder="' + t('namePh') + '"></label>' +
-    '<button class="btn" id="go">' + t('start') + '</button></div>');
-  document.getElementById('go').onclick = function () {
-    var v = document.getElementById('nm').value.trim();
-    S.started = true; if (v) S.name = v; F.save();
-    F.open(v || null).then(function () { location.hash = '#/'; route(); });
+    '<button class="btn wa" id="ty">' + IC.heart + t('thanksBtn') + '</button></div>' +
+    '<button class="btn" id="go" style="margin-top:22px">' + t('start') + '</button>');
+  wireThanks();
+  document.getElementById('go').onclick = function () { S.started = true; F.save(); location.hash = '#/'; route(); };
+}
+
+function wireThanks() {
+  var b = document.getElementById('ty'); if (!b) return;
+  b.onclick = function () {
+    b.disabled = true;
+    F.thank('thanks').then(function () { b.outerHTML = '<p class="ok-line">' + IC.ok + esc(t('thanked')(F.owner())) + '</p>'; });
   };
 }
 
@@ -194,7 +232,8 @@ function scrHome() {
       return '<button class="pack' + (d ? ' done' : '') + '" data-go="#/p/' + p.id + '"><span class="no">' + (d ? IC.ok : (i + 1)) + '</span>' +
         '<span class="grow"><b>' + esc(S.lang === 'ru' ? p.ru : p.kk) + '</b><span>' + t('six') + (d ? ' · ' + t('done') : '') + '</span></span></button>';
     }).join('') +
-    '<a class="btn ghost" style="margin-top:22px" target="_blank" rel="noopener" href="' + esc(F.wa(t('thanksMsg'))) + '">' + IC.wa + t('thanksBtn') + '</a>');
+    '<button class="btn ghost" style="margin-top:22px" id="ty">' + IC.heart + t('thanksBtn') + '</button>');
+  wireThanks();
 }
 
 function pack(id) { return P.filter(function (p) { return p.id === id; })[0]; }
@@ -256,15 +295,21 @@ function scrQuiz(id) {
   }
   function end() {
     F.mark('done', id);
-    var list = p.phrases.slice(0, 3).map(function (x) { return x.en; }).join(' ');
-    paint(top() + '<div class="msg" style="padding-top:4vh"><h1>' + t('fin')(right, p.phrases.length) + '</h1><p class="sub">' + t('finSub') + '</p></div>' +
-      '<a class="btn wa" target="_blank" rel="noopener" href="' + esc(F.wa(t('brag')(list))) + '">' + IC.wa + t('share') + '</a>' +
+    paint(top() + '<div class="msg" style="padding-top:4vh"><h1>' + t('fin')(right, p.phrases.length) + '</h1><p class="sub">' + esc(t('brag')(F.owner())) + '</p></div>' +
+      '<button class="btn wa" id="sh">' + IC.heart + t('share') + '</button>' +
       '<button class="btn ghost" data-go="#/">' + t('home') + '</button>');
+    document.getElementById('sh').onclick = function () {
+      var b = this; b.disabled = true;
+      F.thank('done:' + id).then(function () { b.outerHTML = '<p class="ok-line">' + IC.ok + t('shared') + '</p>'; });
+    };
   }
   draw();
 }
 
 function route() {
+  if (!S.lang) return scrLang();
+  if (F.linkCode && S.code && F.linkCode !== S.code) F.logout();
+  if (!F.signedIn()) return scrLogin();
   if (!S.started) return scrThanks();
   var r = (location.hash || '').replace(/^#\/?/, '').split('/');
   if (r[0] === 'p' && r[1]) return scrPack(r[1]);
@@ -272,18 +317,9 @@ function route() {
   scrHome();
 }
 
-function boot() {
-  paint(top() + '<div class="msg"><p class="sub">' + t('wait') + '</p></div>');
-  F.open().then(function (r) {
-    if (!r.ok) return scrMsg(r.reason === 'taken' ? 'taken' : r.reason === 'net' ? 'net' : r.reason === 'none' ? 'none' : 'bad');
-    if (r.kind === 'kid') { location.replace('../kids/' + location.search); return; }
-    window.onhashchange = route;
-    route();
-  });
-}
-
-if (F.DEMO) document.body.insertAdjacentHTML('afterbegin', '<div class="demo">Демо: пригласивший выдуман, в базу ничего не уходит</div>');
-boot();
+if (F.DEMO) document.body.insertAdjacentHTML('afterbegin', '<div class="demo">Демо: любой промокод из 8 знаков, в базу ничего не уходит</div>');
+window.onhashchange = route;
+route();
 })();
 </script>
 </body>

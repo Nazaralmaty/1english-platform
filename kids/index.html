@@ -88,6 +88,11 @@ h2{font-size:22px;letter-spacing:-.02em;margin:26px 0 12px;font-weight:900}
   font-weight:800;z-index:9;transition:transform .35s cubic-bezier(.32,.72,0,1);display:flex;gap:8px;align-items:center}
 .toast.on{transform:translate(-50%,0)}
 .demo{background:#22313F;color:#fff;text-align:center;font-size:13px;padding:6px}
+.err{color:var(--berry);font-weight:700;min-height:1.2em;margin:0 0 10px}
+.field.code{text-transform:uppercase;letter-spacing:.12em}
+.langpick{min-height:90vh;display:flex;flex-direction:column;justify-content:center;gap:16px}
+.langpick img{width:84px;margin:0 auto 18px;border-radius:24px;background:#fff;padding:14px;box-shadow:var(--sh)}
+.big:disabled{opacity:.55}
 @media (min-width:720px){.grid{grid-template-columns:1fr 1fr 1fr}.app{max-width:820px}}
 </style>
 </head>
@@ -100,33 +105,34 @@ h2{font-size:22px;letter-spacing:-.02em;margin:26px 0 12px;font-weight:900}
 <script>
 (function () {
 'use strict';
-var F = FAM; F.KIND = 'kid';
-var S = F.S, app = document.getElementById('app'), esc = F.esc;
+var F = FAM.make('kid'), S = F.S, app = document.getElementById('app'), esc = FAM.esc;
 var IDS = Object.keys(window.CARTOONS || {}).sort(function (a, b) { return +a.slice(1) - +b.slice(1); });
 
 var T = {
-  kk: { hi: 'Сәлем', giftFrom: function (n) { return n ? n + ' саған сыйлық жіберді' : 'Саған сыйлық'; },
+  kk: { hi: 'Сәлем', giftFrom: function (n) { return n ? n + ' саған сыйлық жасады' : 'Саған сыйлық'; },
         lead: 'Ағылшын тілін мультфильммен үйрен: орман достары, жаңа сөздер және жұлдыздар.',
-        name: 'Атың кім?', namePh: 'Мысалы: Айсұлу', start: 'Бастау!',
-        stars: function (a, b) { return a + ' / ' + b; }, cartoons: 'Мультфильмдер', next: 'Келесі мультфильм',
+        name: 'Атың кім?', namePh: 'Мысалы: Айсұлу', code: 'Промокод', codePh: 'ABCD-EFGH', start: 'Бастау!',
+        codeNote: 'Промокод сілтемеде болды. Сілтемесіз кірсең, оны сыйлық жасаған адамнан сұра.',
+        errName: 'Атыңды жаз', errCode: 'Промокод қате. Сыйлық жасаған адамнан қайта сұра.',
+        errTaken: 'Бұл промокодпен балалар платформасы басқа балаға бекітілген. Өзің бұрын кірсең, атыңды сол кездегідей жаз.',
+        errNet: 'Интернет жоқ. Желіге қосылып, қайта бас.',
+        stars: function (a, b) { return a + ' / ' + b; }, next: 'Келесі мультфильм',
         words: 'Сөздер', tapWord: 'Сөзді бас: тыңдайсың, сосын аудармасы шығады',
-        gotStar: 'Жұлдыз алдың!', thanks: function (n) { return (n || 'Сыйлық жіберген адам') + ' қуансын: рахмет айт!'; },
-        thanksBtn: 'Рахмет айту', thanksText: function (k) { return 'Рахмет! Мен 1English-те ' + k + ' мультфильм көрдім ⭐'; },
-        ep: 'Мультфильм', bad: 'Сілтеме ескірген', badSub: 'Сені шақырған адамнан жаңа сілтеме сұра.',
-        taken: 'Бұл сілтеме басқа телефонда ашылған', takenSub: 'Шақырған адам кабинетінде «Жаңа сілтеме» басып, саған қайта жіберсін.',
-        none: 'Сілтеме керек', noneSub: 'Бұл бет шақыру арқылы ашылады. Сілтемені WhatsApp-тағы хаттан аш.',
-        net: 'Интернет жоқ', netSub: 'Желіге қосылып, бетті қайта аш.', again: 'Қайта көру', wait: 'Бір секунд…' },
-  ru: { hi: 'Привет', giftFrom: function (n) { return n ? n + ' прислал(а) тебе подарок' : 'Тебе подарок'; },
+        gotStar: 'Жұлдыз алдың!', thanks: function (n) { return (n || 'Сыйлық жасаған адам') + ' қуансын: рахмет айт!'; },
+        thanksBtn: 'Рахмет айту', thanked: function (n) { return 'Рахмет жіберілді. ' + (n || '') + ' оны кабинетінен көреді.'; },
+        ep: 'Мультфильм', wait: 'Бір секунд…' },
+  ru: { hi: 'Привет', giftFrom: function (n) { return n ? n + ' сделал(а) тебе подарок' : 'Тебе подарок'; },
         lead: 'Учи английский по мультикам: лесные друзья, новые слова и звёзды.',
-        name: 'Как тебя зовут?', namePh: 'Например: Айсулу', start: 'Начать!',
-        stars: function (a, b) { return a + ' / ' + b; }, cartoons: 'Мультики', next: 'Следующий мультик',
+        name: 'Как тебя зовут?', namePh: 'Например: Айсулу', code: 'Промокод', codePh: 'ABCD-EFGH', start: 'Начать!',
+        codeNote: 'Промокод был в ссылке. Если входишь без ссылки, спроси его у того, кто подарил.',
+        errName: 'Напиши своё имя', errCode: 'Промокод неверный. Спроси его ещё раз у того, кто подарил.',
+        errTaken: 'Детская платформа по этому промокоду уже закреплена за другим ребёнком. Если входил раньше, напиши имя так же, как тогда.',
+        errNet: 'Нет интернета. Подключись и нажми ещё раз.',
+        stars: function (a, b) { return a + ' / ' + b; }, next: 'Следующий мультик',
         words: 'Слова', tapWord: 'Нажми на слово: услышишь его, потом увидишь перевод',
         gotStar: 'Ты получил звезду!', thanks: function (n) { return 'Порадуй ' + (n || 'того, кто подарил') + ': скажи спасибо!'; },
-        thanksBtn: 'Сказать спасибо', thanksText: function (k) { return 'Спасибо! Я посмотрел(а) в 1English уже ' + k + ' мультик(ов) ⭐'; },
-        ep: 'Мультик', bad: 'Ссылка устарела', badSub: 'Попроси новую ссылку у того, кто тебя пригласил.',
-        taken: 'Эту ссылку уже открыли на другом телефоне', takenSub: 'Пусть пригласивший нажмёт «Новая ссылка» в кабинете и пришлёт её снова.',
-        none: 'Нужна ссылка', noneSub: 'Эта страница открывается по приглашению. Открой ссылку из сообщения в WhatsApp.',
-        net: 'Нет интернета', netSub: 'Подключись к сети и открой страницу снова.', again: 'Ещё раз', wait: 'Секунду…' }
+        thanksBtn: 'Сказать спасибо', thanked: function (n) { return 'Спасибо отправлено. ' + (n || '') + ' увидит его в своём кабинете.'; },
+        ep: 'Мультик', wait: 'Секунду…' }
 };
 function t(k) { return (T[S.lang] || T.kk)[k]; }
 
@@ -140,7 +146,7 @@ function title(id) {
 function toast(html) {
   var el = document.getElementById('toast');
   el.innerHTML = html; el.classList.add('on');
-  clearTimeout(toast.t); toast.t = setTimeout(function () { el.classList.remove('on'); }, 2200);
+  clearTimeout(toast.t); toast.t = setTimeout(function () { el.classList.remove('on'); }, 2600);
 }
 function top(withStars) {
   return '<div class="top"><div class="logo"><img src="../assets/logo.png" alt=""></div>' +
@@ -156,24 +162,31 @@ function paint(html) {
   });
 }
 
-function scrMsg(kind) {
-  paint(top(false) + '<div class="msg"><h1>' + esc(t(kind)) + '</h1><p class="sub">' + esc(t(kind + 'Sub')) + '</p>' +
-    (kind === 'net' ? '<button class="big" id="re">' + t('again') + '</button>' : '') + '</div>');
-  var re = document.getElementById('re'); if (re) re.onclick = boot;
+/* Язык — самым первым экраном, до всего остального. */
+function scrLang() {
+  app.innerHTML = '<div class="langpick"><img src="../assets/logo.png" alt="">' +
+    '<button class="big" data-pick="kk">Қазақша</button><button class="big sun" data-pick="ru">Русский</button></div>';
+  Array.prototype.forEach.call(app.querySelectorAll('[data-pick]'), function (b) {
+    b.onclick = function () { S.lang = b.getAttribute('data-pick'); F.save(); route(); };
+  });
 }
 
-function scrHello() {
+function scrLogin() {
   paint(top(false) +
-    '<div class="hero"><img src="../media/cartoon/b1.jpg" alt=""><span class="gift">' + esc(t('giftFrom')(F.owner())) + '</span></div>' +
+    '<div class="hero"><img src="../media/cartoon/b1.jpg" alt="">' + (F.linkCode ? '<span class="gift">' + esc(t('giftFrom')('')) + '</span>' : '') + '</div>' +
     '<h1>' + t('hi') + '!</h1><p class="sub">' + t('lead') + '</p>' +
-    '<label><b>' + t('name') + '</b><input class="field" id="nm" maxlength="30" autocomplete="given-name" placeholder="' + t('namePh') + '"></label>' +
-    '<button class="big" id="go" disabled>' + t('start') + '</button>');
-  var nm = document.getElementById('nm'), go = document.getElementById('go');
-  nm.oninput = function () { go.disabled = !nm.value.trim(); };
+    '<label><b>' + t('name') + '</b><input class="field" id="nm" maxlength="30" autocomplete="given-name" placeholder="' + t('namePh') + '" value="' + esc(S.name || '') + '"></label>' +
+    '<label><b>' + t('code') + '</b><input class="field code" id="cd" maxlength="9" autocapitalize="characters" autocomplete="off" placeholder="' + t('codePh') + '" value="' + esc(F.linkCode ? F.linkCode.slice(0, 4) + '-' + F.linkCode.slice(4) : '') + '"></label>' +
+    (F.linkCode ? '' : '<p class="sub" style="margin-top:-6px">' + t('codeNote') + '</p>') +
+    '<p class="err" id="er"></p><button class="big" id="go">' + t('start') + '</button>');
+  var go = document.getElementById('go'), er = document.getElementById('er');
   go.onclick = function () {
-    var v = nm.value.trim(); if (!v) return;
-    S.name = v; F.save(); go.disabled = true;
-    F.open(v).then(function () { location.hash = '#/'; route(); });
+    go.disabled = true; er.textContent = '';
+    F.enter(document.getElementById('cd').value, document.getElementById('nm').value).then(function (r) {
+      go.disabled = false;
+      if (r.ok) { location.hash = '#/'; return route(); }
+      er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet' }[r.reason] || 'errCode');
+    });
   };
 }
 
@@ -191,12 +204,19 @@ function scrHome() {
   Array.prototype.forEach.call(app.querySelectorAll('[data-ep]'), function (b) {
     b.onclick = function () { location.hash = '#/ep/' + b.getAttribute('data-ep'); };
   });
+  wireThanks();
 }
 
 function thanksCard() {
   return '<div class="thanks"><p>' + esc(t('thanks')(F.owner())) + '</p>' +
-    '<a class="big sun" style="text-decoration:none" target="_blank" rel="noopener" href="' +
-    esc(F.wa(t('thanksText')(S.seen.length))) + '">' + t('thanksBtn') + '</a></div>';
+    '<button class="big sun" id="ty">' + t('thanksBtn') + '</button></div>';
+}
+function wireThanks() {
+  var b = document.getElementById('ty'); if (!b) return;
+  b.onclick = function () {
+    b.disabled = true;
+    F.thank('thanks').then(function () { toast(esc(t('thanked')(F.owner()))); });
+  };
 }
 
 function scrEp(id) {
@@ -221,10 +241,11 @@ function scrEp(id) {
   Array.prototype.forEach.call(app.querySelectorAll('[data-w]'), function (b) {
     b.onclick = function () {
       var w = words[+b.getAttribute('data-w')];
-      if (!b.classList.contains('flip')) F.speak(w.en, 0.8);
+      if (!b.classList.contains('flip')) FAM.speak(w.en, 0.8);
       b.classList.toggle('flip');
     };
   });
+  wireThanks();
   /* звезда — за досмотренный мультик: 90 % или конец */
   var v = document.getElementById('v');
   function award() {
@@ -238,24 +259,18 @@ function scrEp(id) {
 }
 
 function route() {
-  if (!S.name) return scrHello();
+  if (!S.lang) return scrLang();
+  /* пришёл по чужой ссылке, а на телефоне вход с другим промокодом — новый вход */
+  if (F.linkCode && S.code && F.linkCode !== S.code) F.logout();
+  if (!F.signedIn()) return scrLogin();
   var p = (location.hash || '').replace(/^#\/?/, '').split('/');
   if (p[0] === 'ep' && p[1]) return scrEp(p[1]);
   scrHome();
 }
 
-function boot() {
-  paint(top(false) + '<div class="msg"><p class="sub">' + t('wait') + '</p></div>');
-  F.open().then(function (r) {
-    if (!r.ok) return scrMsg(r.reason === 'taken' ? 'taken' : r.reason === 'net' ? 'net' : r.reason === 'none' ? 'none' : 'bad');
-    if (r.kind === 'elder') { location.replace('../elders/' + location.search); return; }
-    window.onhashchange = route;
-    route();
-  });
-}
-
-if (F.DEMO) document.body.insertAdjacentHTML('afterbegin', '<div class="demo">Демо: пригласивший выдуман, в базу ничего не уходит</div>');
-boot();
+if (F.DEMO) document.body.insertAdjacentHTML('afterbegin', '<div class="demo">Демо: любой промокод из 8 знаков, в базу ничего не уходит</div>');
+window.onhashchange = route;
+route();
 })();
 </script>
 </body>
