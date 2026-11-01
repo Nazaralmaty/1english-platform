@@ -250,14 +250,20 @@ var LANG = {
     famOk:'Хорошо', famRow:'Подарок семье', famRowCap:'Промокод и две платформы',
     famMsgKid:function (l, c) { return 'Тебе подарок: английский по мультикам в 1English. Открой ссылку: ' + l + ' Промокод: ' + c; },
     famMsgElder:function (l, c) { return 'Дарю вам английский: короткие фразы для жизни, по 5 минут в день. Откройте ссылку: ' + l + ' Промокод: ' + c; },
-    futTab:function (w) { return w === 'school' ? 'Гранты' : 'Вакансии'; },
-    segJobs:'Работа', segUnis:'Учёба за рубежом',
-    jobsTitle:'Работа с английским', jobsSub:'Вакансии hh.kz, где просят английский. Обновляем раз в неделю. Выберите сферу.',
-    jobsN:function (n) { return n + ' ваканс.'; }, allProfs:'Все сферы', noSalary:'зарплата не указана', jobsEmpty:'Вакансий этой сферы сейчас нет',
-    unisTitle:'Учёба за рубежом', unisSub:'Гранты и стипендии, куда поступают с английским.',
-    unisChecked:function (d) { return 'Данные проверены ' + d; },
-    uniCovers:'Что оплачивают', uniEnglish:'Язык', uniOther:'Требования', uniCost:'Сколько стоит без гранта',
-    uniWhen:'Когда подавать', uniHow:'Как подать', uniSite:'Официальный сайт', uniMore:'Подробнее'
+    futTab:function (w) { return w === 'school' ? 'Учёба' : 'Работа'; },
+    segJobs:'Работа', segUnis:'Учёба',
+    jobsTitle:'Работа с английским', jobsFoot:'Вакансии с hh.kz, где просят английский. Обновляем каждую неделю.',
+    allProfs:'Все сферы', jobsEmpty:'Вакансий этой сферы сейчас нет',
+    howTitle:'Как это работает', howCap:'Видео и 4 слайда',
+    unisTitle:'Учёба за рубежом', allCountries:'Все страны', allFields:'Все направления',
+    forYou:'Для тебя', forYouCap:'Бесплатная учёба, стипендия и сильные выпускники', forYouField:function (f) { return 'Направление: ' + f; },
+    allUnis:'Все вузы', found:function (n) { return 'Нашли: ' + n; }, noUnis:'Таких вузов пока нет. Сними один из фильтров.',
+    since:function (y) { return 'с ' + y + ' г.'; },
+    unisFoot:function (d) { return 'Условия грантов сверены с официальными сайтами ' + d + '. Перед подачей проверь на сайте программы.'; },
+    uniGrant:'по гранту', uniStudy:'язык учёбы', alumni:'Здесь учились', taught:'преподавал', city:'Город',
+    uniGrantH:'Грант', goalIelts:function (b, me) { return 'Нужен IELTS ' + b + ', это примерно B2.' + (me ? ' У тебя сейчас ' + me + ': каждый урок приближает.' : ''); },
+    uniCovers:'Что оплачивают', uniEnglish:'Язык', uniOther:'Требования', uniCost:'Без гранта',
+    uniWhen:'Когда подавать', uniHow:'Как подать', uniSite:'Сайт программы', photo:'Фото', toLessons:'К урокам'
   },
   kk: {
     next:'Әрі қарай', enter:'Кіру', phone:'Телефон нөмірі',
@@ -338,14 +344,20 @@ var LANG = {
     famOk:'Жақсы', famRow:'Отбасыға сыйлық', famRowCap:'Промокод және екі платформа',
     famMsgKid:function (l, c) { return 'Саған сыйлық: 1English-те мультфильммен ағылшын тілі. Сілтемені аш: ' + l + ' Промокод: ' + c; },
     famMsgElder:function (l, c) { return 'Сізге ағылшын тілін сыйлаймын: өмірге керек қысқа фразалар, күніне 5 минут. Сілтемені ашыңыз: ' + l + ' Промокод: ' + c; },
-    futTab:function (w) { return w === 'school' ? 'Грант' : 'Жұмыс'; },
-    segJobs:'Жұмыс', segUnis:'Шетелде оқу',
-    jobsTitle:'Ағылшынмен жұмыс', jobsSub:'hh.kz-тегі ағылшын тілі сұралатын вакансиялар. Аптасына бір рет жаңарады. Саланы таңдаңыз.',
-    jobsN:function (n) { return n + ' вакансия'; }, allProfs:'Барлық салалар', noSalary:'жалақы көрсетілмеген', jobsEmpty:'Бұл сала бойынша қазір вакансия жоқ',
-    unisTitle:'Шетелде оқу', unisSub:'Ағылшын тілімен түсуге болатын гранттар мен стипендиялар.',
-    unisChecked:function (d) { return 'Деректер тексерілді: ' + d; },
-    uniCovers:'Не төленеді', uniEnglish:'Тіл', uniOther:'Талаптар', uniCost:'Грантсыз құны',
-    uniWhen:'Қашан тапсыру керек', uniHow:'Қалай тапсыру керек', uniSite:'Ресми сайт', uniMore:'Толығырақ'
+    futTab:function (w) { return w === 'school' ? 'Оқу' : 'Жұмыс'; },
+    segJobs:'Жұмыс', segUnis:'Оқу',
+    jobsTitle:'Ағылшынмен жұмыс', jobsFoot:'hh.kz-тегі ағылшын тілі сұралатын вакансиялар. Әр апта жаңарады.',
+    allProfs:'Барлық салалар', jobsEmpty:'Бұл сала бойынша қазір вакансия жоқ',
+    howTitle:'Бұл қалай жұмыс істейді', howCap:'Видео және 4 слайд',
+    unisTitle:'Шетелде оқу', allCountries:'Барлық елдер', allFields:'Барлық бағыттар',
+    forYou:'Саған', forYouCap:'Тегін оқу, шәкіртақы және мықты түлектер', forYouField:function (f) { return 'Бағыт: ' + f; },
+    allUnis:'Барлық ЖОО', found:function (n) { return 'Табылды: ' + n; }, noUnis:'Мұндай ЖОО әзірге жоқ. Бір сүзгіні алып таста.',
+    since:function (y) { return y + ' жылдан'; },
+    unisFoot:function (d) { return 'Грант шарттары ресми сайттармен ' + d + ' салыстырылды. Тапсырар алдында бағдарлама сайтынан тексер.'; },
+    uniGrant:'грант бойынша', uniStudy:'оқу тілі', alumni:'Мұнда оқығандар', taught:'сабақ берген', city:'Қала',
+    uniGrantH:'Грант', goalIelts:function (b, me) { return 'IELTS ' + b + ' керек, бұл шамамен B2.' + (me ? ' Сенде қазір ' + me + ': әр сабақ жақындатады.' : ''); },
+    uniCovers:'Не төленеді', uniEnglish:'Тіл', uniOther:'Талаптар', uniCost:'Грантсыз',
+    uniWhen:'Қашан тапсыру керек', uniHow:'Қалай тапсыру керек', uniSite:'Бағдарлама сайты', photo:'Фото', toLessons:'Сабақтарға'
   }
 };
 function t(k) {
@@ -1289,33 +1301,47 @@ function famFromProfile() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   ВКЛАДКА «ВАКАНСИИ / ГРАНТЫ» (черновик, BETA)
-   Сверху переключатель «Работа | Учёба за рубежом», выбор помнится (S.who).
-   Работа: сначала сфера плиткой с числом вакансий, потом список сферы.
-   Гранты: карточка сразу показывает, что дают, язык и когда подавать;
-   полный разбор — в шторке. Данные: app/jobs.js (backend/jobs.py раз в
-   неделю), app/unis.js.
+   ВКЛАДКА «ВАКАНСИИ / ГРАНТЫ» (BETA)
+   Сверху сегмент «Работа | Учёба», под заголовком — сторис «Как это
+   работает»: видео, потом слайды. Работа: сферы списком, внутри вакансии.
+   Учёба: фильтр по стране и направлению, подборка «Для тебя», вузы с фото;
+   вуз открывается во весь экран: кампус, кто учился, город, грант.
+   Данные: app/jobs.js (backend/jobs.py раз в неделю), app/unis.js (гранты,
+   проверены по сайтам), app/campus.js (вузы, фото, выпускники).
    ══════════════════════════════════════════════════════════════════ */
 function needScript(src, done) {
   var id = 'js-' + src.replace(/\W/g, '');
-  if (document.getElementById(id)) return done();
-  var el = document.createElement('script');
-  el.id = id; el.src = src; el.onload = done; el.onerror = done;
+  var el = document.getElementById(id);
+  if (el) return el.dataset.ok ? done() : el.addEventListener('load', done);
+  el = document.createElement('script');
+  el.id = id; el.src = src; el.onerror = done;
+  el.onload = function () { el.dataset.ok = '1'; done(); };
   document.head.appendChild(el);
+}
+function needScripts(list, done) {
+  var n = list.length;
+  list.forEach(function (s) { needScript(s, function () { if (--n === 0) done(); }); });
 }
 
 function seg() {
-  return '<div class="seg"><button data-who="adult"' + (S.who !== 'school' ? ' class="on"' : '') + '>' + icon('brief', 20) + t('segJobs') + '</button>' +
-    '<button data-who="school"' + (S.who === 'school' ? ' class="on"' : '') + '>' + icon('cap', 20) + t('segUnis') + '</button></div>';
+  return '<div class="seg2"><button data-who="adult"' + (S.who !== 'school' ? ' class="on"' : '') + '>' + t('segJobs') + '</button>' +
+    '<button data-who="school"' + (S.who === 'school' ? ' class="on"' : '') + '>' + t('segUnis') + '</button></div>';
 }
-function wireWho() {
+function futHead(title) {
+  return seg() + '<h1 class="lt">' + esc(title) + '</h1>' +
+    '<button class="spill' + (S.storySeen ? ' seen' : '') + '" data-story><span class="ring"><img src="assets/stories/poster.jpg" alt=""></span>' +
+    '<span class="grow"><b>' + t('howTitle') + '</b><span class="cap">' + t('howCap') + '</span></span>' +
+    '<span class="go">' + icon('play', 16) + '</span></button>';
+}
+function wireFut() {
   $$('[data-who]').forEach(function (b) {
     b.onclick = function () { var w = b.getAttribute('data-who'); if (w === S.who) return; S.who = w; save(); route(); };
   });
+  var s = $('[data-story]'); if (s) s.onclick = openStories;
 }
 
 function scrFuture() {
-  if (S.who === 'school') return needScript('app/unis.js', scrUnis);
+  if (S.who === 'school') return needScripts(['app/unis.js', 'app/campus.js'], scrUnis);
   needScript('app/jobs.js', scrJobs);
 }
 
@@ -1324,62 +1350,210 @@ function scrJobs() {
   var J = window.JOBS || { profs: [], items: [] };
   function count(p) { return J.items.filter(function (j) { return j.p === p; }).length; }
   if (!JOB_PROF) {
-    paint(seg() + '<h1 style="margin:18px 0 6px">' + t('jobsTitle') + '</h1><p class="sub" style="margin:0 0 16px">' + t('jobsSub') + '</p>' +
-      '<div class="tiles">' + J.profs.map(function (p) {
-        return '<button class="tile" data-prof="' + p.id + '"><b>' + esc(p[S.lang] || p.ru) + '</b><span class="cap">' + t('jobsN')(count(p.id)) + '</span></button>';
-      }).join('') + '</div>');
+    paint(futHead(t('jobsTitle')) +
+      '<div class="glist">' + J.profs.map(function (p) {
+        return '<button class="gi" data-prof="' + p.id + '"><span class="grow">' + esc(p[S.lang] || p.ru) + '</span>' +
+          '<span class="n">' + count(p.id) + '</span><span class="chev">' + icon('right', 16) + '</span></button>';
+      }).join('') + '</div><p class="foot">' + t('jobsFoot') + '</p>');
   } else {
     var prof = J.profs.filter(function (p) { return p.id === JOB_PROF; })[0] || {};
     var list = J.items.filter(function (j) { return j.p === JOB_PROF; });
     paint(seg() + '<button class="crumb" data-prof="">' + icon('left', 18) + t('allProfs') + '</button>' +
-      '<h1 style="margin:6px 0 14px">' + esc(prof[S.lang] || prof.ru || '') + '</h1>' +
-      '<div class="rows">' + (list.length ? list.map(function (j) {
-        return '<a class="row job" target="_blank" rel="noopener" href="' + esc(j.url) + '"><span class="grow"><b>' + esc(j.t) + '</b>' +
-          '<span class="cap">' + esc(j.c || '') + '</span><span class="tags">' + (j.city ? '<i>' + esc(j.city) + '</i>' : '') +
-          '<i class="' + (j.sal ? 'ok' : 'none') + '">' + esc(j.sal || t('noSalary')) + '</i></span></span>' +
-          '<span class="chev">' + icon('right', 20) + '</span></a>';
-      }).join('') : '<p class="note">' + t('jobsEmpty') + '</p>') + '</div>');
+      '<h1 class="lt">' + esc(prof[S.lang] || prof.ru || '') + '</h1>' +
+      (list.length ? '<div class="glist">' + list.map(function (j) {
+        return '<a class="gi job" target="_blank" rel="noopener" href="' + esc(j.url) + '"><span class="grow"><b>' + esc(j.t) + '</b>' +
+          '<span class="cap">' + [j.c, j.city].filter(Boolean).map(esc).join(' · ') + '</span>' +
+          (j.sal ? '<span class="sal">' + esc(j.sal) + '</span>' : '') + '</span>' +
+          '<span class="chev">' + icon('right', 16) + '</span></a>';
+      }).join('') + '</div>' : '<p class="note">' + t('jobsEmpty') + '</p>'));
   }
   $$('[data-prof]').forEach(function (b) {
     b.onclick = function () { JOB_PROF = b.getAttribute('data-prof'); scrJobs(); };
   });
-  wireWho();
+  wireFut();
+}
+
+/* ── Учёба ── */
+var UNI_C = '';   /* фильтр страны — id гранта; направление помнится в S.field */
+function uL() { return S.lang === 'kk' ? 'kk' : 'ru'; }
+function tr(o) { return o ? (o[uL()] || o.ru || '') : ''; }
+function progOf(c) { return (window.UNIS || []).filter(function (u) { return u.id === c.prog; })[0] || {}; }
+function myCode() { var l = (window.LEVELS || []).filter(function (x) { return x.id === S.level; })[0]; return l ? l.code : ''; }
+function img(name) { return 'assets/unis/' + name + '.jpg'; }
+
+/* «Для тебя»: в выбранном направлении. Выше — где учат на английском (с A2
+   это реальная цель), потом где платят стипендию, потом с известными
+   выпускниками; одна страна — один вуз, чтобы подборка была разной. */
+function recommend(f) {
+  var EN = { nu: 1, bogazici: 1, bme: 1 }, STIP = { turkiye: 1, hungary: 1, korea: 1, china: 1 };
+  var lv = (window.LEVELS || []).map(function (x) { return x.id; }).indexOf(S.level);
+  function score(c) { return (EN[c.id] ? (lv >= 2 ? 3 : 1.5) : 0) + (STIP[c.prog] ? 2 : 0) + (c.alumni.length ? 0.5 : 0); }
+  var seen = {}, out = [];
+  (window.CAMPUS || []).filter(function (c) { return !f || c.fields.indexOf(f) >= 0; })
+    .sort(function (a, b) { return score(b) - score(a); })
+    .forEach(function (c) { if (!seen[c.prog] && out.length < 5) { seen[c.prog] = 1; out.push(c); } });
+  return out;
+}
+
+function uniCard(c, big) {
+  var P = (window.PROG || {})[c.prog] || {}, city = (window.CITIES || {})[c.city] || {};
+  if (big) return '<button class="bc" data-uni="' + c.id + '"><img src="' + img(c.img) + '" alt="" loading="lazy">' +
+    '<span class="bcx"><span class="cap">' + P.flag + ' ' + esc(tr(city)) + '</span><b>' + esc(c.name) + '</b>' +
+    '<span class="perk">' + esc(tr(P.perk)) + '</span></span></button>';
+  return '<button class="uc" data-uni="' + c.id + '"><span class="ph"><img src="' + img(c.img) + '" alt="" loading="lazy"></span>' +
+    '<b>' + esc(c.name) + '</b><span class="cap">' + P.flag + ' ' + esc(tr(city)) + ' · ' + t('since')(c.since) + '</span>' +
+    '<span class="perk">' + esc(tr(P.perk)) + '</span></button>';
 }
 
 function scrUnis() {
-  var U = window.UNIS || [], L = S.lang === 'kk' ? 'kk' : 'ru';
-  function tr(o) { return o ? (o[L] || o.ru || '') : ''; }
-  function lang(u) {
-    var en = u.english || {};
-    return [en.ielts && 'IELTS ' + en.ielts, en.toefl && 'TOEFL ' + en.toefl].filter(Boolean).join(' · ') || tr(en.note);
+  var U = window.UNIS || [], C = window.CAMPUS || [], F = window.FIELDS || [], P = window.PROG || {};
+  var f = S.field || '';
+  var list = C.filter(function (c) { return (!UNI_C || c.prog === UNI_C) && (!f || c.fields.indexOf(f) >= 0); });
+  var recs = UNI_C ? [] : recommend(f);
+  var fname = f ? tr(F.filter(function (x) { return x.id === f; })[0]) : '';
+  var checked = U.map(function (u) { return u.checked || ''; }).sort().pop() || '';
+  paint(futHead(t('unisTitle')) +
+    '<div class="fchips">' + [''].concat(U.map(function (u) { return u.id; })).map(function (id) {
+      var u = U.filter(function (x) { return x.id === id; })[0];
+      return '<button data-fc="' + id + '"' + (UNI_C === id ? ' class="on"' : '') + '>' +
+        (id ? (P[id] ? P[id].flag + ' ' : '') + esc(tr(u.country)) : t('allCountries')) + '</button>';
+    }).join('') + '</div>' +
+    '<div class="fchips">' + [{ id: '' }].concat(F).map(function (x) {
+      return '<button data-ff="' + x.id + '"' + (f === x.id ? ' class="on"' : '') + '>' + (x.id ? esc(tr(x)) : t('allFields')) + '</button>';
+    }).join('') + '</div>' +
+    (recs.length ? '<h2 class="sh">' + t('forYou') + '</h2><p class="shcap">' + (f ? t('forYouField')(fname) : t('forYouCap')) + '</p>' +
+      '<div class="rail">' + recs.map(function (c) { return uniCard(c, true); }).join('') + '</div>' : '') +
+    '<h2 class="sh">' + (UNI_C || f ? t('found')(list.length) : t('allUnis')) + '</h2>' +
+    (list.length ? '<div class="ulist">' + list.map(function (c) { return uniCard(c); }).join('') + '</div>' : '<p class="note">' + t('noUnis') + '</p>') +
+    '<p class="foot">' + t('unisFoot')(checked.split('-').reverse().join('.')) + '</p>');
+  $$('.fchips .on').forEach(function (b) { b.parentNode.scrollLeft = b.offsetLeft - 60; });
+  $$('[data-fc]').forEach(function (b) { b.onclick = function () { UNI_C = b.getAttribute('data-fc'); scrUnis(); }; });
+  $$('[data-ff]').forEach(function (b) { b.onclick = function () { S.field = b.getAttribute('data-ff'); save(); scrUnis(); }; });
+  $$('[data-uni]').forEach(function (b) { b.onclick = function () { openUni(b.getAttribute('data-uni')); }; });
+  wireFut();
+}
+
+/* Полноэкранный слой поверх вкладки: вуз и сторис. */
+function overlay(cls, html) {
+  var el = document.createElement('div');
+  el.className = cls; el.innerHTML = html;
+  document.body.appendChild(el);
+  document.documentElement.classList.add('locked');
+  function close() { el.remove(); document.documentElement.classList.remove('locked'); document.removeEventListener('keydown', esc_); }
+  function esc_(e) { if (e.key === 'Escape') close(); }
+  document.addEventListener('keydown', esc_);
+  return { el: el, close: close };
+}
+
+function openUni(id) {
+  var c = (window.CAMPUS || []).filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  var u = progOf(c), P = (window.PROG || {})[c.prog] || {}, city = (window.CITIES || {})[c.city] || {}, en = u.english || {};
+  var how = (u.how && (u.how[uL()] || u.how.ru)) || [], cr = window.PHOTO_CREDIT || {};
+  function row(k, v) { return v ? '<div class="kv2"><span>' + t(k) + '</span><p>' + esc(v) + '</p></div>' : ''; }
+  function credit(k) { var x = cr[k]; return x ? '<a href="' + esc(x.u) + '" target="_blank" rel="noopener">' + esc(x.a) + '</a>, ' + esc(x.l) : ''; }
+  var goal = en.ielts ? t('goalIelts')(en.ielts, myCode()) : '';
+  var o = overlay('full', '<div class="fs">' +
+    '<div class="hero"><img src="' + img(c.img) + '" alt=""><button class="xbtn" data-x aria-label="close">' + icon('close', 20) + '</button></div>' +
+    '<div class="fpad">' +
+      '<p class="eyebrow">' + P.flag + ' ' + esc(tr(u.country)) + ' · ' + esc(tr(city)) + ' · ' + t('since')(c.since) + '</p>' +
+      '<h1 class="lt">' + esc(c.name) + '</h1>' +
+      '<p class="lead">' + esc(tr(c.fact)) + '</p>' +
+      '<div class="pair"><span><b>' + esc(tr(P.perk)) + '</b>' + t('uniGrant') + '</span><span><b>' + esc(tr(P.study)) + '</b>' + t('uniStudy') + '</span></div>' +
+      (c.alumni.length ? '<h2 class="sh">' + t('alumni') + '</h2><div class="ppl">' + c.alumni.map(function (a) {
+        return '<div class="pp"><img src="' + img('p_' + a.p) + '" alt=""><b>' + esc(a[uL()] || a.ru) + '</b><span>' +
+          esc(tr(a.what)) + (a.role === 'taught' ? ' · ' + t('taught') : '') + '</span></div>';
+      }).join('') + '</div>' : '') +
+      '<h2 class="sh">' + t('city') + '</h2>' +
+      '<div class="cityc"><img src="' + img(city.img) + '" alt="" loading="lazy"><span><b>' + esc(tr(city)) + '</b>' + esc(tr(city.line)) + '</span></div>' +
+      '<h2 class="sh">' + t('uniGrantH') + '</h2><p class="shcap">' + esc(uL() === 'kk' && u.name_kk || u.name) + '</p>' +
+      (goal ? '<p class="goal">' + esc(goal) + '</p>' : '') +
+      '<div class="glist plain">' + row('uniCovers', tr(u.covers)) + row('uniEnglish', tr(en.note)) + row('uniOther', tr(u.other)) +
+        row('uniWhen', tr(u.when)) + row('uniCost', tr(u.cost)) + '</div>' +
+      (how.length ? '<h2 class="sh">' + t('uniHow') + '</h2><ol class="steps2">' + how.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '') +
+      '<a class="btn" target="_blank" rel="noopener" href="' + esc(u.url) + '">' + t('uniSite') + '</a>' +
+      '<p class="credit">' + t('photo') + ': ' + [credit(c.img), credit(city.img)].filter(Boolean).join('; ') + '. Wikimedia Commons</p>' +
+    '</div></div>');
+  o.el.querySelector('[data-x]').onclick = o.close;
+}
+
+/* ── Сторис «Как это работает» ──
+   Первый слайд — видео (media/stories/howto_<lang>.mp4, собрано HyperFrames
+   из promo/howto), дальше картинки с короткой подписью. Тап справа — дальше,
+   слева — назад, удержание — пауза. Нет видео на этом языке — берём русское,
+   нет и его — слайд пропускается. */
+var STORY = [
+  { video: 1 },
+  { pic: 's_jobs',
+    h: { ru: 'Работа с английским', kk: 'Ағылшынмен жұмыс' },
+    p: { ru: 'Каждую неделю собираем с hh.kz вакансии, где просят английский. Выбери сферу: увидишь компанию, город и зарплату.',
+         kk: 'Әр апта hh.kz-тен ағылшын тілі сұралатын вакансияларды жинаймыз. Саланы таңда: компания, қала және жалақы көрінеді.' } },
+  { pic: 's_filters',
+    h: { ru: 'Страна и направление', kk: 'Ел және бағыт' },
+    p: { ru: 'Во вкладке «Учёба» выбери страну и что хочешь изучать. Сверху соберём вузы для тебя.',
+         kk: '«Шетелде оқу» бөлімінде елді және не оқығың келетінін таңда. Жоғарыда саған лайық ЖОО-лар шығады.' } },
+  { pic: 's_uni',
+    h: { ru: 'Открой вуз', kk: 'ЖОО-ны аш' },
+    p: { ru: 'Кампус и город на фото, кто там учился, что даёт грант, когда и как подавать.',
+         kk: 'Кампус пен қала суретте, онда кім оқыған, грант не береді, қашан және қалай тапсыру керек.' } },
+  { photo: 'assets/unis/u_nu.jpg',
+    h: { ru: 'Английский — твой пропуск', kk: 'Ағылшын тілі — сенің жолдамаң' },
+    p: { ru: 'Nazarbayev University просит IELTS 6.0, это примерно B2. Каждый уровень курса — шаг к нему.',
+         kk: 'Nazarbayev University IELTS 6.0 сұрайды, бұл шамамен B2. Курстың әр деңгейі — соған бір қадам.' },
+    cta: 1 }
+];
+
+function openStories() {
+  S.storySeen = true; save();
+  var pill = $('[data-story]'); if (pill) pill.classList.add('seen');
+  var o = overlay('story', '<div class="bars">' + STORY.map(function () { return '<i><b></b></i>'; }).join('') + '</div>' +
+    '<button class="sx" aria-label="close">' + icon('close', 22) + '</button><div class="stage"></div>');
+  var el = o.el, stage = el.querySelector('.stage'), bars = el.querySelectorAll('.bars b');
+  var i = -1, t0 = 0, held = 0, paused = false, vid = null, raf = 0, DUR = 7000;
+
+  function go(n) {
+    if (n < 0) n = 0;
+    if (n >= STORY.length) return end();
+    i = n; t0 = performance.now(); held = 0; vid = null;
+    Array.prototype.forEach.call(bars, function (b, k) { b.style.width = k < i ? '100%' : '0%'; });
+    var s = STORY[i];
+    el.classList.toggle('lt', !!s.pic);
+    if (s.video) {
+      var src = 'media/stories/howto_' + uL() + '.mp4';
+      stage.innerHTML = '<video class="sv" playsinline preload="auto" poster="assets/stories/poster.jpg"></video>';
+      vid = stage.firstChild;
+      vid.onerror = function () { if (vid.src.indexOf('_ru') < 0) { vid.src = 'media/stories/howto_ru.mp4'; vid.play(); } else go(i + 1); };
+      vid.onended = function () { go(i + 1); };
+      vid.src = src;
+      var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; vid.play(); });
+    } else if (s.photo) {
+      stage.innerHTML = '<div class="sphoto"><img src="' + s.photo + '" alt=""><div class="stx"><h2>' + esc(tr(s.h)) + '</h2><p>' + esc(tr(s.p)) + '</p>' +
+        (s.cta ? '<button class="btn light" data-cta>' + t('toLessons') + '</button>' : '') + '</div></div>';
+      var b = stage.querySelector('[data-cta]'); if (b) b.onclick = function (e) { e.stopPropagation(); end(); go_('#/lessons'); };
+    } else {
+      stage.innerHTML = '<div class="spic"><div class="stx"><h2>' + esc(tr(s.h)) + '</h2><p>' + esc(tr(s.p)) + '</p></div>' +
+        '<div class="phone"><img src="assets/stories/' + s.pic + '_' + uL() + '.jpg" alt=""></div></div>';
+    }
   }
-  var checked = U.map(function (u) { return u.checked || ''; }).sort().pop();
-  paint(seg() + '<h1 style="margin:18px 0 6px">' + t('unisTitle') + '</h1>' +
-    '<p class="sub" style="margin:0 0 16px">' + t('unisSub') + (checked ? ' ' + t('unisChecked')(checked.split('-').reverse().join('.')) : '') + '</p>' +
-    U.map(function (u) {
-      return '<button class="uni" data-uni="' + u.id + '"><span class="uhead"><span class="flag num">' + esc(u.flag) + '</span><span class="grow"><b>' +
-        esc(L === 'kk' && u.name_kk || u.name) + '</b><span class="cap">' + esc(tr(u.country)) + '</span></span></span>' +
-        '<span class="kvs"><span><i>' + t('uniCovers') + '</i>' + esc(tr(u.covers)) + '</span>' +
-        (lang(u) ? '<span><i>' + t('uniEnglish') + '</i>' + esc(lang(u)) + '</span>' : '') +
-        '<span><i>' + t('uniWhen') + '</i>' + esc(tr(u.when)) + '</span></span>' +
-        '<span class="more">' + t('uniMore') + icon('right', 16) + '</span></button>';
-    }).join(''));
-  $$('[data-uni]').forEach(function (b) {
-    b.onclick = function () {
-      var u = U.filter(function (x) { return x.id === b.getAttribute('data-uni'); })[0];
-      function kv(k, v) { return v ? '<div class="kv"><b>' + t(k) + '</b><p>' + esc(v) + '</p></div>' : ''; }
-      var en = u.english || {};
-      var how = (u.how && (u.how[L] || u.how.ru)) || [];
-      var v = openSheet('<span class="chip accent">' + esc(tr(u.country)) + '</span>' +
-        '<h1 style="margin:12px 0 4px">' + esc(L === 'kk' && u.name_kk || u.name) + '</h1>' +
-        kv('uniCovers', tr(u.covers)) + kv('uniEnglish', [lang(u), en.ielts || en.toefl ? tr(en.note) : ''].filter(Boolean).join('. ')) +
-        kv('uniOther', tr(u.other)) + kv('uniCost', tr(u.cost)) + kv('uniWhen', tr(u.when)) +
-        (how.length ? '<div class="kv"><b>' + t('uniHow') + '</b><ol>' + how.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol></div>' : '') +
-        '<div class="gap-sm"></div><a class="btn" target="_blank" rel="noopener" href="' + esc(u.url) + '">' + t('uniSite') + '</a>');
-      v.querySelector('.sheet').classList.add('tall');
-    };
+  function tick(now) {
+    raf = requestAnimationFrame(tick);
+    if (i < 0) return;
+    var p;
+    if (vid) p = vid.duration ? vid.currentTime / vid.duration : 0;
+    else { if (paused) { t0 = now - held; return; } held = now - t0; p = held / DUR; if (p >= 1) return go(i + 1); }
+    bars[i].style.width = Math.min(100, p * 100) + '%';
+  }
+  function end() { cancelAnimationFrame(raf); if (vid) vid.pause(); o.close(); }
+  function go_(h) { location.hash = h; }
+
+  var down = 0, dx = 0;
+  stage.addEventListener('pointerdown', function (e) { down = performance.now(); dx = e.clientX; paused = true; if (vid) vid.pause(); });
+  stage.addEventListener('pointerup', function (e) {
+    var quick = performance.now() - down < 250; paused = false;
+    if (quick) { if (e.clientX < window.innerWidth * 0.3) go(i - 1); else go(i + 1); }
+    else if (vid) vid.play();
   });
-  wireWho();
+  el.querySelector('.sx').onclick = end;
+  go(0); raf = requestAnimationFrame(tick);
 }
 
 function games() {

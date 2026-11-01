@@ -1,0 +1,1 @@
+{ "name": "1english-howto", "private": true, "scripts": { "render": "npx --yes hyperframes@0.8.82 render . --fps 30 --quality high --output work/_video.mp4" } }
