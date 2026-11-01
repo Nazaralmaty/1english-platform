@@ -363,6 +363,12 @@
       });
     },
 
+    /* Без входа: гость семейного приглашения (kids/, elders/). Пускают его
+       только функции en_invite_open / en_invite_ping — по токену ссылки. */
+    anonRpc: function (name, body) {
+      return req('/rest/v1/rpc/' + name, { method: 'POST', body: body || {} });
+    },
+
     normPhone: normPhone
   };
 

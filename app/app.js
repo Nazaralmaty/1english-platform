@@ -21,6 +21,15 @@
 var DEMO = /[?&]demo=1/.test(location.search);
 var KEY = DEMO ? '1eng.demo' : '1eng.v2';
 
+/* Черновик 01.11.2026: «Подарок семье» на главной и вкладка «Вакансии /
+   Гранты». Живые ученики их не видят, пока не включено: ?beta=1 включает на
+   этом телефоне, ?beta=0 выключает. Включить всем — BETA = true. */
+var BETA = (function () {
+  var m = /[?&]beta=([01])/.exec(location.search);
+  try { if (m) localStorage.setItem('1eng.beta', m[1]); return DEMO || localStorage.getItem('1eng.beta') === '1'; }
+  catch (e) { return DEMO; }
+})();
+
 function blank() {
   return {
     phone: '',
@@ -224,7 +233,30 @@ var LANG = {
     lessonNow:'Урок идёт сейчас', startedAt:function (x) { return 'Начался в ' + x; },
     today:'сегодня', tomorrow:'завтра',
     weekday:['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'],
-    uDay:'дн', uHour:'ч', uMin:'мин'
+    uDay:'дн', uHour:'ч', uMin:'мин',
+    famTitle:'Подарок семье', famSub:'К вашему курсу — два приглашения. Близкие учатся бесплатно, каждый в своём кабинете.',
+    famKid:'Ребёнку: английский по мультикам', famElder:'Старшим: английский для жизни',
+    famNotSent:'Ещё не открыли', famOpened:function (n) { return (n || 'Приглашённый') + ' открыл(а) подарок'; },
+    famProgKid:function (n) { return n + ' мульт. посмотрено'; }, famProgElder:function (n) { return n + ' тем пройдено'; },
+    famKidAbout:'Детский кабинет: 14 мультиков Forest English, слова с озвучкой и звёзды за каждый мультик. Ребёнку не нужен ни номер, ни код — ссылка открывает всё.',
+    famElderAbout:'Кабинет для старших: фразы для поездки, врача, магазина, звонка детям. Крупный шрифт, чтение русскими буквами, медленная озвучка. Первая строка — «Скажите спасибо»: подарок от вас.',
+    famWho:'Кому отправляем?', famRel:{ mama:'Маме', papa:'Папе', aje:'Бабушке', ata:'Дедушке', aga:'Брату', apke:'Сестре' },
+    famSend:'Отправить в WhatsApp', famCopy:'Скопировать ссылку', famCopied:'Ссылка скопирована',
+    famPreview:'Посмотреть, что увидят', famRenew:'Новая ссылка', famRenewCap:'Старая ссылка перестанет открываться',
+    famRenewed:'Готово: отправьте новую ссылку', famOff:'Приглашения заработают после обновления базы.',
+    famMsgKid:function (l) { return 'Тебе подарок: английский по мультикам в 1English. Открой ссылку: ' + l; },
+    famMsgElder:function (l) { return 'Дарю вам английский: короткие фразы для жизни, по 5 минут в день. Откройте ссылку: ' + l; },
+    futTab:function (w) { return w === 'school' ? 'Гранты' : w === 'adult' ? 'Вакансии' : 'Будущее'; },
+    futAsk:'Что вам ближе?', futAskSub:'Покажем то, ради чего стоит учить английский.',
+    futSchool:'Я школьник', futSchoolCap:'Гранты на учёбу за рубежом',
+    futAdult:'Я взрослый', futAdultCap:'Работа, где нужен английский',
+    jobsTitle:'Работа с английским', jobsSub:'Вакансии с hh.kz, где просят английский. Список обновляется раз в неделю.',
+    jobsAll:'Все', noSalary:'зарплата не указана', jobsEmpty:'Вакансий этой профессии сейчас нет',
+    unisTitle:'Учёба за рубежом', unisSub:'Гранты и стипендии, куда поступают с английским.',
+    unisChecked:function (d) { return 'Данные проверены ' + d; },
+    uniCovers:'Что оплачивают', uniEnglish:'Английский', uniOther:'Требования', uniCost:'Сколько стоит без гранта',
+    uniWhen:'Когда подавать', uniHow:'Как подать', uniSite:'Официальный сайт',
+    toJobs:'Мне нужны вакансии', toUnis:'Мне нужны гранты на учёбу'
   },
   kk: {
     next:'Әрі қарай', enter:'Кіру', phone:'Телефон нөмірі',
@@ -288,7 +320,30 @@ var LANG = {
     lessonNow:'Сабақ қазір жүріп жатыр', startedAt:function (x) { return 'Басталды: ' + x; },
     today:'бүгін', tomorrow:'ертең',
     weekday:['жексенбі','дүйсенбі','сейсенбі','сәрсенбі','бейсенбі','жұма','сенбі'],
-    uDay:'күн', uHour:'сағ', uMin:'мин'
+    uDay:'күн', uHour:'сағ', uMin:'мин',
+    famTitle:'Отбасыңызға сыйлық', famSub:'Курсыңызға екі шақыру қосылды. Жақындарыңыз тегін оқиды, әрқайсысы өз кабинетінде.',
+    famKid:'Балаға: мультфильммен ағылшын', famElder:'Үлкендерге: өмірге керек ағылшын',
+    famNotSent:'Әлі ашылмаған', famOpened:function (n) { return (n || 'Шақырылған адам') + ' сыйлықты ашты'; },
+    famProgKid:function (n) { return n + ' мультфильм көрді'; }, famProgElder:function (n) { return n + ' тақырып өтті'; },
+    famKidAbout:'Балалар кабинеті: Forest English-тің 14 мультфильмі, дыбысталатын сөздер және әр мультфильм үшін жұлдыз. Балаға нөмір де, код та керек емес — бәрін сілтеме ашады.',
+    famElderAbout:'Үлкендерге арналған кабинет: сапарға, дәрігерге, дүкенге, балаларға қоңырау шалуға керек фразалар. Ірі әріп, қазақ әрпімен оқылуы, баяу дыбыс. Алғашқы жолы — «Рахмет айтыңыз»: сыйлық сізден.',
+    famWho:'Кімге жібересіз?', famRel:{ mama:'Анама', papa:'Әкеме', aje:'Әжеме', ata:'Атама', aga:'Ағама', apke:'Әпкеме' },
+    famSend:'WhatsApp-қа жіберу', famCopy:'Сілтемені көшіру', famCopied:'Сілтеме көшірілді',
+    famPreview:'Олар не көреді', famRenew:'Жаңа сілтеме', famRenewCap:'Ескі сілтеме ашылмай қалады',
+    famRenewed:'Дайын: жаңа сілтемені жіберіңіз', famOff:'Шақырулар база жаңартылғаннан кейін іске қосылады.',
+    famMsgKid:function (l) { return 'Саған сыйлық: 1English-те мультфильммен ағылшын тілі. Сілтемені аш: ' + l; },
+    famMsgElder:function (l) { return 'Сізге ағылшын тілін сыйлаймын: өмірге керек қысқа фразалар, күніне 5 минут. Сілтемені ашыңыз: ' + l; },
+    futTab:function (w) { return w === 'school' ? 'Грант' : w === 'adult' ? 'Жұмыс' : 'Болашақ'; },
+    futAsk:'Сізге не жақын?', futAskSub:'Ағылшын тілі не үшін керек екенін көрсетеміз.',
+    futSchool:'Мен мектеп оқушысымын', futSchoolCap:'Шетелде оқуға гранттар',
+    futAdult:'Мен ересекпін', futAdultCap:'Ағылшын тілі керек жұмыс',
+    jobsTitle:'Ағылшынмен жұмыс', jobsSub:'hh.kz-тегі ағылшын тілі сұралатын вакансиялар. Тізім аптасына бір рет жаңарады.',
+    jobsAll:'Барлығы', noSalary:'жалақы көрсетілмеген', jobsEmpty:'Бұл мамандық бойынша қазір вакансия жоқ',
+    unisTitle:'Шетелде оқу', unisSub:'Ағылшын тілімен түсуге болатын гранттар мен стипендиялар.',
+    unisChecked:function (d) { return 'Деректер тексерілді: ' + d; },
+    uniCovers:'Не төленеді', uniEnglish:'Ағылшын тілі', uniOther:'Талаптар', uniCost:'Грантсыз құны',
+    uniWhen:'Қашан тапсыру керек', uniHow:'Қалай тапсыру керек', uniSite:'Ресми сайт',
+    toJobs:'Маған вакансиялар керек', toUnis:'Маған оқу гранттары керек'
   }
 };
 function t(k) {
@@ -424,6 +479,11 @@ var IC = {
   edit:    '<path d="M4.4 19.6h3.6l9.7-9.7-3.6-3.6-9.7 9.7z"/><path d="M14.1 6.3 16.6 3.8l3.6 3.6-2.5 2.5"/>',
   cam:     '<path d="M3.6 8.6h3.2l1.4-2.2h7.6l1.4 2.2h3.2v9.8H3.6z"/><circle cx="12" cy="13.3" r="3.1"/>',
   globe:   '<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.3 2.4 3.4 5.3 3.4 8.6s-1.1 6.2-3.4 8.6c-2.3-2.4-3.4-5.3-3.4-8.6S9.7 5.8 12 3.4z"/>',
+  gift:    '<rect x="3.6" y="8.4" width="16.8" height="4.4" rx="1.2"/><path d="M5.2 12.8v7.6h13.6v-7.6M12 8.4v12"/><path d="M12 8.4c-1.6-3.6-6.2-3.8-5.6-1 .4 1.4 3.4 1 5.6 1zM12 8.4c1.6-3.6 6.2-3.8 5.6-1-.4 1.4-3.4 1-5.6 1z"/>',
+  brief:   '<rect x="3.4" y="7.4" width="17.2" height="12.4" rx="2.6"/><path d="M8.8 7.4V5.6a1.6 1.6 0 0 1 1.6-1.6h3.2a1.6 1.6 0 0 1 1.6 1.6v1.8M3.4 12.6h17.2"/>',
+  cap:     '<path d="M2.6 9.4 12 5l9.4 4.4L12 13.8z"/><path d="M6.6 11.4v4.4c3.2 2.6 7.6 2.6 10.8 0v-4.4M21.4 9.4v5"/>',
+  kid:     '<circle cx="12" cy="9" r="5.2"/><path d="M9.8 9.6h.01M14.2 9.6h.01M10.2 11.6a2.6 2.6 0 0 0 3.6 0"/><path d="M6.4 20.4a5.6 5.6 0 0 1 11.2 0"/>',
+  heart:   '<path d="M12 20s-7.6-4.6-7.6-10.2A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.6 2.4C19.6 15.4 12 20 12 20z"/>',
   moon:    '<circle cx="12" cy="12" r="8.6"/><path d="M12 3.4v17.2a8.6 8.6 0 0 0 0-17.2z" fill="currentColor" stroke="none"/>'
 };
 function icon(name, size) {
@@ -642,7 +702,7 @@ function scrHome() {
     '<div id="bn"></div>' +
 
     (mine
-      ? '<h2 class="sect">' + t('myCourse') + '</h2>' + courseCard(mine, true) +
+      ? '<h2 class="sect">' + t('myCourse') + '</h2>' + courseCard(mine, true) + famBlock() +
         '<h2 class="sect">' + t('otherCourses') + '</h2>'
       : '<h2 class="sect">' + t('allCourses') + '</h2>' +
         '<p class="sub" style="margin:-6px 0 14px">' + t('pickCourse') + '</p>') +
@@ -656,6 +716,8 @@ function scrHome() {
       S.lang = v; save(); syncProfile(); route();
     };
   });
+
+  wireFam();
 
   $$('[data-lv]').forEach(function (b) {
     b.onclick = function () {
@@ -1097,6 +1159,198 @@ function scrWords(id) {
 /* ══════════════════════════════════════════════════════════════════════
    ЭКРАН: ИГРЫ
    ══════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════
+   ПОДАРОК СЕМЬЕ (черновик, BETA)
+   Две ссылки ученика: ребёнку (kids/) и старшему (elders/). Строки
+   приглашений заводит en_my_invites() при первом вызове — патч
+   backend/patch_2026-11-01_family.sql. Нет патча — блок говорит, что
+   приглашения заработают после обновления базы, остальное не трогается.
+   ══════════════════════════════════════════════════════════════════ */
+var INV = null;               /* null — ещё не спрашивали; 'off' — в базе нет функций; {kid, elder} */
+
+function loadInvites() {
+  if (!BETA) return;
+  if (DEMO) {
+    INV = { kid:   { token: 'demo', guest_name: 'Айсұлу', progress: { seen: ['b1', 'b2', 'b3'] } },
+            elder: { token: 'demo', guest_name: '', progress: {} } };
+    return;
+  }
+  if (!global_DB() || !DB.rpc) return;
+  DB.rpc('en_my_invites', {}).then(function (rows) {
+    INV = {};
+    (rows || []).forEach(function (r) { INV[r.kind] = r; });
+    if (!INV.kid) INV = 'off';
+    if (/^#\/?home/.test(location.hash)) route();
+  }).catch(function () { INV = 'off'; });
+}
+
+function famLink(kind, inv, rel) {
+  var base = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
+  return base + (kind === 'kid' ? 'kids/' : 'elders/') +
+    (inv.token === 'demo' ? '?demo=1' : '?i=' + encodeURIComponent(inv.token)) + (rel ? '&r=' + rel : '');
+}
+
+function famState(kind) {
+  var inv = INV && INV !== 'off' ? INV[kind] : null;
+  if (!inv) return INV === 'off' ? t('famOff') : '';
+  var pr = inv.progress || {}, n = kind === 'kid' ? (pr.seen || []).length : (pr.done || []).length;
+  if (!inv.guest_name && !inv.opened_at && !n) return t('famNotSent');
+  return t('famOpened')(inv.guest_name) + (n ? ' · ' + t(kind === 'kid' ? 'famProgKid' : 'famProgElder')(n) : '');
+}
+
+function famBlock() {
+  if (!BETA) return '';
+  function row(kind, ic, name) {
+    return '<button class="row" data-fam="' + kind + '"><span class="mark">' + icon(ic, 24) + '</span>' +
+      '<span class="grow"><b>' + name + '</b><span class="cap">' + esc(famState(kind)) + '</span></span>' +
+      '<span class="chev">' + icon('right', 20) + '</span></button>';
+  }
+  return '<div class="fam"><h2 class="sect">' + icon('gift', 22) + t('famTitle') + '</h2>' +
+    '<p class="sub" style="margin:-6px 0 12px">' + t('famSub') + '</p>' +
+    '<div class="rows">' + row('kid', 'kid', t('famKid')) + row('elder', 'heart', t('famElder')) + '</div></div>';
+}
+
+function wireFam() {
+  $$('[data-fam]').forEach(function (b) {
+    b.onclick = function () { famSheet(b.getAttribute('data-fam')); };
+  });
+}
+
+function famSheet(kind) {
+  var inv = INV && INV !== 'off' ? INV[kind] : null;
+  var rel = kind === 'elder' ? 'mama' : '';
+  var rels = t('famRel');
+  function body() {
+    var link = inv ? famLink(kind, inv, rel) : '';
+    var msg = t(kind === 'kid' ? 'famMsgKid' : 'famMsgElder')(link);
+    return '<h1 style="margin:0 0 10px">' + t(kind === 'kid' ? 'famKid' : 'famElder') + '</h1>' +
+      '<p class="sub" style="margin-bottom:16px">' + t(kind === 'kid' ? 'famKidAbout' : 'famElderAbout') + '</p>' +
+      (!inv ? '<p class="note" style="text-align:left">' + t('famOff') + '</p>' :
+        (kind === 'elder' ? '<b style="display:block;margin-bottom:8px">' + t('famWho') + '</b><div class="chips wrap">' +
+          Object.keys(rels).map(function (k) {
+            return '<button data-rel="' + k + '"' + (k === rel ? ' class="on"' : '') + '>' + rels[k] + '</button>';
+          }).join('') + '</div>' : '') +
+        '<a class="btn" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">' + t('famSend') + '</a>' +
+        '<div class="gap-sm"></div><button class="btn ghost" id="fcopy">' + t('famCopy') + '</button>' +
+        '<div class="gap-sm"></div><a class="btn quiet" target="_blank" rel="noopener" href="' +
+          esc(famLink(kind, { token: 'demo' }, rel)) + '">' + t('famPreview') + '</a>' +
+        (inv.opened_at || inv.guest_name ? '<div class="gap-sm"></div><button class="btn quiet" id="frenew">' + t('famRenew') +
+          '</button><p class="note">' + t('famRenewCap') + '</p>' : ''));
+  }
+  openSheet('<div id="fsheet">' + body() + '</div>', function (veil, close) {
+    function wire() {
+      Array.prototype.forEach.call(veil.querySelectorAll('[data-rel]'), function (b) {
+        b.onclick = function () { rel = b.getAttribute('data-rel'); veil.querySelector('#fsheet').innerHTML = body(); wire(); };
+      });
+      var cp = veil.querySelector('#fcopy');
+      if (cp) cp.onclick = function () {
+        var l = famLink(kind, inv, rel);
+        (navigator.clipboard ? navigator.clipboard.writeText(l) : Promise.reject())
+          .then(function () { toast(t('famCopied')); }, function () { window.prompt('', l); });
+      };
+      var rn = veil.querySelector('#frenew');
+      if (rn) rn.onclick = function () {
+        if (DEMO) return toast(t('famRenewed'));
+        DB.rpc('en_invite_renew', { p_kind: kind }).then(function (tok) {
+          if (!tok) return;
+          inv.token = tok; inv.guest_name = inv.guest_name || ''; inv.opened_at = null;
+          veil.querySelector('#fsheet').innerHTML = body(); wire(); toast(t('famRenewed'));
+        });
+      };
+    }
+    wire();
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ВКЛАДКА «ВАКАНСИИ / ГРАНТЫ» (черновик, BETA)
+   Взрослый видит вакансии с английским (app/jobs.js, раз в неделю
+   собирает backend/jobs.py), школьник — гранты за рубежом (app/unis.js).
+   Кто есть кто, ученик говорит сам один раз; S.who живёт на телефоне.
+   ══════════════════════════════════════════════════════════════════ */
+function needScript(src, done) {
+  var id = 'js-' + src.replace(/\W/g, '');
+  if (document.getElementById(id)) return done();
+  var el = document.createElement('script');
+  el.id = id; el.src = src; el.onload = done; el.onerror = done;
+  document.head.appendChild(el);
+}
+
+function scrFuture() {
+  if (S.who === 'adult') return needScript('app/jobs.js', scrJobs);
+  if (S.who === 'school') return needScript('app/unis.js', scrUnis);
+  paint('<div class="head"><h1>' + t('futAsk') + '</h1></div>' +
+    '<p class="sub" style="margin:-8px 0 20px">' + t('futAskSub') + '</p>' +
+    '<div class="rows">' +
+      '<button class="row" data-who="school"><span class="mark">' + icon('cap', 24) + '</span><span class="grow"><b>' +
+        t('futSchool') + '</b><span class="cap">' + t('futSchoolCap') + '</span></span><span class="chev">' + icon('right', 20) + '</span></button>' +
+      '<button class="row" data-who="adult"><span class="mark">' + icon('brief', 24) + '</span><span class="grow"><b>' +
+        t('futAdult') + '</b><span class="cap">' + t('futAdultCap') + '</span></span><span class="chev">' + icon('right', 20) + '</span></button>' +
+    '</div>');
+  wireWho();
+}
+
+function wireWho() {
+  $$('[data-who]').forEach(function (b) {
+    b.onclick = function () { S.who = b.getAttribute('data-who'); save(); route(); };
+  });
+}
+
+var JOB_PROF = '';
+function scrJobs() {
+  var J = window.JOBS || { profs: [], items: [] };
+  var list = J.items.filter(function (j) { return !JOB_PROF || j.p === JOB_PROF; });
+  paint('<div class="head"><h1>' + t('jobsTitle') + '</h1></div>' +
+    '<p class="sub" style="margin:-8px 0 16px">' + t('jobsSub') + '</p>' +
+    '<div class="chips"><button data-prof=""' + (!JOB_PROF ? ' class="on"' : '') + '>' + t('jobsAll') + '</button>' +
+      J.profs.map(function (p) {
+        return '<button data-prof="' + p.id + '"' + (p.id === JOB_PROF ? ' class="on"' : '') + '>' + esc(p[S.lang] || p.ru) + '</button>';
+      }).join('') + '</div>' +
+    '<div class="rows">' + (list.length ? list.map(function (j) {
+      return '<a class="row" target="_blank" rel="noopener" href="' + esc(j.url) + '"><span class="grow"><b>' + esc(j.t) + '</b>' +
+        '<span class="cap">' + esc([j.c, j.city].filter(Boolean).join(' · ')) + '</span>' +
+        '<span class="cap' + (j.sal ? ' ok' : '') + '">' + esc(j.sal || t('noSalary')) + '</span></span>' +
+        '<span class="chev">' + icon('right', 20) + '</span></a>';
+    }).join('') : '<p class="note">' + t('jobsEmpty') + '</p>') + '</div>' +
+    '<button class="btn quiet" style="margin-top:18px" data-who="school">' + t('toUnis') + '</button>');
+  $$('[data-prof]').forEach(function (b) {
+    b.onclick = function () { JOB_PROF = b.getAttribute('data-prof'); scrJobs(); };
+  });
+  wireWho();
+}
+
+function scrUnis() {
+  var U = window.UNIS || [], L = S.lang === 'kk' ? 'kk' : 'ru';
+  function tr(o) { return o ? (o[L] || o.ru || '') : ''; }
+  var list = U;
+  var checked = U.map(function (u) { return u.checked || ''; }).sort().pop();
+  paint('<div class="head"><h1>' + t('unisTitle') + '</h1></div>' +
+    '<p class="sub" style="margin:-8px 0 16px">' + t('unisSub') + (checked ? ' ' + t('unisChecked')(checked.split('-').reverse().join('.')) : '') + '</p>' +
+    '<div class="rows">' + list.map(function (u) {
+      var en = u.english && (u.english.ielts ? 'IELTS ' + u.english.ielts : '');
+      return '<button class="row" data-uni="' + u.id + '"><span class="mark num">' + esc(u.flag) + '</span><span class="grow"><b>' + esc(u.name) +
+        '</b><span class="cap">' + esc([tr(u.country), en].filter(Boolean).join(' · ')) + '</span></span><span class="chev">' + icon('right', 20) + '</span></button>';
+    }).join('') + '</div>' +
+    '<button class="btn quiet" style="margin-top:18px" data-who="adult">' + t('toJobs') + '</button>');
+  $$('[data-uni]').forEach(function (b) {
+    b.onclick = function () {
+      var u = U.filter(function (x) { return x.id === b.getAttribute('data-uni'); })[0];
+      function kv(k, v) { return v ? '<div class="kv"><b>' + t(k) + '</b><p>' + esc(v) + '</p></div>' : ''; }
+      var en = u.english || {};
+      var enLine = [en.ielts && 'IELTS ' + en.ielts, en.toefl && 'TOEFL ' + en.toefl].filter(Boolean).join(' · ');
+      var how = (u.how && (u.how[L] || u.how.ru)) || [];
+      var v = openSheet('<span class="chip accent">' + esc(tr(u.country)) + '</span>' +
+        '<h1 style="margin:12px 0 4px">' + esc(u.name) + '</h1>' +
+        kv('uniCovers', tr(u.covers)) + kv('uniEnglish', [enLine, tr(en.note)].filter(Boolean).join('. ')) +
+        kv('uniOther', tr(u.other)) + kv('uniCost', tr(u.cost)) + kv('uniWhen', tr(u.when)) +
+        (how.length ? '<div class="kv"><b>' + t('uniHow') + '</b><ol>' + how.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol></div>' : '') +
+        '<div class="gap-sm"></div><a class="btn" target="_blank" rel="noopener" href="' + esc(u.url) + '">' + t('uniSite') + '</a>');
+      v.querySelector('.sheet').classList.add('tall');
+    };
+  });
+  wireWho();
+}
+
 function games() {
   return [
     { file: 'flappy.html',  id: 'flappy_english', name: 'Flappy English', note: t('gFlappyNote') },
@@ -1323,8 +1577,9 @@ function tabs() {
     { to: '#/home',     ic: 'home',    name: t('homeTab') },
     { to: '#/lessons',  ic: 'book',    name: t('lessonsTab') },
     { to: '#/games',    ic: 'game',    name: t('gamesTab') },
+    BETA ? { to: '#/future', ic: S.who === 'school' ? 'cap' : 'brief', name: t('futTab')(S.who) } : null,
     { to: '#/settings', ic: 'profile', name: t('profileTab') }
-  ];
+  ].filter(Boolean);
 }
 
 function paint(html, plain) {
@@ -1341,7 +1596,7 @@ function paint(html, plain) {
 }
 
 function drawTabs(active) {
-  tabsEl.className = 'tabs' + (active ? '' : ' off');
+  tabsEl.className = 'tabs' + (active ? '' : ' off') + (BETA ? ' five' : '');
   if (!active) return;
   tabsEl.innerHTML = tabs().map(function (x) {
     return '<button class="tab' + (x.to === active ? ' on' : '') + '" data-to="' + x.to + '">' +
@@ -1368,6 +1623,7 @@ function route() {
   }
   if (r === 'games')  { drawTabs('#/games'); return scrGames(); }
   if (r === 'settings') { drawTabs('#/settings'); return scrProfile(); }
+  if (r === 'future' && BETA) { drawTabs('#/future'); return scrFuture(); }
 
   if (r === 'lesson' && parts[1]) {
     var id = parts[1], step = parts[2];
@@ -1400,7 +1656,9 @@ window.addEventListener('hashchange', route);
 if (window.DB && DB.init() && S.phone) {
   DB.pull().then(function (d) { if (d) { mergeServer(d); route(); } });
   loadSchedule();
+  loadInvites();
 }
+if (DEMO) loadInvites();
 route();
 
 /* автопроверка экрана: открыть index.html?test=1 и посмотреть консоль.

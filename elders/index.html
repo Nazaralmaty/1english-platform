@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FBF7F0">
+<meta name="robots" content="noindex">
+<title>1English · Ағылшын — өмірге</title>
+<link rel="icon" href="../assets/logo.png">
+<link rel="apple-touch-icon" href="../assets/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="1English">
+<style>
+@font-face{font-family:'Golos Text';font-weight:400 900;font-display:swap;src:url('../assets/fonts/GolosText-cyrillic-ext.woff2') format('woff2');unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:'Golos Text';font-weight:400 900;font-display:swap;src:url('../assets/fonts/GolosText-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Golos Text';font-weight:400 900;font-display:swap;src:url('../assets/fonts/GolosText-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212}
+/* 45+: кегль от 20 px, кнопка от 60 px высотой, контраст не ниже 7:1, одна
+   кнопка — одно действие. Всё решается нажатием, клавиатура только для имени. */
+:root{--bg:#FBF7F0;--card:#FFFFFF;--ink:#14202E;--muted:#4E5B69;--line:#E6DFD2;--navy:#0A3161;--accent:#B31942;
+  --ok:#1E7F4D;--ok-soft:#E5F2EA;--no-soft:#FBE9EC;--r:22px;--sh:0 1px 2px rgba(10,49,97,.06),0 10px 26px rgba(10,49,97,.08)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:500 20px/1.45 'Golos Text',system-ui,sans-serif}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+a{color:inherit}
+.app{max-width:600px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 48px)}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.top img{width:44px;height:44px;border-radius:12px}
+.top .grow{flex:1;min-width:0}
+.top b{display:block;font-size:20px;font-weight:800}
+.top span{font-size:16px;color:var(--muted)}
+.lang{display:flex;border:2px solid var(--line);border-radius:999px;padding:3px;background:#fff}
+.lang button{padding:8px 14px;border-radius:999px;font-size:16px;font-weight:800;color:var(--muted)}
+.lang button.on{background:var(--navy);color:#fff}
+h1{font-size:32px;line-height:1.15;letter-spacing:-.02em;margin:0 0 14px;font-weight:900}
+h1 em{font-style:normal;color:var(--accent)}
+h2{font-size:24px;margin:30px 0 14px;font-weight:900}
+.sub{color:var(--muted);margin:0 0 22px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:64px;padding:16px 22px;border-radius:18px;
+  background:var(--navy);color:#fff;font-size:21px;font-weight:800;text-decoration:none;margin-top:12px}
+.btn.wa{background:var(--ok)}
+.btn.ghost{background:#fff;color:var(--navy);box-shadow:inset 0 0 0 2px var(--line)}
+.btn:active{transform:scale(.985)}
+.field{width:100%;padding:18px;border-radius:16px;border:2px solid var(--line);background:#fff;font:600 21px 'Golos Text',sans-serif;color:var(--ink);outline:none}
+.field:focus{border-color:var(--navy)}
+label b{display:block;margin:6px 0 8px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:22px}
+.gift{padding-top:26px}
+.pack{display:flex;align-items:center;gap:16px;width:100%;text-align:left;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);
+  padding:18px;margin-bottom:12px;min-height:88px}
+.pack .no{width:52px;height:52px;border-radius:16px;background:#EEF2F8;color:var(--navy);display:grid;place-items:center;font-weight:900;font-size:22px;flex:none}
+.pack.done .no{background:var(--ok);color:#fff}
+.pack .grow{flex:1;min-width:0}
+.pack b{display:block;font-size:21px;font-weight:800}
+.pack .grow > span{display:block;font-size:17px;color:var(--muted)}
+.today{background:var(--navy);color:#fff}
+.today .sub{color:rgba(255,255,255,.8);margin-bottom:8px}
+.today .btn{background:#fff;color:var(--navy)}
+.ph{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:14px}
+.ph .en{font-size:27px;font-weight:900;letter-spacing:-.01em;line-height:1.2}
+.ph .tr{font-size:21px;color:var(--navy);margin-top:6px;font-weight:600}
+.ph .mean{font-size:19px;color:var(--muted);margin-top:6px}
+.ph .row{display:flex;gap:10px;margin-top:14px}
+.ph .row .btn{margin:0;min-height:56px;font-size:19px}
+.back{width:56px;height:56px;border-radius:16px;background:#fff;box-shadow:var(--sh);display:grid;place-items:center;flex:none}
+.opt{display:block;width:100%;text-align:left;background:#fff;border-radius:18px;box-shadow:inset 0 0 0 2px var(--line);padding:18px 20px;
+  margin-top:12px;font-size:21px;font-weight:700;min-height:64px}
+.opt.ok{background:var(--ok-soft);box-shadow:inset 0 0 0 3px var(--ok)}
+.opt.no{background:var(--no-soft);box-shadow:inset 0 0 0 3px var(--accent)}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 22px}
+.bar i{display:block;height:100%;width:100%;background:var(--ok);border-radius:99px;transform-origin:left;transition:transform .3s}
+.msg{text-align:center;padding-top:10vh}
+.demo{background:#14202E;color:#fff;text-align:center;font-size:14px;padding:6px}
+svg{flex:none}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script src="../app/db.js"></script>
+<script src="../app/elders.js"></script>
+<script src="../app/family.js"></script>
+<script>
+(function () {
+'use strict';
+var F = FAM; F.KIND = 'elder';
+var S = F.S, app = document.getElementById('app'), esc = F.esc, P = window.ELDER;
+
+/* Кто пригласил — по связи из ссылки (&r=) и полу ученика. */
+function who() {
+  var g = S.owner && S.owner.owner_gender, r = S.rel || '';
+  var kk = { m: 'балаңыз', f: 'балаңыз', '': 'балаңыз' }, ru = { m: 'ваш ребёнок', f: 'ваш ребёнок', '': 'ваш ребёнок' };
+  if (r === 'mama' || r === 'papa') { kk = { m: 'ұлыңыз', f: 'қызыңыз', '': 'балаңыз' }; ru = { m: 'ваш сын', f: 'ваша дочь', '': 'ваш ребёнок' }; }
+  if (r === 'aje' || r === 'ata')   { kk = { m: 'немереңіз', f: 'немереңіз', '': 'немереңіз' }; ru = { m: 'ваш внук', f: 'ваша внучка', '': 'ваш внук' }; }
+  if (r === 'aga' || r === 'apke')  { kk = { m: 'бауырыңыз', f: 'бауырыңыз', '': 'бауырыңыз' }; ru = { m: 'ваш брат', f: 'ваша сестра', '': 'ваш родной человек' }; }
+  return (S.lang === 'ru' ? ru : kk)[g || ''] || (S.lang === 'ru' ? ru[''] : kk['']);
+}
+
+var T = {
+  kk: {
+    thanksHead: function (w, n) { return '<em>Рахмет айтыңыз:</em> ' + w + (n ? ' ' + esc(n) : '') + ' сізге ағылшын тілін сыйлады'; },
+    thanksSub: 'Асықпай, күніне 5 минут. Өмірде керек фразалар: сапар, дәрігер, немерелер, телефон. Әр фразаның оқылуы қазақ әрпімен жазылған.',
+    thanksBtn: 'Рахмет айту', thanksMsg: 'Рахмет, балам! Сыйлығыңды аштым, ағылшынды бастадым.',
+    name: 'Сізді қалай атайық?', namePh: 'Мысалы: Гүлнара апа', start: 'Бастау',
+    hi: function (n) { return 'Сәлеметсіз бе' + (n ? ', ' + esc(n) : '') + '!'; },
+    today: 'Бүгінгі сабақ', todaySub: '6 фраза · 5 минут', open: 'Ашу', allDone: 'Барлық тақырып өтілді. Қайталауға болады.',
+    topics: 'Тақырыптар', six: '6 фраза', done: 'өтілді',
+    listen: 'Тыңдау', slow: 'Баяу', check: 'Тексеріп көрейік',
+    q: 'Бұл фраза нені білдіреді?', ok: 'Дұрыс!', no: 'Дұрысы:', next: 'Келесі',
+    fin: function (a, b) { return 'Жарайсыз! ' + a + ' / ' + b; }, finSub: 'Үйренгеніңізбен бөлісіңіз: ол қуанады.',
+    brag: function (list) { return 'Бүгін ағылшынша үйрендім: ' + list + ' Рахмет сыйлығыңа!'; },
+    share: 'WhatsApp-қа жіберу', home: 'Басты бетке',
+    bad: 'Сілтеме ескірген', badSub: 'Сізді шақырған адамнан жаңа сілтеме сұраңыз.',
+    taken: 'Бұл сілтеме басқа телефонда ашылған', takenSub: 'Шақырған адам кабинетінде «Жаңа сілтеме» басып, сізге қайта жіберсін.',
+    none: 'Сілтеме керек', noneSub: 'Бұл бет шақыру арқылы ашылады. WhatsApp-тағы хаттағы сілтемені басыңыз.',
+    net: 'Интернет жоқ', netSub: 'Желіге қосылып, бетті қайта ашыңыз.', again: 'Қайта көру', wait: 'Бір секунд…'
+  },
+  ru: {
+    thanksHead: function (w, n) { return '<em>Скажите спасибо:</em> ' + w + (n ? ' ' + esc(n) : '') + ' подарил(а) вам английский'; },
+    thanksSub: 'Без спешки, по 5 минут в день. Фразы, которые нужны в жизни: поездка, врач, внуки, телефон. Как читается каждая фраза, написано русскими буквами.',
+    thanksBtn: 'Сказать спасибо', thanksMsg: 'Спасибо, родной! Открыл(а) твой подарок, начинаю английский.',
+    name: 'Как к вам обращаться?', namePh: 'Например: Гульнара апа', start: 'Начать',
+    hi: function (n) { return 'Здравствуйте' + (n ? ', ' + esc(n) : '') + '!'; },
+    today: 'Урок на сегодня', todaySub: '6 фраз · 5 минут', open: 'Открыть', allDone: 'Все темы пройдены. Можно повторять.',
+    topics: 'Темы', six: '6 фраз', done: 'пройдено',
+    listen: 'Слушать', slow: 'Медленно', check: 'Проверим себя',
+    q: 'Что значит эта фраза?', ok: 'Верно!', no: 'Правильно так:', next: 'Дальше',
+    fin: function (a, b) { return 'Молодец! ' + a + ' из ' + b; }, finSub: 'Поделитесь, чему научились: ему будет приятно.',
+    brag: function (list) { return 'Сегодня выучил(а) по-английски: ' + list + ' Спасибо за подарок!'; },
+    share: 'Отправить в WhatsApp', home: 'На главную',
+    bad: 'Ссылка устарела', badSub: 'Попросите новую ссылку у того, кто вас пригласил.',
+    taken: 'Эту ссылку уже открыли на другом телефоне', takenSub: 'Пусть пригласивший нажмёт «Новая ссылка» в кабинете и пришлёт её снова.',
+    none: 'Нужна ссылка', noneSub: 'Эта страница открывается по приглашению. Нажмите ссылку из сообщения в WhatsApp.',
+    net: 'Нет интернета', netSub: 'Подключитесь к сети и откройте страницу снова.', again: 'Ещё раз', wait: 'Секунду…'
+  }
+};
+function t(k) { return (T[S.lang] || T.kk)[k]; }
+function mean(p) { return S.lang === 'ru' ? p.ru : p.kk; }
+
+var IC = {
+  play: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M8 5.6v12.8L19 12z" fill="currentColor"/></svg>',
+  slow: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  back: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>',
+  ok:   '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>',
+  wa:   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8.2 19z"/></svg>'
+};
+
+function top() {
+  return '<div class="top"><img src="../assets/logo.png" alt=""><div class="grow"><b>1English</b><span>' +
+    (S.lang === 'ru' ? 'Английский для жизни' : 'Ағылшын — өмірге') + '</span></div>' +
+    '<div class="lang"><button data-l="kk"' + (S.lang === 'kk' ? ' class="on"' : '') + '>KZ</button>' +
+    '<button data-l="ru"' + (S.lang === 'ru' ? ' class="on"' : '') + '>RU</button></div></div>';
+}
+function paint(html) {
+  app.innerHTML = html; window.scrollTo(0, 0);
+  Array.prototype.forEach.call(app.querySelectorAll('[data-l]'), function (b) {
+    b.onclick = function () { S.lang = b.getAttribute('data-l'); F.save(); route(); };
+  });
+  Array.prototype.forEach.call(app.querySelectorAll('[data-go]'), function (b) {
+    b.onclick = function () { location.hash = b.getAttribute('data-go'); };
+  });
+}
+
+function scrMsg(kind) {
+  paint(top() + '<div class="msg"><h1>' + esc(t(kind)) + '</h1><p class="sub">' + esc(t(kind + 'Sub')) + '</p>' +
+    (kind === 'net' ? '<button class="btn" id="re">' + t('again') + '</button>' : '') + '</div>');
+  var re = document.getElementById('re'); if (re) re.onclick = boot;
+}
+
+/* Первый экран — «Рахмет айтыңыз». С него начинается подарок. */
+function scrThanks() {
+  paint(top() +
+    '<div class="card gift"><h1>' + t('thanksHead')(who(), F.owner()) + '</h1><p class="sub" style="margin:0">' + t('thanksSub') + '</p>' +
+    '<a class="btn wa" target="_blank" rel="noopener" href="' + esc(F.wa(t('thanksMsg'))) + '">' + IC.wa + t('thanksBtn') + '</a></div>' +
+    '<div style="margin-top:26px"><label><b>' + t('name') + '</b><input class="field" id="nm" maxlength="30" placeholder="' + t('namePh') + '"></label>' +
+    '<button class="btn" id="go">' + t('start') + '</button></div>');
+  document.getElementById('go').onclick = function () {
+    var v = document.getElementById('nm').value.trim();
+    S.started = true; if (v) S.name = v; F.save();
+    F.open(v || null).then(function () { location.hash = '#/'; route(); });
+  };
+}
+
+function scrHome() {
+  var next = P.filter(function (p) { return S.done.indexOf(p.id) < 0; })[0];
+  paint(top() + '<h1>' + t('hi')(S.name) + '</h1>' +
+    '<div class="card today">' +
+      (next ? '<p class="sub">' + t('today') + ' · ' + t('todaySub') + '</p><h2 style="margin:0 0 4px">' + esc(S.lang === 'ru' ? next.ru : next.kk) + '</h2>' +
+              '<p class="sub">' + esc(S.lang === 'ru' ? next.noteRu : next.noteKk) + '</p>' +
+              '<button class="btn" data-go="#/p/' + next.id + '">' + IC.play + t('open') + '</button>'
+            : '<h2 style="margin:0">' + t('allDone') + '</h2>') +
+    '</div>' +
+    '<h2>' + t('topics') + '</h2>' +
+    P.map(function (p, i) {
+      var d = S.done.indexOf(p.id) >= 0;
+      return '<button class="pack' + (d ? ' done' : '') + '" data-go="#/p/' + p.id + '"><span class="no">' + (d ? IC.ok : (i + 1)) + '</span>' +
+        '<span class="grow"><b>' + esc(S.lang === 'ru' ? p.ru : p.kk) + '</b><span>' + t('six') + (d ? ' · ' + t('done') : '') + '</span></span></button>';
+    }).join('') +
+    '<a class="btn ghost" style="margin-top:22px" target="_blank" rel="noopener" href="' + esc(F.wa(t('thanksMsg'))) + '">' + IC.wa + t('thanksBtn') + '</a>');
+}
+
+function pack(id) { return P.filter(function (p) { return p.id === id; })[0]; }
+
+function scrPack(id) {
+  var p = pack(id); if (!p) { location.hash = '#/'; return; }
+  F.mark('seen', id);
+  paint('<div class="top"><button class="back" data-go="#/">' + IC.back + '</button><div class="grow"><b>' + esc(S.lang === 'ru' ? p.ru : p.kk) +
+      '</b><span>' + esc(S.lang === 'ru' ? p.noteRu : p.noteKk) + '</span></div></div>' +
+    p.phrases.map(function (x, k) {
+      return '<div class="ph"><div class="en">' + esc(x.en) + '</div><div class="tr">' + esc(x.tr) + '</div><div class="mean">' + esc(mean(x)) + '</div>' +
+        '<div class="row"><button class="btn" data-say="' + k + '">' + IC.play + t('listen') + '</button>' +
+        '<button class="btn ghost" data-slow="' + k + '">' + IC.slow + t('slow') + '</button></div></div>';
+    }).join('') +
+    '<button class="btn" style="margin-top:20px" data-go="#/q/' + id + '">' + t('check') + '</button>');
+  Array.prototype.forEach.call(app.querySelectorAll('[data-say]'), function (b) {
+    b.onclick = function () { F.speak(p.phrases[+b.getAttribute('data-say')].en, 0.85); };
+  });
+  Array.prototype.forEach.call(app.querySelectorAll('[data-slow]'), function (b) {
+    b.onclick = function () { F.speak(p.phrases[+b.getAttribute('data-slow')].en, 0.55); };
+  });
+}
+
+/* Проверка: фраза звучит сама, выбрать её смысл из трёх. Ошибка не штраф —
+   показываем правильный ответ и идём дальше. */
+function scrQuiz(id) {
+  var p = pack(id); if (!p) { location.hash = '#/'; return; }
+  var i = 0, right = 0;
+  function opts(k) {
+    var others = p.phrases.filter(function (_, j) { return j !== k; }).sort(function () { return Math.random() - 0.5; }).slice(0, 2);
+    return others.concat([p.phrases[k]]).sort(function () { return Math.random() - 0.5; });
+  }
+  function draw() {
+    if (i >= p.phrases.length) return end();
+    var x = p.phrases[i], list = opts(i), answered = false;
+    paint('<div class="top"><button class="back" data-go="#/p/' + id + '">' + IC.back + '</button><div class="grow"><b>' +
+        esc(S.lang === 'ru' ? p.ru : p.kk) + '</b><span>' + (i + 1) + ' / ' + p.phrases.length + '</span></div></div>' +
+      '<div class="bar"><i style="transform:scaleX(' + (i / p.phrases.length) + ')"></i></div>' +
+      '<div class="ph"><div class="en">' + esc(x.en) + '</div><div class="tr">' + esc(x.tr) + '</div>' +
+      '<div class="row"><button class="btn" id="say">' + IC.play + t('listen') + '</button></div></div>' +
+      '<h2 style="margin-top:8px">' + t('q') + '</h2>' +
+      list.map(function (o, k) { return '<button class="opt" data-o="' + k + '">' + esc(mean(o)) + '</button>'; }).join('') +
+      '<div id="nx"></div>');
+    F.speak(x.en, 0.85);
+    document.getElementById('say').onclick = function () { F.speak(x.en, 0.85); };
+    Array.prototype.forEach.call(app.querySelectorAll('[data-o]'), function (b) {
+      b.onclick = function () {
+        if (answered) return; answered = true;
+        var good = list[+b.getAttribute('data-o')] === x;
+        if (good) right++;
+        Array.prototype.forEach.call(app.querySelectorAll('[data-o]'), function (o) {
+          if (list[+o.getAttribute('data-o')] === x) o.classList.add('ok');
+        });
+        if (!good) b.classList.add('no');
+        document.getElementById('nx').innerHTML = '<button class="btn" id="go">' + t('next') + '</button>';
+        document.getElementById('go').onclick = function () { i++; draw(); };
+      };
+    });
+  }
+  function end() {
+    F.mark('done', id);
+    var list = p.phrases.slice(0, 3).map(function (x) { return x.en; }).join(' ');
+    paint(top() + '<div class="msg" style="padding-top:4vh"><h1>' + t('fin')(right, p.phrases.length) + '</h1><p class="sub">' + t('finSub') + '</p></div>' +
+      '<a class="btn wa" target="_blank" rel="noopener" href="' + esc(F.wa(t('brag')(list))) + '">' + IC.wa + t('share') + '</a>' +
+      '<button class="btn ghost" data-go="#/">' + t('home') + '</button>');
+  }
+  draw();
+}
+
+function route() {
+  if (!S.started) return scrThanks();
+  var r = (location.hash || '').replace(/^#\/?/, '').split('/');
+  if (r[0] === 'p' && r[1]) return scrPack(r[1]);
+  if (r[0] === 'q' && r[1]) return scrQuiz(r[1]);
+  scrHome();
+}
+
+function boot() {
+  paint(top() + '<div class="msg"><p class="sub">' + t('wait') + '</p></div>');
+  F.open().then(function (r) {
+    if (!r.ok) return scrMsg(r.reason === 'taken' ? 'taken' : r.reason === 'net' ? 'net' : r.reason === 'none' ? 'none' : 'bad');
+    if (r.kind === 'kid') { location.replace('../kids/' + location.search); return; }
+    window.onhashchange = route;
+    route();
+  });
+}
+
+if (F.DEMO) document.body.insertAdjacentHTML('afterbegin', '<div class="demo">Демо: пригласивший выдуман, в базу ничего не уходит</div>');
+boot();
+})();
+</script>
+</body>
+</html>
