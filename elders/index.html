@@ -108,6 +108,7 @@ var T = {
     errName: 'Атыңызды жазыңыз', errCode: 'Промокод қате. Сыйлық жасаған адамнан қайта сұраңыз.',
     errTaken: 'Бұл промокодпен үлкендер платформасы басқа адамға бекітілген. Бұрын кірсеңіз, атыңызды сол кездегідей жазыңыз.',
     errNet: 'Интернет жоқ. Желіге қосылып, қайта басыңыз.',
+    errServer: 'Қызмет уақытша істемей тұр. Кейінірек қайта басыңыз.',
     hi: function (n) { return 'Сәлеметсіз бе' + (n ? ', ' + esc(n) : '') + '!'; },
     today: 'Бүгінгі сабақ', todaySub: '6 фраза · 5 минут', open: 'Ашу', allDone: 'Барлық тақырып өтілді. Қайталауға болады.',
     topics: 'Тақырыптар', six: '6 фраза', done: 'өтілді',
@@ -131,6 +132,7 @@ var T = {
     errName: 'Напишите имя', errCode: 'Промокод неверный. Спросите его ещё раз у того, кто подарил.',
     errTaken: 'Платформа для старших по этому промокоду уже закреплена за другим человеком. Если входили раньше, напишите имя так же, как тогда.',
     errNet: 'Нет интернета. Подключитесь и нажмите ещё раз.',
+    errServer: 'Сервис временно не работает. Попробуйте чуть позже.',
     hi: function (n) { return 'Здравствуйте' + (n ? ', ' + esc(n) : '') + '!'; },
     today: 'Урок на сегодня', todaySub: '6 фраз · 5 минут', open: 'Открыть', allDone: 'Все темы пройдены. Можно повторять.',
     topics: 'Темы', six: '6 фраз', done: 'пройдено',
@@ -194,7 +196,7 @@ function scrLogin() {
     F.enter(document.getElementById('cd').value, document.getElementById('nm').value).then(function (r) {
       go.disabled = false;
       if (r.ok) { location.hash = '#/'; return route(); }
-      er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet' }[r.reason] || 'errCode');
+      er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet', server: 'errServer' }[r.reason] || 'errCode');
     });
   };
 }

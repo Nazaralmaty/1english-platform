@@ -48,7 +48,8 @@
       if (DEMO) return Promise.resolve(done({ owner_name: 'Асқар', owner_gender: 'm', guest_name: name }));
       return global.DB.anonRpc('en_guest_enter', { p_code: code, p_kind: kind, p_name: name })
         .then(function (r) { return r && r.ok ? done(r) : (r || { ok: false, reason: 'code' }); })
-        .catch(function () { return { ok: false, reason: 'net' }; });
+        /* статус есть — ответил сервер (функции нет, база легла), нет — не дошли до сети */
+        .catch(function (e) { return { ok: false, reason: e && e.status ? 'server' : 'net' }; });
     };
 
     function push(note) {

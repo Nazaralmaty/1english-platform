@@ -116,6 +116,7 @@ var T = {
         errName: 'Атыңды жаз', errCode: 'Промокод қате. Сыйлық жасаған адамнан қайта сұра.',
         errTaken: 'Бұл промокодпен балалар платформасы басқа балаға бекітілген. Өзің бұрын кірсең, атыңды сол кездегідей жаз.',
         errNet: 'Интернет жоқ. Желіге қосылып, қайта бас.',
+        errServer: 'Қызмет уақытша істемей тұр. Кейінірек қайта бас.',
         stars: function (a, b) { return a + ' / ' + b; }, next: 'Келесі мультфильм',
         words: 'Сөздер', tapWord: 'Сөзді бас: тыңдайсың, сосын аудармасы шығады',
         gotStar: 'Жұлдыз алдың!', thanks: function (n) { return (n || 'Сыйлық жасаған адам') + ' қуансын: рахмет айт!'; },
@@ -128,6 +129,7 @@ var T = {
         errName: 'Напиши своё имя', errCode: 'Промокод неверный. Спроси его ещё раз у того, кто подарил.',
         errTaken: 'Детская платформа по этому промокоду уже закреплена за другим ребёнком. Если входил раньше, напиши имя так же, как тогда.',
         errNet: 'Нет интернета. Подключись и нажми ещё раз.',
+        errServer: 'Сервис временно не работает. Попробуй чуть позже.',
         stars: function (a, b) { return a + ' / ' + b; }, next: 'Следующий мультик',
         words: 'Слова', tapWord: 'Нажми на слово: услышишь его, потом увидишь перевод',
         gotStar: 'Ты получил звезду!', thanks: function (n) { return 'Порадуй ' + (n || 'того, кто подарил') + ': скажи спасибо!'; },
@@ -185,7 +187,7 @@ function scrLogin() {
     F.enter(document.getElementById('cd').value, document.getElementById('nm').value).then(function (r) {
       go.disabled = false;
       if (r.ok) { location.hash = '#/'; return route(); }
-      er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet' }[r.reason] || 'errCode');
+      er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet', server: 'errServer' }[r.reason] || 'errCode');
     });
   };
 }
