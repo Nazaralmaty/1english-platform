@@ -186,7 +186,7 @@ function scrLogin() {
     go.disabled = true; er.textContent = '';
     F.enter(document.getElementById('cd').value, document.getElementById('nm').value).then(function (r) {
       go.disabled = false;
-      if (r.ok) { location.hash = '#/'; return route(); }
+      if (r.ok) { location.replace('#/'); return route(); }
       er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet', server: 'errServer' }[r.reason] || 'errCode');
     });
   };
@@ -222,7 +222,7 @@ function wireThanks() {
 }
 
 function scrEp(id) {
-  var c = CARTOONS[id]; if (!c) { location.hash = '#/'; return; }
+  var c = CARTOONS[id]; if (!c) { location.replace('#/'); return; }
   var i = IDS.indexOf(id), nextId = IDS[i + 1];
   var words = (((window.CONTENT || {})[id] || {}).words || []).slice(0, 8);
   paint('<div class="top"><button class="back" id="bk" aria-label="back">' + BACK + '</button>' +
@@ -238,7 +238,7 @@ function scrEp(id) {
       }).join('') + '</div>' : '') +
     (nextId ? '<div style="margin-top:24px"><button class="big" id="nx">' + t('next') + '</button></div>' : '') +
     thanksCard());
-  document.getElementById('bk').onclick = function () { location.hash = '#/'; };
+  document.getElementById('bk').onclick = function () { F.back('#/'); };
   var nx = document.getElementById('nx'); if (nx) nx.onclick = function () { location.hash = '#/ep/' + nextId; };
   Array.prototype.forEach.call(app.querySelectorAll('[data-w]'), function (b) {
     b.onclick = function () {

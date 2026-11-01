@@ -131,7 +131,7 @@ window.VIDEOS = {
 | [`app/jobs.js`](app/jobs.js) | вакансии hh.kz с английским; собирает [`backend/jobs.py`](backend/jobs.py), раз в неделю — `backend/jobs_weekly.sh` (launchd на Air) |
 | [`app/unis.js`](app/unis.js) | гранты на учёбу за рубежом с источниками и датой проверки |
 | [`app/campus.js`](app/campus.js) | 15 вузов под эти гранты: фото кампуса и города, кто учился, направления; фото в `assets/unis/` (Wikimedia Commons, авторы в `PHOTO_CREDIT`). Проверка — `node app/check_campus.mjs` |
-| [`promo/howto/`](promo/howto/) | видео для сторис вкладки (HyperFrames): `npx hyperframes@0.8.82 render . -o work/_video.mp4`, потом `./mix.sh` → `media/stories/howto_ru.mp4` |
+| [`promo/howto/`](promo/howto/) | видео для сторис вкладки, русское и казахское (HyperFrames). Экраны — `node caps.cjs ru\|kk`, озвучка — `script.txt` и `kk/script.txt` через `engine/tts_or.py`, сборка — `./build.sh` → `media/stories/howto_{ru,kk}.mp4` |
 | [`app/check_family.mjs`](app/check_family.mjs) | проверка фраз, вакансий, грантов и мультиков для гостей |
 | [`backend/patch_2026-11-01_family.sql`](backend/patch_2026-11-01_family.sql) | патч: промокоды `en_invite_codes`, места гостей `en_invites`, функции входа гостя и уведомлений |
 | [`prototype.html`](prototype.html) | стенд первой, казахоязычной версии |
@@ -168,6 +168,8 @@ node app/check_reading.mjs    # тексты чтения: каждое поме
 node app/check_reminder.mjs   # плашка «скоро урок»: переход через неделю, урок, который идёт
 node app/check_family.mjs     # фразы для старших, вакансии, гранты, мультики гостей
 node app/check_campus.mjs     # вузы: грант, город, фото и автор у каждого
+node app/check_nav.cjs        # входы и выходы: «назад», шторки, вуз, сторис (нужен http.server 8790)
+node app/check_nav_guest.cjs  # то же для kids/ и elders/, плюс озвучка фраз
 python3 backend/jobs.py --test   # разбор вакансий hh
 open "index.html?test=1"      # экраны: смотреть консоль
 ```

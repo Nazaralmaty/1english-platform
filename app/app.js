@@ -448,7 +448,28 @@ function esc(s) {
 }
 function $(sel, root) { return (root || view).querySelector(sel); }
 function $$(sel, root) { return Array.prototype.slice.call((root || view).querySelectorAll(sel)); }
-function go(hash) { location.hash = hash; }
+/* ── Навигация ──
+   Вперёд — новый адрес в истории (go). Назад — шаг по истории, если на этот
+   экран пришли оттуда, иначе замена адреса (back): иначе системный «назад»
+   на телефоне возвращает на экран, с которого только что ушли.
+   Шторка снизу — запись в истории без смены адреса: «назад» закрывает её,
+   а не уводит со страницы. Пока шторка закрывается шагом назад, переход
+   ждёт конца этого шага (PENDING), чтобы не потеряться в истории. */
+var PREV = '', BACKING = false, PENDING = null;
+window.addEventListener('hashchange', function (e) { PREV = e.oldURL.indexOf('#') >= 0 ? e.oldURL.slice(e.oldURL.indexOf('#')) : ''; });
+function go(hash) {
+  if (BACKING) { PENDING = function () { location.hash = hash; }; return; }
+  location.hash = hash;
+}
+function back(hash) {
+  if (BACKING) { PENDING = function () { back(hash); }; return; }
+  if (PREV && PREV === hash) history.back(); else location.replace(hash);
+}
+window.addEventListener('popstate', function () {
+  var v = document.querySelector('.veil:not(.fveil)');
+  if (v && !(history.state && history.state.sheet)) v.remove();
+  if (BACKING) { BACKING = false; var f = PENDING; PENDING = null; if (f) f(); }
+});
 
 function toast(text) {
   var el = document.createElement('div');
@@ -518,9 +539,17 @@ function openSheet(html, wire) {
   var veil = document.createElement('div');
   veil.className = 'veil';
   veil.innerHTML = '<div class="sheet"><div class="grip"></div>' + html + '</div>';
+  var prev = document.querySelector('.veil:not(.fveil)');
+  if (prev) prev.remove(); else history.pushState({ sheet: 1 }, '');   /* шторка вместо шторки — та же запись */
   document.body.appendChild(veil);
-  veil.onclick = function (e) { if (e.target === veil) veil.remove(); };
-  if (wire) wire(veil, function () { veil.remove(); });
+  function close() {
+    if (!veil.parentNode) return;
+    veil.remove();
+    if (history.state && history.state.sheet) { BACKING = true; history.back(); }
+  }
+  veil.close = close;
+  veil.onclick = function (e) { if (e.target === veil) close(); };
+  if (wire) wire(veil, close);
   return veil;
 }
 
@@ -880,7 +909,7 @@ function scrRead(id) {
     b.onclick = function () { speak(s.examples[+b.getAttribute('data-say')].en); };
   });
   $('#ok').onclick = function () {
-    prog(id).read = true; save(); syncStep(id, 'read'); go('#/lessons');
+    prog(id).read = true; save(); syncStep(id, 'read'); back('#/lessons');
   };
 }
 
@@ -897,7 +926,7 @@ function scrPrac(id) {
     '<div class="dock"><button class="btn" id="ok">' + t('got') + '</button></div>', true);
 
   $('#ok').onclick = function () {
-    prog(id).prac = true; save(); syncStep(id, 'prac'); go('#/lessons');
+    prog(id).prac = true; save(); syncStep(id, 'prac'); back('#/lessons');
   };
 }
 
@@ -950,7 +979,7 @@ function scrText(id) {
       };
     });
     $('#ok').onclick = function () {
-      prog(id).text = true; save(); syncStep(id, 'text'); go('#/lessons');
+      prog(id).text = true; save(); syncStep(id, 'text'); back('#/lessons');
     };
   }
   draw();
@@ -1100,7 +1129,7 @@ function scrTask(id) {
         '<div class="cap">' + (right === deck.length ? t('noMistakes') : t('canRetry')) + '</div>' +
       '</div>' +
       '<div class="dock">' +
-        '<button class="btn" data-nav="#/lessons">' + t('toLessons') + '</button>' +
+        '<button class="btn" data-back="#/lessons">' + t('toLessons') + '</button>' +
         '<div class="gap-sm"></div>' +
         '<button class="btn ghost" id="again">' + t('again') + '</button>' +
       '</div>', true);
@@ -1164,7 +1193,7 @@ function scrWords(id) {
         '<div class="score num">' + s.words.length + '</div>' +
         '<div class="cap">' + t('wordsDone') + '</div>' +
       '</div>' +
-      '<div class="dock"><button class="btn" data-nav="#/lessons">' + t('toLessons') + '</button></div>', true);
+      '<div class="dock"><button class="btn" data-back="#/lessons">' + t('toLessons') + '</button></div>', true);
   }
 
   draw();
@@ -1296,7 +1325,7 @@ function famSheet(kind) {
 function famFromProfile() {
   var v = openSheet('<h1 style="margin:0 0 10px">' + t('famTitle') + '</h1><p class="sub" style="margin-bottom:14px">' + t('famSub') + '</p>' + famRows());
   Array.prototype.forEach.call(v.querySelectorAll('[data-fam]'), function (b) {
-    b.onclick = function () { v.remove(); famSheet(b.getAttribute('data-fam')); };
+    b.onclick = function () { famSheet(b.getAttribute('data-fam')); };
   });
 }
 
@@ -1335,18 +1364,37 @@ function futHead(title) {
 }
 function wireFut() {
   $$('[data-who]').forEach(function (b) {
-    b.onclick = function () { var w = b.getAttribute('data-who'); if (w === S.who) return; S.who = w; save(); route(); };
+    b.onclick = function () {
+      var w = b.getAttribute('data-who'); if (w === S.who) return;
+      S.who = w; save();
+      if (location.hash === '#/future') route(); else location.replace('#/future');
+    };
   });
-  var s = $('[data-story]'); if (s) s.onclick = openStories;
+  var s = $('[data-story]'); if (s) s.onclick = function () { warmStory(); go('#/future/story'); };
 }
 
-function scrFuture() {
+/* Адреса вкладки: #/future — корень, #/future/jobs/<сфера> — вакансии сферы,
+   #/future/uni/<id> — вуз, #/future/story — сторис. Слой (вуз, сторис)
+   открывается поверх корня; если корень уже нарисован, он не
+   перерисовывается — так после закрытия вуза список стоит там же. */
+var FUT_SUB = [];
+function scrFuture(sub) {
+  FUT_SUB = sub || [];
+  JOB_PROF = FUT_SUB[0] === 'jobs' ? (FUT_SUB[1] || '') : '';
+  if (FUT_SUB[0] === 'uni') S.who = 'school';
   if (S.who === 'school') return needScripts(['app/unis.js', 'app/campus.js'], scrUnis);
   needScript('app/jobs.js', scrJobs);
+}
+function futKey() { return [S.who, JOB_PROF, UNI_C, S.field, S.lang].join('|'); }
+function samePaint() { return view.getAttribute('data-fut') === futKey(); }
+function futLayer() {
+  if (FUT_SUB[0] === 'uni') openUni(FUT_SUB[1]);
+  else if (FUT_SUB[0] === 'story') openStories();
 }
 
 var JOB_PROF = '';
 function scrJobs() {
+  if (samePaint()) return futLayer();
   var J = window.JOBS || { profs: [], items: [] };
   function count(p) { return J.items.filter(function (j) { return j.p === p; }).length; }
   if (!JOB_PROF) {
@@ -1368,9 +1416,11 @@ function scrJobs() {
       }).join('') + '</div>' : '<p class="note">' + t('jobsEmpty') + '</p>'));
   }
   $$('[data-prof]').forEach(function (b) {
-    b.onclick = function () { JOB_PROF = b.getAttribute('data-prof'); scrJobs(); };
+    b.onclick = function () { var p = b.getAttribute('data-prof'); if (p) go('#/future/jobs/' + p); else back('#/future'); };
   });
   wireFut();
+  view.setAttribute('data-fut', futKey());
+  futLayer();
 }
 
 /* ── Учёба ── */
@@ -1405,7 +1455,9 @@ function uniCard(c, big) {
     '<span class="perk">' + esc(tr(P.perk)) + '</span></button>';
 }
 
-function scrUnis() {
+function scrUnis(keepScroll) {
+  if (!keepScroll && samePaint()) return futLayer();
+  var y = window.scrollY;
   var U = window.UNIS || [], C = window.CAMPUS || [], F = window.FIELDS || [], P = window.PROG || {};
   var f = S.field || '';
   var list = C.filter(function (c) { return (!UNI_C || c.prog === UNI_C) && (!f || c.fields.indexOf(f) >= 0); });
@@ -1426,27 +1478,41 @@ function scrUnis() {
     '<h2 class="sh">' + (UNI_C || f ? t('found')(list.length) : t('allUnis')) + '</h2>' +
     (list.length ? '<div class="ulist">' + list.map(function (c) { return uniCard(c); }).join('') + '</div>' : '<p class="note">' + t('noUnis') + '</p>') +
     '<p class="foot">' + t('unisFoot')(checked.split('-').reverse().join('.')) + '</p>');
-  $$('.fchips .on').forEach(function (b) { b.parentNode.scrollLeft = b.offsetLeft - 60; });
-  $$('[data-fc]').forEach(function (b) { b.onclick = function () { UNI_C = b.getAttribute('data-fc'); scrUnis(); }; });
-  $$('[data-ff]').forEach(function (b) { b.onclick = function () { S.field = b.getAttribute('data-ff'); save(); scrUnis(); }; });
-  $$('[data-uni]').forEach(function (b) { b.onclick = function () { openUni(b.getAttribute('data-uni')); }; });
+  /* фильтр перерисовывает экран на месте: прокрутка и лента чипов не прыгают */
+  if (keepScroll) { view.classList.remove('enter'); window.scrollTo(0, y); }
+  $$('.fchips').forEach(function (row, i) {
+    var on = row.querySelector('.on'), kept = keepScroll && keepScroll[i];
+    row.scrollLeft = kept != null ? kept : (on ? on.offsetLeft - 60 : 0);
+  });
+  function chips() { return $$('.fchips').map(function (r) { return r.scrollLeft; }); }
+  $$('[data-fc]').forEach(function (b) { b.onclick = function () { UNI_C = b.getAttribute('data-fc'); scrUnis(chips()); }; });
+  $$('[data-ff]').forEach(function (b) { b.onclick = function () { S.field = b.getAttribute('data-ff'); save(); scrUnis(chips()); }; });
+  $$('[data-uni]').forEach(function (b) { b.onclick = function () { go('#/future/uni/' + b.getAttribute('data-uni')); }; });
   wireFut();
+  view.setAttribute('data-fut', futKey());
+  if (!keepScroll) futLayer();
 }
 
 /* Полноэкранный слой поверх вкладки: вуз и сторис. */
-function overlay(cls, html) {
+/* Закрыть слой = вернуться на #/future (шаг назад, если пришли оттуда);
+   убирает слой route() → closeLayers() → el.teardown. */
+function overlay(cls, html, onTeardown) {
   var el = document.createElement('div');
   el.className = cls; el.innerHTML = html;
   document.body.appendChild(el);
   document.documentElement.classList.add('locked');
-  function close() { el.remove(); document.documentElement.classList.remove('locked'); document.removeEventListener('keydown', esc_); }
   function esc_(e) { if (e.key === 'Escape') close(); }
+  function close() { back('#/future'); }
+  el.teardown = function () {
+    if (onTeardown) onTeardown();
+    el.remove(); document.documentElement.classList.remove('locked'); document.removeEventListener('keydown', esc_);
+  };
   document.addEventListener('keydown', esc_);
   return { el: el, close: close };
 }
 
 function openUni(id) {
-  var c = (window.CAMPUS || []).filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  var c = (window.CAMPUS || []).filter(function (x) { return x.id === id; })[0]; if (!c) return location.replace('#/future');
   var u = progOf(c), P = (window.PROG || {})[c.prog] || {}, city = (window.CITIES || {})[c.city] || {}, en = u.english || {};
   var how = (u.how && (u.how[uL()] || u.how.ru)) || [], cr = window.PHOTO_CREDIT || {};
   function row(k, v) { return v ? '<div class="kv2"><span>' + t(k) + '</span><p>' + esc(v) + '</p></div>' : ''; }
@@ -1502,11 +1568,27 @@ var STORY = [
     cta: 1 }
 ];
 
+/* iPhone пускает видео со звуком только из самого нажатия, а сторис
+   открывается позже, по смене адреса. Поэтому ролик запускается прямо в
+   нажатии на кружок, и сторис берёт этот же элемент. Язык ролика выбирается
+   сразу: перебор файлов через onerror шёл бы уже без нажатия — без звука. */
+var STORY_LANGS = ['ru', 'kk'];
+var STORY_VID = null;
+function storySrc() { return 'media/stories/howto_' + (STORY_LANGS.indexOf(uL()) >= 0 ? uL() : 'ru') + '.mp4'; }
+function warmStory() {
+  var v = document.createElement('video');
+  v.className = 'sv'; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto';
+  v.poster = 'assets/stories/poster.jpg'; v.src = storySrc();
+  var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
+  STORY_VID = v;
+}
+
 function openStories() {
   S.storySeen = true; save();
   var pill = $('[data-story]'); if (pill) pill.classList.add('seen');
   var o = overlay('story', '<div class="bars">' + STORY.map(function () { return '<i><b></b></i>'; }).join('') + '</div>' +
-    '<button class="sx" aria-label="close">' + icon('close', 22) + '</button><div class="stage"></div>');
+    '<button class="sx" aria-label="close">' + icon('close', 22) + '</button><div class="stage"></div>',
+    function () { cancelAnimationFrame(raf); if (vid) { vid.pause(); vid.removeAttribute('src'); vid.load(); } });
   var el = o.el, stage = el.querySelector('.stage'), bars = el.querySelectorAll('.bars b');
   var i = -1, t0 = 0, held = 0, paused = false, vid = null, raf = 0, DUR = 7000;
 
@@ -1518,17 +1600,19 @@ function openStories() {
     var s = STORY[i];
     el.classList.toggle('lt', !!s.pic);
     if (s.video) {
-      var src = 'media/stories/howto_' + uL() + '.mp4';
-      stage.innerHTML = '<video class="sv" playsinline preload="auto" poster="assets/stories/poster.jpg"></video>';
-      vid = stage.firstChild;
-      vid.onerror = function () { if (vid.src.indexOf('_ru') < 0) { vid.src = 'media/stories/howto_ru.mp4'; vid.play(); } else go(i + 1); };
+      vid = STORY_VID && STORY_VID.src.indexOf(storySrc()) >= 0 ? STORY_VID : null;
+      STORY_VID = null;
+      if (!vid) { warmStory(); vid = STORY_VID; STORY_VID = null; }   /* открыли по ссылке или вернулись назад к видео */
+      else vid.currentTime = vid.currentTime > 1 ? 0 : vid.currentTime;
+      stage.innerHTML = ''; stage.appendChild(vid);
       vid.onended = function () { go(i + 1); };
-      vid.src = src;
-      var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; vid.play(); });
+      vid.onerror = function () { go(i + 1); };
+      /* звук запрещён (открыли по ссылке, без нажатия) — играем без звука; закрыли во время загрузки — молчим */
+      var pr = vid.play(); if (pr && pr.catch) pr.catch(function (e) { if (e && e.name === 'NotAllowedError') { vid.muted = true; vid.play().catch(function () {}); } });
     } else if (s.photo) {
       stage.innerHTML = '<div class="sphoto"><img src="' + s.photo + '" alt=""><div class="stx"><h2>' + esc(tr(s.h)) + '</h2><p>' + esc(tr(s.p)) + '</p>' +
         (s.cta ? '<button class="btn light" data-cta>' + t('toLessons') + '</button>' : '') + '</div></div>';
-      var b = stage.querySelector('[data-cta]'); if (b) b.onclick = function (e) { e.stopPropagation(); end(); go_('#/lessons'); };
+      var b = stage.querySelector('[data-cta]'); if (b) b.onclick = function (e) { e.stopPropagation(); location.replace('#/lessons'); };
     } else {
       stage.innerHTML = '<div class="spic"><div class="stx"><h2>' + esc(tr(s.h)) + '</h2><p>' + esc(tr(s.p)) + '</p></div>' +
         '<div class="phone"><img src="assets/stories/' + s.pic + '_' + uL() + '.jpg" alt=""></div></div>';
@@ -1543,11 +1627,11 @@ function openStories() {
     bars[i].style.width = Math.min(100, p * 100) + '%';
   }
   function end() { cancelAnimationFrame(raf); if (vid) vid.pause(); o.close(); }
-  function go_(h) { location.hash = h; }
 
-  var down = 0, dx = 0;
-  stage.addEventListener('pointerdown', function (e) { down = performance.now(); dx = e.clientX; paused = true; if (vid) vid.pause(); });
+  var down = 0, y0 = 0;
+  stage.addEventListener('pointerdown', function (e) { down = performance.now(); y0 = e.clientY; paused = true; if (vid) vid.pause(); });
   stage.addEventListener('pointerup', function (e) {
+    if (e.clientY - y0 > 90) return end();   /* смахнули вниз — закрыть, как в инстаграме */
     var quick = performance.now() - down < 250; paused = false;
     if (quick) { if (e.clientX < window.innerWidth * 0.3) go(i - 1); else go(i + 1); }
     else if (vid) vid.play();
@@ -1792,6 +1876,7 @@ function tabs() {
 
 function paint(html, plain) {
   view.className = 'view enter' + (plain ? ' plain' : '');
+  view.removeAttribute('data-fut');
   view.innerHTML = html;
   view.scrollTop = 0;
   window.scrollTo(0, 0);
@@ -1799,7 +1884,7 @@ function paint(html, plain) {
     b.onclick = function () { go(b.getAttribute('data-nav')); };
   });
   $$('[data-back]').forEach(function (b) {
-    b.onclick = function () { go(b.getAttribute('data-back')); };
+    b.onclick = function () { back(b.getAttribute('data-back')); };
   });
 }
 
@@ -1815,14 +1900,24 @@ function drawTabs(active) {
   });
 }
 
+/* Слои поверх экрана (шторка, вуз, сторис) живут только на своём адресе:
+   любой переход их закрывает, иначе слой висит над чужим экраном. */
+function closeLayers() {
+  Array.prototype.forEach.call(document.querySelectorAll('.veil,.full,.story'), function (el) {
+    if (el.classList.contains('veil')) el.remove(); else if (el.teardown) el.teardown(); else el.remove();
+  });
+  document.documentElement.classList.remove('locked');
+}
+
 function route() {
   var parts = (location.hash || '').replace(/^#\/?/, '').split('/').filter(Boolean);
   var r = parts[0] || '';
 
   /* Два входных условия, и оба обязательные: сначала номер, потом курс.
      Курс выбирается на главной — туда и упирается вход без уровня. */
-  if (!S.phone) { if (r !== 'login') return go('#/login'); }
-  else if (!S.level && r !== 'home' && r !== 'level') return go('#/home');
+  closeLayers();
+  if (!S.phone) { if (r !== 'login') return location.replace('#/login'); }
+  else if (!S.level && r !== 'home' && r !== 'level') return location.replace('#/home');
 
   if (r === 'login')  { drawTabs(null); return scrLogin(); }
   if (r === 'home' || r === 'level') {
@@ -1831,7 +1926,7 @@ function route() {
   }
   if (r === 'games')  { drawTabs('#/games'); return scrGames(); }
   if (r === 'settings') { drawTabs('#/settings'); return scrProfile(); }
-  if (r === 'future' && BETA) { drawTabs('#/future'); return scrFuture(); }
+  if (r === 'future' && BETA) { drawTabs('#/future'); return scrFuture(parts.slice(1)); }
 
   if (r === 'lesson' && parts[1]) {
     var id = parts[1], step = parts[2];
@@ -1841,7 +1936,7 @@ function route() {
     if (step === 'text')  { drawTabs(null); return scrText(id); }
     if (step === 'task')  { drawTabs(null); return scrTask(id); }
     if (step === 'words') { drawTabs(null); return scrWords(id); }
-    return go('#/lessons');   /* отдельного экрана урока нет: шаги живут в списке */
+    return location.replace('#/lessons');   /* отдельного экрана урока нет: шаги живут в списке */
   }
 
   drawTabs('#/lessons');

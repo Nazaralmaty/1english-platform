@@ -9,8 +9,15 @@
      озвучка kie Flash Lite (engine/tts_or.py, Achird), тайминг из assets/vo.
      Рендер: npx hyperframes@0.8.82 render . -o work/_video.mp4, звук — mix.sh. -->
 <script src="vendor/gsap.min.js"></script>
-<script src="assets/vo/vo.js"></script>
-<script src="assets/vo/words.js"></script>
+<script>
+/* Язык ролика. index.html — русский; kk.html — та же композиция с LANG = 'kk' (делает build.sh).
+   Озвучка языка — в <lang>/assets/vo (русская в assets/vo), экраны — в assets/screens_<lang>. */
+var LANG = 'ru';
+var VO_DIR = LANG === 'ru' ? '' : LANG + '/';
+var SCR_DIR = 'assets/screens' + (LANG === 'ru' ? '' : '_' + LANG) + '/';
+document.write('<script src="' + VO_DIR + 'assets/vo/vo.js"><\/script><script src="' + VO_DIR + 'assets/vo/words.js"><\/script>' +
+  '<script src="' + SCR_DIR + 'rects.js"><\/script>');
+</script>
 <style>
 @font-face{font-family:G;font-weight:400 900;src:url(fonts/GolosText-cyrillic.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 @font-face{font-family:G;font-weight:400 900;src:url(fonts/GolosText-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F}
@@ -47,32 +54,55 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="43" data-width="1080" data-height="1920">
-  <div id="stage" class="clip layer" data-start="0" data-duration="43" data-track-index="0">
+<div id="root" data-composition-id="main" data-start="0" data-duration="47" data-width="1080" data-height="1920">
+  <div id="stage" class="clip layer" data-start="0" data-duration="47" data-track-index="0">
     <div id="bg"></div>
-    <div class="big" id="i1">Работа<br>в Алматы.</div>
-    <div class="big" id="i2">Учёба<br>в Сеуле.</div>
+    <div class="big" id="i1"></div>
+    <div class="big" id="i2"></div>
     <div id="ttl"></div>
     <div id="phone"><div id="scr">
       <div id="island"></div>
       <div id="sb"><span>9:41</span><svg width="124" height="29" viewBox="0 0 110 26"><g fill="#0E1B2E"><rect x="0" y="16" width="6" height="8" rx="1.5"/><rect x="9" y="12" width="6" height="12" rx="1.5"/><rect x="18" y="7" width="6" height="17" rx="1.5"/><rect x="27" y="2" width="6" height="22" rx="1.5"/><path d="M51 22l-4-4.4a6 6 0 0 1 8 0zM43.6 14.4a11 11 0 0 1 14.8 0l-2.4 2.6a7.6 7.6 0 0 0-10 0zM40.2 10.6a16 16 0 0 1 21.6 0l-2.4 2.6a12.6 12.6 0 0 0-16.8 0z"/><rect x="70" y="4" width="34" height="18" rx="5" fill="none" stroke="#0E1B2E" stroke-width="2" opacity=".45"/><rect x="73" y="7" width="26" height="12" rx="2.5"/><rect x="106" y="10" width="3" height="6" rx="1.2" opacity=".45"/></g></svg></div>
       <div id="vp">
-        <img class="sc" id="s_jobs" src="assets/screens/jobs.png">
-        <img class="sc" id="s_jobs_it" src="assets/screens/jobs_it.png">
-        <img class="sc" id="s_unis" src="assets/screens/unis.png">
-        <img class="sc" id="s_long" src="assets/screens/unis_it_long.png">
-        <img id="tabs" src="assets/screens/tabs_school.png">
-        <img class="sc" id="s_snu" src="assets/screens/snu_long.png">
+        <img class="sc" id="s_jobs" data-src="jobs.png">
+        <img class="sc" id="s_jobs_it" data-src="jobs_it.png">
+        <img class="sc" id="s_unis" data-src="unis.png">
+        <img class="sc" id="s_long" data-src="unis_it_long.png">
+        <img id="tabs" data-src="tabs_school.png">
+        <img class="sc" id="s_snu" data-src="snu_long.png">
         <div id="tap"></div>
       </div>
     </div></div>
-    <div id="end"><img src="assets/img/logo-white.png"><p>Вкладка уже<br>в 1English</p><span>Работа · Учёба</span></div>
+    <div id="end"><img src="assets/img/logo-white.png"><p></p><span></span></div>
   </div>
 </div>
 <script>
 (function () {
   var K = 640 / 390;                       /* pt экрана → px композиции */
-  var START = [0.5, 5.2, 9.0, 13.0, 17.9, 22.4, 27.0, 31.9, 36.8];
+  /* Тексты и слова-триггеры по языку: w* — слово реплики, на котором случается событие */
+  var T = {
+    ru: { i1: 'Работа<br>в Алматы.', w1: 'работа', i2: 'Учёба<br>в Сеуле.', w2: 'учёба',
+      one: ['1English', 'Одна вкладка'], jobs: ['Работа', 'Вакансии<br>с английским'], wIt: 'сферу',
+      comp: ['Работа', 'Компания, город,<br>зарплата'], wComp: 'видишь', wSeg: 'учёба', unis: ['Учёба', '15 вузов.<br>8 стран.'],
+      wF: 'направление', picks: ['Учёба', 'Подборка<br>для тебя'], wPicks: 'подборка',
+      uni: ['Seoul National University', 'Кампус и город'], alum: ['Seoul National University', 'Кто здесь учился'], wAlum: 'знаменитые',
+      grant: ['Грант', 'Что дают<br>и как подавать'], end: 'Вкладка уже<br>в 1English', endSub: 'Работа · Учёба' },
+    kk: { i1: 'Алматыда<br>жұмыс.', w1: 'алматы', i2: 'Сеулде<br>оқу.', w2: 'сеул',
+      one: ['1English', 'Бір бөлім'], jobs: ['Жұмыс', 'Ағылшынмен<br>вакансиялар'], wIt: 'саланы',
+      comp: ['Жұмыс', 'Компания, қала,<br>жалақы'], wComp: 'компанияны', wSeg: 'оқу', unis: ['Оқу', '15 ЖОО.<br>8 ел.'],
+      wF: 'бағытты', picks: ['Оқу', 'Саған арналған<br>іріктеу'], wPicks: 'саған',
+      uni: ['Seoul National University', 'Кампус пен қала'], alum: ['Seoul National University', 'Мұнда кім оқыған'], wAlum: 'белгілі',
+      grant: ['Грант', 'Не береді,<br>қалай тапсыру'], end: 'Бөлім қазір<br>1English-те', endSub: 'Жұмыс · Оқу' }
+  }[LANG];
+  document.getElementById('i1').innerHTML = T.i1; document.getElementById('i2').innerHTML = T.i2;
+  document.querySelector('#end p').innerHTML = T.end; document.querySelector('#end span').textContent = T.endSub;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-src]'), function (im) { im.src = SCR_DIR + im.getAttribute('data-src'); });
+  /* реплики идут друг за другом с паузой GAP[k] после реплики k; после 6-й — время на прокрутку списка */
+  var GAP = [0.5, 0.5, 0.4, 0.6, 0.5, 1.0, 0.6, 0.7];
+  var START = [0.5];
+  for (var k = 0; k < 8; k++) START.push(START[k] + window.VO[k][0] + GAP[k]);
+  var END = START[8] + window.VO[8][0] + 2.2;   /* mix.sh режет ролик по __END */
+  window.__END = END;
   function wt(l, w) {                      /* время слова w в реплике l */
     var ws = (window.WORDS || [])[l] || [];
     for (var i = 0; i < ws.length; i++) if (ws[i].w.indexOf(w) === 0) return START[l] + ws[i].t;
@@ -83,11 +113,14 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
   var E = 'power3.out', IO = 'power2.inOut';
 
   /* интро: две строки на чёрном, на «Сеуле» под ними проступает город */
-  tl.fromTo('#i1', { opacity: 0, y: 40, filter: 'blur(14px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: .7, ease: E }, wt(0, 'работа') - .1);
-  tl.fromTo('#i2', { opacity: 0, y: 40, filter: 'blur(14px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: .7, ease: E }, wt(0, 'учёба') - .1);
-  tl.fromTo('#bg', { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 3, ease: 'power2.out' }, wt(0, 'учёба') - .1);
+  tl.fromTo('#i1', { opacity: 0, y: 40, filter: 'blur(14px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: .7, ease: E }, wt(0, T.w1) - .1);
+  tl.fromTo('#i2', { opacity: 0, y: 40, filter: 'blur(14px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: .7, ease: E }, wt(0, T.w2) - .1);
+  /* фон живёт строго до ухода интро: наплыв и уход не пересекаются, иначе при покадровом рендере фото остаётся на весь ролик */
+  var bgIn = wt(0, T.w2) - .1, bgOut = START[1] - .25;
+  tl.fromTo('#bg', { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: Math.max(.3, bgOut - bgIn), ease: 'power2.out' }, bgIn);
   tl.to(['#i1', '#i2'], { opacity: 0, y: -60, filter: 'blur(14px)', duration: .5, ease: 'power2.in' }, START[1] - .25);
-  tl.to('#bg', { opacity: 0, duration: .6 }, START[1] - .25);
+  tl.to('#bg', { opacity: 0, duration: .6 }, bgOut);
+  tl.set('#bg', { display: 'none' }, bgOut + .6);
 
   /* заголовок над телефоном: каждый — свой слой, старый уходит вверх, новый поднимается
      (без tl.call: при перемотке кадров колбэки не срабатывают) */
@@ -126,49 +159,50 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
   window.__TAPS = [];
   function tapAt(at, xpt, ypt, sfx) { tap(at, xpt, ypt); window.__TAPS.push([at, sfx || 'tap']); }
 
-  var R = { it: [20, 432.6, 350, 52.6], seg: [195, 16, 173, 34], fit: [185, 269.8, 42.6, 37.8], snu: [20, 2437, 350, 300.9] };
+  var Q = window.RECTS;   /* координаты кнопок на скриншотах, pt — снимает caps.cjs */
+  var R = { it: Q.jobs.it, seg: Q.jobs_it.school, fit: Q.unis.fit, snu: Q.unis_it_long.snu, ppl: Q.snu_long.ppl, grant: Q.snu_long.grant };
   function cx(r) { return r[0] + r[2] / 2; } function cy(r) { return r[1] + r[3] / 2; }
 
   /* телефон поднимается с jobs */
   tl.set('#s_jobs', { opacity: 1 }, 0);
   tl.fromTo('#phone', { y: 1700 }, { y: 0, duration: 1.1, ease: 'expo.out' }, START[1] + .1);
-  title(START[1] + .1, '1English', 'Одна вкладка');
+  title(START[1] + .1, T.one[0], T.one[1]);
   tl.fromTo('#phone', { scale: 1 }, { scale: 1.03, duration: 30, ease: 'none', transformOrigin: '50% 30%', immediateRender: false }, START[1] + 1.2);
 
   /* работа */
-  title(START[2], 'Работа', 'Вакансии<br>с английским');
-  var tIt = wt(3, 'сферу') - .05;
+  title(START[2], T.jobs[0], T.jobs[1]);
+  var tIt = wt(3, T.wIt) - .05;
   tapAt(tIt, cx(R.it), cy(R.it));
   show(tIt + .12, '#s_jobs_it', 'push'); hide(tIt + .12, '#s_jobs', 'push');
-  title(wt(3, 'видишь'), 'Работа', 'Компания, город,<br>зарплата');
+  title(wt(3, T.wComp), T.comp[0], T.comp[1]);
 
   /* учёба */
-  var tSeg = wt(4, 'учёба') - .1;
+  var tSeg = wt(4, T.wSeg) - .1;
   tapAt(tSeg, cx(R.seg), cy(R.seg));
   show(tSeg + .1, '#s_unis'); hide(tSeg + .1, '#s_jobs_it');
-  title(START[4] + .2, 'Учёба', '15 вузов.<br>8 стран.');
-  var tF = wt(5, 'направление');
+  title(START[4] + .2, T.unis[0], T.unis[1]);
+  var tF = wt(5, T.wF);
   tapAt(tF, cx(R.fit), cy(R.fit));
   show(tF + .1, '#s_long', null, .2); show(tF + .1, '#tabs', null, .01); hide(tF + .1, '#s_unis');
-  title(wt(5, 'подборка'), 'Учёба', 'Подборка<br>для тебя');
+  title(wt(5, T.wPicks), T.picks[0], T.picks[1]);
   var scrollTo = R.snu[1] - 190;
-  scroll(START[5] + 2.8, '#s_long', scrollTo, 1.3);
+  scroll(START[6] - 1.55, '#s_long', scrollTo, 1.3);
 
   /* вуз */
   var tU = START[6] - .15;
   tapAt(tU, 195, R.snu[1] - scrollTo + 110);
   show(tU + .12, '#s_snu', 'sheet'); window.__TAPS.push([tU + .12, 'open']);
-  title(START[6] + .3, 'Seoul National University', 'Кампус и город');
-  title(wt(6, 'кто'), 'Seoul National University', 'Кто здесь учился');
-  scroll(wt(6, 'кто') - .3, '#s_snu', 420, 1.1);
-  title(START[7], 'Грант', 'Что дают<br>и как подавать');
-  scroll(START[7] + .2, '#s_snu', 1000, 2.2);
+  title(START[6] + .3, T.uni[0], T.uni[1]);
+  title(wt(6, T.wAlum), T.alum[0], T.alum[1]);
+  scroll(wt(6, T.wAlum) - .3, '#s_snu', R.ppl[1] - 210, 1.1);
+  title(START[7], T.grant[0], T.grant[1]);
+  scroll(START[7] + .2, '#s_snu', R.grant[1] - 160, 2.2);
 
   /* финал */
   tl.to('#phone', { y: 1500, duration: .9, ease: 'power3.in' }, START[8] - .3);
   tl.fromTo('#end', { opacity: 0, scale: .96 }, { opacity: 1, scale: 1, duration: .9, ease: E, immediateRender: false }, START[8] + .5);
   buildTitles();
-  tl.to({}, { duration: .01 }, 43);
+  tl.to({}, { duration: .01 }, 47);
 
   window.__timelines = window.__timelines || {};
   window.__timelines.main = tl;

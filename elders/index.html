@@ -172,6 +172,9 @@ function paint(html) {
   Array.prototype.forEach.call(app.querySelectorAll('[data-go]'), function (b) {
     b.onclick = function () { location.hash = b.getAttribute('data-go'); };
   });
+  Array.prototype.forEach.call(app.querySelectorAll('[data-back]'), function (b) {
+    b.onclick = function () { F.back(b.getAttribute('data-back')); };
+  });
 }
 
 /* Язык — самым первым экраном. */
@@ -195,7 +198,7 @@ function scrLogin() {
     go.disabled = true; er.textContent = '';
     F.enter(document.getElementById('cd').value, document.getElementById('nm').value).then(function (r) {
       go.disabled = false;
-      if (r.ok) { location.hash = '#/'; return route(); }
+      if (r.ok) { location.replace('#/'); return route(); }
       er.textContent = t({ name: 'errName', taken: 'errTaken', net: 'errNet', server: 'errServer' }[r.reason] || 'errCode');
     });
   };
@@ -208,7 +211,7 @@ function scrThanks() {
     '<button class="btn wa" id="ty">' + IC.heart + t('thanksBtn') + '</button></div>' +
     '<button class="btn" id="go" style="margin-top:22px">' + t('start') + '</button>');
   wireThanks();
-  document.getElementById('go').onclick = function () { S.started = true; F.save(); location.hash = '#/'; route(); };
+  document.getElementById('go').onclick = function () { S.started = true; F.save(); location.replace('#/'); route(); };
 }
 
 function wireThanks() {
@@ -241,9 +244,9 @@ function scrHome() {
 function pack(id) { return P.filter(function (p) { return p.id === id; })[0]; }
 
 function scrPack(id) {
-  var p = pack(id); if (!p) { location.hash = '#/'; return; }
+  var p = pack(id); if (!p) { location.replace('#/'); return; }
   F.mark('seen', id);
-  paint('<div class="top"><button class="back" data-go="#/">' + IC.back + '</button><div class="grow"><b>' + esc(S.lang === 'ru' ? p.ru : p.kk) +
+  paint('<div class="top"><button class="back" data-back="#/">' + IC.back + '</button><div class="grow"><b>' + esc(S.lang === 'ru' ? p.ru : p.kk) +
       '</b><span>' + esc(S.lang === 'ru' ? p.noteRu : p.noteKk) + '</span></div></div>' +
     p.phrases.map(function (x, k) {
       return '<div class="ph"><div class="en">' + esc(x.en) + '</div><div class="tr">' + esc(x.tr) + '</div><div class="mean">' + esc(mean(x)) + '</div>' +
@@ -252,17 +255,17 @@ function scrPack(id) {
     }).join('') +
     '<button class="btn" style="margin-top:20px" data-go="#/q/' + id + '">' + t('check') + '</button>');
   Array.prototype.forEach.call(app.querySelectorAll('[data-say]'), function (b) {
-    b.onclick = function () { F.speak(p.phrases[+b.getAttribute('data-say')].en, 0.85); };
+    b.onclick = function () { FAM.speak(p.phrases[+b.getAttribute('data-say')].en, 0.85); };
   });
   Array.prototype.forEach.call(app.querySelectorAll('[data-slow]'), function (b) {
-    b.onclick = function () { F.speak(p.phrases[+b.getAttribute('data-slow')].en, 0.55); };
+    b.onclick = function () { FAM.speak(p.phrases[+b.getAttribute('data-slow')].en, 0.55); };
   });
 }
 
 /* Проверка: фраза звучит сама, выбрать её смысл из трёх. Ошибка не штраф —
    показываем правильный ответ и идём дальше. */
 function scrQuiz(id) {
-  var p = pack(id); if (!p) { location.hash = '#/'; return; }
+  var p = pack(id); if (!p) { location.replace('#/'); return; }
   var i = 0, right = 0;
   function opts(k) {
     var others = p.phrases.filter(function (_, j) { return j !== k; }).sort(function () { return Math.random() - 0.5; }).slice(0, 2);
@@ -271,7 +274,7 @@ function scrQuiz(id) {
   function draw() {
     if (i >= p.phrases.length) return end();
     var x = p.phrases[i], list = opts(i), answered = false;
-    paint('<div class="top"><button class="back" data-go="#/p/' + id + '">' + IC.back + '</button><div class="grow"><b>' +
+    paint('<div class="top"><button class="back" data-back="#/p/' + id + '">' + IC.back + '</button><div class="grow"><b>' +
         esc(S.lang === 'ru' ? p.ru : p.kk) + '</b><span>' + (i + 1) + ' / ' + p.phrases.length + '</span></div></div>' +
       '<div class="bar"><i style="transform:scaleX(' + (i / p.phrases.length) + ')"></i></div>' +
       '<div class="ph"><div class="en">' + esc(x.en) + '</div><div class="tr">' + esc(x.tr) + '</div>' +
@@ -279,8 +282,8 @@ function scrQuiz(id) {
       '<h2 style="margin-top:8px">' + t('q') + '</h2>' +
       list.map(function (o, k) { return '<button class="opt" data-o="' + k + '">' + esc(mean(o)) + '</button>'; }).join('') +
       '<div id="nx"></div>');
-    F.speak(x.en, 0.85);
-    document.getElementById('say').onclick = function () { F.speak(x.en, 0.85); };
+    FAM.speak(x.en, 0.85);
+    document.getElementById('say').onclick = function () { FAM.speak(x.en, 0.85); };
     Array.prototype.forEach.call(app.querySelectorAll('[data-o]'), function (b) {
       b.onclick = function () {
         if (answered) return; answered = true;
@@ -299,7 +302,7 @@ function scrQuiz(id) {
     F.mark('done', id);
     paint(top() + '<div class="msg" style="padding-top:4vh"><h1>' + t('fin')(right, p.phrases.length) + '</h1><p class="sub">' + esc(t('brag')(F.owner())) + '</p></div>' +
       '<button class="btn wa" id="sh">' + IC.heart + t('share') + '</button>' +
-      '<button class="btn ghost" data-go="#/">' + t('home') + '</button>');
+      '<button class="btn ghost" data-back="#/">' + t('home') + '</button>');
     document.getElementById('sh').onclick = function () {
       var b = this; b.disabled = true;
       F.thank('done:' + id).then(function () { b.outerHTML = '<p class="ok-line">' + IC.ok + t('shared') + '</p>'; });

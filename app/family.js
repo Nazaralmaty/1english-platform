@@ -71,6 +71,11 @@
 
     F.owner = function () { return (F.S.owner && F.S.owner.name) || ''; };
     F.logout = function () { delete F.S.code; delete F.S.name; F.save(); };
+    /* «Назад» на экране — шаг по истории, если пришли оттуда, иначе замена
+       адреса: иначе системный «назад» телефона возвращает на тот же экран. */
+    var prev = '';
+    window.addEventListener('hashchange', function (e) { var i = e.oldURL.indexOf('#'); prev = i >= 0 ? e.oldURL.slice(i) : ''; });
+    F.back = function (hash) { if (prev && prev === hash) history.back(); else location.replace(hash); };
     return F;
   }
 
